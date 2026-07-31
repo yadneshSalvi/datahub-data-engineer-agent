@@ -63,10 +63,12 @@ export const api = {
     request<{ run_id: string }>("/api/runs", { method: "POST", body: JSON.stringify(input) }),
   metrics: () => request<MetricsResponse>("/api/metrics"),
   lineage: (wholeNamespace = true) => request<LineageGraphResponse>(`/api/lineage/graph?whole_namespace=${wholeNamespace}`),
+  lineageFocus: (urn: string, up = 3, down = 3) => request<LineageGraphResponse>(`/api/lineage/graph?urn=${encodeURIComponent(urn)}&up=${up}&down=${down}`),
   demoState: () => request<DemoState>("/api/demo/state"),
   seed: () => request<DemoJobAccepted>("/api/demo/seed", { method: "POST", body: JSON.stringify({ wipe: false }) }),
   breakScenario: (scenario: Scenario) => request<DemoJobAccepted>("/api/demo/break", { method: "POST", body: JSON.stringify({ scenario }) }),
   reset: (keepMemory: boolean, purge = false) => request<DemoJobAccepted>("/api/demo/reset", { method: "POST", body: JSON.stringify({ keep_memory: keepMemory, purge }) }),
   postmortems: () => request<PostmortemRecord[]>("/api/postmortems"),
-  compare: () => request<CompareResponse>("/api/compare"),
+  postmortem: (id: string) => request<PostmortemRecord>(`/api/postmortems/${encodeURIComponent(id)}`),
+  compare: (a?: string, b?: string) => request<CompareResponse>(a && b ? `/api/compare?a=${encodeURIComponent(a)}&b=${encodeURIComponent(b)}` : "/api/compare"),
 };

@@ -29,6 +29,7 @@
       },
       "devDependencies": {
         "@tailwindcss/vite": "4.1.14",
+        "@types/dagre": "0.7.52",
         "@types/react": "19.1.16",
         "@types/react-dom": "19.1.9",
         "@vitejs/plugin-react": "4.3.4",
@@ -324,6 +325,8 @@
     "@types/d3-transition": ["@types/d3-transition@3.0.9", "", { "dependencies": { "@types/d3-selection": "*" } }, "sha512-uZS5shfxzO3rGlu0cC3bjmMFKsXv+SmZZcgp0KD22ts4uGXp5EVYGzu/0YdwZeKmddhcAccYtREJKkPfXkZuCg=="],
 
     "@types/d3-zoom": ["@types/d3-zoom@3.0.8", "", { "dependencies": { "@types/d3-interpolate": "*", "@types/d3-selection": "*" } }, "sha512-iqMC4/YlFCSlO8+2Ii1GGGliCAY4XdeG748w5vQUbevlbDu0zSjH/+jojorQVBK/se0j6DUFNPBGSqD3YWYnDw=="],
+
+    "@types/dagre": ["@types/dagre@0.7.52", "", {}, "sha512-XKJdy+OClLk3hketHi9Qg6gTfe1F3y+UFnHxKA2rn9Dw+oXa4Gb378Ztz9HlMgZKSxpPmn4BNVh9wgkpvrK1uw=="],
 
     "@types/estree": ["@types/estree@1.0.9", "", {}, "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="],
 

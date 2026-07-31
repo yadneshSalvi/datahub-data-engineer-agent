@@ -88,6 +88,26 @@ svg { display: block; }
 }
 .section-label { color: var(--color-fg-subtle); font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
 
+.lineage-canvas .react-flow__pane { cursor: grab; }
+.lineage-canvas .react-flow__pane:active { cursor: grabbing; }
+.lineage-canvas .react-flow__node { border-radius: 12px; }
+.lineage-canvas .react-flow__node:focus-visible { box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-brand); }
+.lineage-canvas .react-flow__handle { opacity: .85; }
+.lineage-canvas .react-flow__edge { pointer-events: all; }
+.lineage-control {
+  display: grid; width: 30px; height: 30px; place-items: center; border: 1px solid transparent;
+  border-radius: 7px; color: var(--color-fg-muted); transition: color 180ms ease-out, background 180ms ease-out, border-color 180ms ease-out;
+}
+.lineage-control:hover { border-color: var(--color-border); background: var(--color-surface-2); color: var(--color-fg); }
+.lineage-edge { fill: none; stroke-width: 1.35; transition: stroke 400ms ease-out, opacity 400ms ease-out; }
+.lineage-edge-default { stroke: var(--color-border-strong); opacity: .62; }
+.lineage-edge-blast { stroke: var(--color-warn); stroke-width: 1.8; opacity: .78; }
+.lineage-edge-causal { stroke: var(--color-critical); stroke-width: 2.4; stroke-dasharray: 8 7; filter: drop-shadow(0 0 3px color-mix(in oklch, var(--color-critical) 40%, transparent)); animation: causal-march .75s linear infinite; }
+@keyframes causal-march { to { stroke-dashoffset: -15; } }
+
+table { border-spacing: 0; }
+select, option { background-color: var(--color-surface); color: var(--color-fg); }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }

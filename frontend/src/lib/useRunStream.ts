@@ -46,6 +46,7 @@ const initialState: RunStreamState = {
 type StreamAction =
   | { type: "EVENT"; event: RunEvent }
   | { type: "REPLAY"; events: RunEvent[] }
+  | { type: "RESET" }
   | { type: "CONNECTION"; connection: StreamConnection };
 
 function applyEvent(state: RunStreamState, event: RunEvent): RunStreamState {
@@ -78,6 +79,7 @@ function replay(events: RunEvent[], connection: StreamConnection): RunStreamStat
 }
 
 function runStreamReducer(state: RunStreamState, action: StreamAction): RunStreamState {
+  if (action.type === "RESET") return initialState;
   if (action.type === "CONNECTION") return { ...state, connection: action.connection };
   if (action.type === "REPLAY") {
     const merged = new Map<number, RunEvent>();
@@ -103,7 +105,7 @@ export function useRunStream(runId: string | undefined): RunStreamState {
     let active = true;
     let source: EventSource | null = null;
     latestSeq.current = 0;
-    dispatch({ type: "CONNECTION", connection: "connecting" });
+    dispatch({ type: "RESET" });
 
     const reconcile = async () => {
       if (reconciling.current) return;
@@ -143,6 +145,7 @@ export function useRunStream(runId: string | undefined): RunStreamState {
       }
       source = new EventSource(`${API_URL}/api/runs/${encodeURIComponent(runId)}/stream`);
       source.onopen = () => dispatch({ type: "CONNECTION", connection: "live" });
+      source.onerror = () => { if (active) dispatch({ type: "CONNECTION", connection: "reconnecting" }); };
       eventKinds.forEach((kind) => source?.addEventListener(kind, receive));
     };
 
