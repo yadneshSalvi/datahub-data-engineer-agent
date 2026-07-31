@@ -49,7 +49,7 @@ from demo.common import (
     upsert_dataset,
 )
 from oncall_agent.config import get_settings
-from oncall_agent.datahub.client import execute_graphql, get_client, get_graph
+from oncall_agent.datahub.client import execute_graphql, get_client, get_graph, preflight_gms
 from oncall_agent.datahub.reads import (
     ASSERTION_STATUS_QUERY,
     HEALTH_SIGNALS_QUERY,
@@ -520,6 +520,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--verify", action="store_true", help="verify every seeded invariant")
     args = parser.parse_args(argv)
     try:
+        preflight_gms()
         seed(wipe=args.wipe, verify=args.verify)
     except Exception as exc:
         print(f"ERROR seed_failed={type(exc).__name__} message={exc}", file=sys.stderr, flush=True)

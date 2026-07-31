@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "DataHub integration core for the On-Call Data Engineer Agent"
 requires-python = ">=3.12"
 dependencies = [
-  "acryl-datahub",
+  "acryl-datahub==1.6.0.16",
   "fastapi",
   "httpx",
   "openai-agents==0.19.1",

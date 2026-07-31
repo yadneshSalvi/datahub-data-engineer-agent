@@ -20,7 +20,7 @@ from demo.common import (
 )
 from demo.seed import verify_seed, wipe_namespace
 from oncall_agent.config import get_settings
-from oncall_agent.datahub.client import get_client, get_graph
+from oncall_agent.datahub.client import get_client, get_graph, preflight_gms
 from oncall_agent.datahub.reads import list_open_incidents
 from oncall_agent.datahub.writes import (
     patch_custom_properties,
@@ -222,6 +222,7 @@ def main(argv: list[str] | None = None) -> int:
     modes.add_argument("--purge", action="store_true", help="hard-delete demo entities")
     args = parser.parse_args(argv)
     try:
+        preflight_gms()
         reset(keep_memory=args.keep_memory, purge=args.purge)
     except Exception as exc:
         print(f"ERROR reset_failed={type(exc).__name__} message={exc}", file=sys.stderr, flush=True)

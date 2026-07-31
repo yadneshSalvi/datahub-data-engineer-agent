@@ -1173,7 +1173,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "acryl-datahub" },
+    { name = "acryl-datahub", specifier = "==1.6.0.16" },
     { name = "fastapi" },
     { name = "httpx" },
     { name = "openai-agents", specifier = "==0.19.1" },

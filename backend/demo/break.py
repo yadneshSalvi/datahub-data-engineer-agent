@@ -21,7 +21,7 @@ from demo.common import (
     now_millis,
     upsert_dataset,
 )
-from oncall_agent.datahub.client import get_graph
+from oncall_agent.datahub.client import get_graph, preflight_gms
 from oncall_agent.datahub.reads import (
     get_assertion_status,
     get_freshness,
@@ -336,6 +336,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--scenario", choices=SCENARIOS, required=True)
     args = parser.parse_args(argv)
     try:
+        preflight_gms()
         arm_scenario(args.scenario)
     except Exception as exc:
         print(f"ERROR break_failed={type(exc).__name__} message={exc}", file=sys.stderr, flush=True)

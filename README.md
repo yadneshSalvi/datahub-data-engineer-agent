@@ -86,14 +86,27 @@ Owner notification is an external action rather than a DataHub metadata artifact
 
 ## The memory loop, measured
 
+**What is being compared.** Two triage runs against the **same root cause** (`raw.trips_raw`
+stalled behind its 6-hour freshness SLA) but **different symptoms**, so the second run cannot
+simply repeat the first. The cold run was triggered by a row-count assertion failure on
+`marts.agg_daily_rides`; the repeat run was triggered on `marts.agg_zone_demand`, a dataset the
+agent had never triaged, whose root cause sits **three lineage hops upstream**. Between the two,
+`demo/reset.py --keep-memory` restored the warehouse to health while deliberately preserving the
+post-mortem — so the only difference is what the agent remembered.
+
 | Run             |                                  Recall | Time to root cause | Tool calls |
 | --------------- | --------------------------------------: | -----------------: | ---------: |
 | Cold incident   |                         No prior memory |             65.5 s |         71 |
 | Repeat incident | Prior post-mortem recalled and verified |               38 s |         50 |
 
-`GET /api/compare` reports **41% less time to root cause and 30% fewer tool calls**. The checked-in
+`GET /api/compare` reports **41% less time to root cause and 30% fewer tool calls**. Both runs
+reached the same correct root cause, and the repeat run still verified it against live evidence
+rather than trusting memory alone. The checked-in
 [comparison snapshot](examples/snapshots/compare.json) contains the complete source records; the
 [cold and recall post-mortems](examples/README.md) are the exact artifacts those runs generated.
+
+These are two runs on one seeded warehouse, not a benchmark — reproduce them yourself with the
+demo walkthrough below.
 
 ## One-command setup
 
@@ -184,6 +197,39 @@ demo capture; no screenshot is represented as generated in this repository.
 - The demo runs one uvicorn worker and uses SQLite for its local event/run mirror. It is a local
   reproducible system, not a horizontally scaled or multi-tenant service.
 - Triggering is polling-based; DataHub Actions integration is not included.
+
+## Notes for DataHub developers
+
+Building this surfaced five behaviours on **DataHub OSS GMS v1.5.0.6** that cost real debugging
+time. Each was reproduced live against a stock `datahub docker quickstart`, and each is worked
+around in this codebase. We are writing them up here in case they are useful upstream.
+
+1. **`operations(limit: n)` truncates before ordering, and is not newest-first.** On a dataset whose
+   `operation` series had ~10 points, `limit: 5` omitted the newest record entirely — so a dataset
+   26 hours stale read as 1.2 hours *fresh*. The failure is silent and intermittent; nothing in the
+   response indicates truncation. Workaround: request a generous `limit` and take
+   `max(..., key=timestampMillis)` client-side. See `backend/src/oncall_agent/datahub/reads.py`.
+2. **`hasFailingAssertions` as a search filter never populates.** `searchAcrossEntities` with
+   `hasFailingAssertions = true` returned `total: 0` at t+10/20/30/45 s after a `FAILURE`
+   `assertionRunEvent`, while the same dataset's `health` field correctly reported
+   `{type: "ASSERTIONS", status: "FAIL", causes: [...]}`. We derive the trigger feed from `health`.
+3. **Two writes to the same (entity, timeseries aspect) in one run can coalesce non-deterministically.**
+   The REST sink batches asynchronously; emitting a healthy point and then a broken point for the
+   same dataset in quick succession sometimes left the *healthy* one winning. Separating
+   `timestampMillis` is not sufficient — we restructured so each series is written exactly once.
+4. **`add_lineage(column_lineage=True | "auto_fuzzy" | "auto_strict")` silently writes nothing when
+   the two schemas share no column names.** No exception, no warning; the downstream simply ends up
+   with no `upstreamLineage` aspect and every later lineage read returns `[]`. This reads exactly
+   like "lineage is broken". Related: `transformation_text=` imports `sqlglot`, and without it the
+   whole `add_lineage` call raises so the edge is never written.
+5. **Asymmetric GraphQL fields fail the entire query.** `FineGrainedLineage.confidenceScore` is
+   accepted by the Python write model but does not exist on the read schema; requesting it fails the
+   whole query rather than that field. Same class: `CustomAssertionInfo.entity`,
+   `SchemaFieldRef.fieldPath`, `institutionalMemory.elements[].actor`.
+
+Timing observed for anyone building similar tooling: lineage becomes queryable ~5 s after write,
+but **assertion run events took ~50 s to index**, so state-change verification needs a ~2 minute
+budget rather than a few seconds.
 
 ## Project layout
 
