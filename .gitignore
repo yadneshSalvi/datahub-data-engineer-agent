@@ -1,5 +1,7 @@
 # Private planning docs — not for publication
 IDEA.md
+plans/
+STATUS.md
 
 # Python
 __pycache__/
@@ -7,10 +9,25 @@ __pycache__/
 .venv/
 venv/
 *.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Node
+node_modules/
+dist/
+.vite/
 
 # Env & secrets
 .env
 .env.*
+!.env.example
+
+# Runtime data
+data/
+*.db
+*.sqlite3
+logs/
 
 # OS / editor
 .DS_Store
