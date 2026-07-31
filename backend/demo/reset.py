@@ -9,7 +9,17 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from demo.catalog import ASSERTIONS, DATASETS, POSTMORTEM_PROPERTY_URN, TAG_NAMES
+from demo.catalog import (
+    ASSERTIONS,
+    CHARTS,
+    DASHBOARDS,
+    DATASETS,
+    ML_MODEL_URN,
+    POSTMORTEM_PROPERTY_URN,
+    TAG_NAMES,
+    chart_urn,
+    dashboard_urn,
+)
 from demo.common import (
     emit_assertion_result,
     emit_operation,
@@ -94,12 +104,32 @@ def _memory_document_urns() -> set[str]:
     return document_urns
 
 
+def _consumer_urns() -> tuple[str, ...]:
+    """Every non-dataset entity the agent is capable of tagging.
+
+    Cleanup scope must match WRITE scope. `tag_assets` tags whatever the blast radius contains —
+    charts, dashboards and the ML model included — so a dataset-only reset leaves residue behind
+    while still asserting it is clean.
+    """
+
+    return (
+        *(chart_urn(name) for name, *_ in CHARTS),
+        *(dashboard_urn(name) for name, *_ in DASHBOARDS),
+        ML_MODEL_URN,
+    )
+
+
 def _remove_agent_artifacts(*, keep_memory: bool) -> tuple[int, int]:
     graph = get_graph()
     documents = _memory_document_urns() if not keep_memory else set()
     tags_removed = 0
+    for consumer_urn in _consumer_urns():
+        tags_removed += int(remove_tags(consumer_urn, TAG_NAMES))
     for dataset in DATASETS:
-        tags_removed += int(remove_tags(dataset.urn, TAG_NAMES))
+        # Column-level tags live on editableSchemaMetadata and are invisible to an entity-level
+        # remove_tags, so pass every field explicitly.
+        field_paths = tuple(column[0] for column in dataset.columns)
+        tags_removed += int(remove_tags(dataset.urn, TAG_NAMES, fields=field_paths))
         entity = get_client().entities.get(dataset.urn)
         if not keep_memory:
             memory_prefix = f"{get_settings().frontend_url.rstrip('/')}/memory/"
@@ -143,11 +173,13 @@ def _truncate_local_store(*, keep_memory: bool) -> None:
                     "SELECT name FROM sqlite_master WHERE type = 'table'"
                 ).fetchall()
             }
-            for table in ("run_events", "runs"):
-                if table in tables:
-                    connection.execute(f"DELETE FROM {table}")
-            if not keep_memory and "postmortems" in tables:
-                connection.execute("DELETE FROM postmortems")
+            # --keep-memory must preserve the RUN MIRROR too, not just post-mortems. The runs are
+            # what /api/compare reads, and the UI advertises them as permanent replayable records;
+            # wiping them made the documented walkthrough dead-end at "No comparable pair".
+            if not keep_memory:
+                for table in ("run_events", "runs", "postmortems"):
+                    if table in tables:
+                        connection.execute(f"DELETE FROM {table}")
             connection.commit()
         finally:
             connection.close()
@@ -161,13 +193,33 @@ def _clear_receipts() -> None:
 
 
 def _assert_no_oncall_tags() -> None:
+    """Assert no agent-written tag survives, on ANY entity type or column.
+
+    Previously this walked only DATASETS at entity level, so it reported a clean reset while
+    `oncall_impacted` persisted on all 4 charts, 3 dashboards and the ML model, and column tags
+    persisted on schema fields. An assertion narrower than the writes it guards is worse than none.
+    """
+
     forbidden = {f"urn:li:tag:{name}" for name in TAG_NAMES}
     remaining: dict[str, set[str]] = {}
+
     for dataset in DATASETS:
         entity = get_client().entities.get(dataset.urn)
         present = {tag.tag for tag in (entity.tags or [])} & forbidden
         if present:
             remaining[dataset.key] = present
+        for column in dataset.columns:
+            field = column[0]
+            field_tags = {tag.tag for tag in (entity[field].tags or [])} & forbidden
+            if field_tags:
+                remaining[f"{dataset.key}.{field}"] = field_tags
+
+    for consumer_urn in _consumer_urns():
+        entity = get_client().entities.get(consumer_urn)
+        present = {tag.tag for tag in (entity.tags or [])} & forbidden
+        if present:
+            remaining[consumer_urn] = present
+
     if remaining:
         raise AssertionError(f"On-call tags remain after reset: {remaining}")
 

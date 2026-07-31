@@ -96,6 +96,7 @@ class TriageContext:
     tool_calls: int = 0
     root_cause_urn: str | None = None
     incident_urn: str | None = None
+    incident_resource_urn: str | None = None
     postmortem_id: str | None = None
     time_to_root_cause_s: float | None = None
     mcp_available: bool = True

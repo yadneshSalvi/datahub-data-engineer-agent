@@ -158,9 +158,19 @@ def datahub_url_for(urn: str) -> str:
         "DASHBOARD": "dashboard",
         "MLMODEL": "mlModel",
         "ASSERTION": "assertions",
-        "INCIDENT": "incident",
         "DOCUMENT": "document",
     }.get(entity_type_from_urn(urn))
     if route is None:
         raise ValueError(f"Unsupported DataHub URN for deep link: {urn}")
     return f"{get_settings().datahub_ui_url.rstrip('/')}/{route}/{urn}"
+
+
+def incident_url_for(dataset_urn: str) -> str:
+    """Build a deep link to the Incidents tab of the dataset an incident was raised on.
+
+    There is no standalone `/incident/<urn>` route in the OSS UI — it 404s. Incidents are only
+    reachable through their entity's Incidents tab, so an incident link needs the RESOURCE urn,
+    not the incident urn.
+    """
+
+    return f"{get_settings().datahub_ui_url.rstrip('/')}/dataset/{dataset_urn}/Incidents"

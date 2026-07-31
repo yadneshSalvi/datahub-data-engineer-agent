@@ -38,7 +38,7 @@ from oncall_agent.agent.models import (
     RecalledPostMortem,
 )
 from oncall_agent.config import get_settings
-from oncall_agent.datahub.client import datahub_url_for
+from oncall_agent.datahub.client import incident_url_for
 from oncall_agent.datahub.urns import short_display_name
 
 log = logging.getLogger(__name__)
@@ -528,11 +528,12 @@ async def raise_incident(
             priority=priority,
         )
         context.incident_urn = urn
+        context.incident_resource_urn = dataset_urn
         record = ActionRecord(
             action="incident",
             summary=f"Active {priority.lower()} {incident_type.lower()} incident",
             urns=[urn, dataset_urn],
-            datahub_url=datahub_url_for(urn),
+            datahub_url=incident_url_for(dataset_urn),
             detail=title,
         )
     except Exception as exc:
@@ -749,7 +750,11 @@ async def resolve_incident(
             action="resolve",
             summary=f"Incident moved to {stage}",
             urns=[incident_urn],
-            datahub_url=datahub_url_for(incident_urn),
+            datahub_url=(
+                incident_url_for(context.incident_resource_urn)
+                if context.incident_resource_urn
+                else None
+            ),
             detail=message,
             ok=ok,
         )
