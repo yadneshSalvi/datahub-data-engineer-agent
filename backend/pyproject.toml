@@ -5,6 +5,7 @@ description = "DataHub integration core for the On-Call Data Engineer Agent"
 requires-python = ">=3.12"
 dependencies = [
   "acryl-datahub",
+  "fastapi",
   "httpx",
   "openai-agents==0.19.1",
   "pydantic>=2.12",
@@ -12,6 +13,7 @@ dependencies = [
   "python-dotenv",
   "sqlglot",
   "sqlparse",
+  "uvicorn[standard]",
 ]
 
 [dependency-groups]

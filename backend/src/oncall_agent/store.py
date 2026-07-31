@@ -334,6 +334,12 @@ class Store:
             return None
         row["doc_json"] = json.loads(row["doc_json"])
         row["datahub_links"] = json.loads(row["datahub_links"] or "[]")
+        rows = await self.list_runs(limit=1000)
+        row["used_by_runs"] = [
+            run
+            for run in rows
+            if postmortem_id in run.get("recalled_ids", []) and run["id"] != row["run_id"]
+        ]
         return row
 
     def _get_postmortem_sync(self, postmortem_id: str) -> dict[str, Any] | None:
@@ -342,6 +348,52 @@ class Store:
                 "SELECT * FROM postmortems WHERE id=?", (postmortem_id,)
             ).fetchone()
         return dict(row) if row is not None else None
+
+    async def list_postmortems(
+        self,
+        *,
+        query: str = "",
+        root_cause_urn: str | None = None,
+    ) -> list[dict[str, Any]]:
+        """Return post-mortems newest first with optional text and root-cause filters."""
+
+        rows = await asyncio.to_thread(self._list_postmortems_sync, query, root_cause_urn)
+        for row in rows:
+            row["doc_json"] = json.loads(row["doc_json"])
+            row["datahub_links"] = json.loads(row["datahub_links"] or "[]")
+        return rows
+
+    def _list_postmortems_sync(
+        self,
+        query: str,
+        root_cause_urn: str | None,
+    ) -> list[dict[str, Any]]:
+        clauses: list[str] = []
+        parameters: list[str] = []
+        if query:
+            clauses.append("(title LIKE ? OR symptom LIKE ? OR doc_markdown LIKE ?)")
+            pattern = f"%{query}%"
+            parameters.extend([pattern, pattern, pattern])
+        if root_cause_urn:
+            clauses.append("root_cause_urn=?")
+            parameters.append(root_cause_urn)
+        where = f" WHERE {' AND '.join(clauses)}" if clauses else ""
+        with self._lock:
+            rows = self._connection.execute(
+                f"SELECT * FROM postmortems{where} ORDER BY created_at DESC",
+                parameters,
+            ).fetchall()
+        return [dict(row) for row in rows]
+
+    async def count_postmortems(self) -> int:
+        """Return the number of locally mirrored post-mortems."""
+
+        return await asyncio.to_thread(self._count_postmortems_sync)
+
+    def _count_postmortems_sync(self) -> int:
+        with self._lock:
+            row = self._connection.execute("SELECT COUNT(*) AS n FROM postmortems").fetchone()
+        return int(row["n"])
 
     async def count_runs(self) -> int:
         """Return the number of mirrored runs."""
@@ -375,7 +427,9 @@ class Store:
                         and left.get("root_cause_urn") == right.get("root_cause_urn")
                         and int(left.get("recall_used") or 0) != int(right.get("recall_used") or 0)
                     ):
-                        first, second = right, left
+                        cold = left if not int(left.get("recall_used") or 0) else right
+                        recall = right if cold is left else left
+                        first, second = cold, recall
                         break
                 if first is not None:
                     break
@@ -388,5 +442,9 @@ class Store:
             new = second.get(metric)
             absolute = (new - old) if old is not None and new is not None else None
             pct = (absolute / old * 100) if absolute is not None and old else None
+            if isinstance(absolute, float):
+                absolute = round(absolute, 3)
+            if pct is not None:
+                pct = round(pct, 3)
             deltas[metric] = {"absolute": absolute, "pct": pct}
         return {"a": first, "b": second, "deltas": deltas}

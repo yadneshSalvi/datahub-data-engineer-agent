@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+
 import pytest
 
 from oncall_agent.agent.events import MetricEvent
@@ -94,5 +96,55 @@ async def test_store_lifecycle_replay_and_reuse(tmp_path) -> None:
         assert run is not None and run["status"] == "succeeded"
         memory = await store.get_postmortem("run-store")
         assert memory is not None and memory["reused_count"] == 1
+    finally:
+        await store.close()
+
+
+@pytest.mark.asyncio
+async def test_compare_auto_selects_cold_and_recall_pair(tmp_path) -> None:
+    store = await Store.open(tmp_path / "compare.db")
+    root = _postmortem().root_cause_urn
+
+    def report(run_id: str, *, recall: bool, seconds: float, calls: int) -> TriageReport:
+        return TriageReport(
+            run_id=run_id,
+            status="succeeded",
+            summary="fixture",
+            root_cause_urn=root,
+            root_cause_name="trips_raw",
+            incident_urn=None,
+            postmortem_id=None,
+            causal_path=[],
+            blast_radius=[],
+            actions=[],
+            findings=[],
+            tool_calls=calls,
+            hops_walked=1 if recall else 3,
+            recall_used=recall,
+            recalled_ids=["pm-cold"] if recall else [],
+            time_to_root_cause_s=seconds,
+            duration_s=seconds + 1,
+            error=None,
+        )
+
+    try:
+        await store.create_run("run-cold", _trigger())
+        await store.finish_run(report("run-cold", recall=False, seconds=20, calls=10))
+        await asyncio.sleep(0.002)
+        await store.create_run("run-recall", _trigger())
+        await store.finish_run(report("run-recall", recall=True, seconds=5, calls=4))
+        comparison = await store.compare_runs()
+        assert comparison is not None
+        assert comparison["a"]["id"] == "run-cold"
+        assert comparison["b"]["id"] == "run-recall"
+        assert comparison["deltas"]["time_to_root_cause_s"] == {
+            "absolute": -15.0,
+            "pct": -75.0,
+        }
+        assert comparison["deltas"]["tool_calls"] == {"absolute": -6, "pct": -60.0}
+        assert comparison["deltas"]["hops_walked"] == {
+            "absolute": -2,
+            "pct": -66.667,
+        }
     finally:
         await store.close()

@@ -303,8 +303,11 @@ async def run_triage(trigger: TriggerSpec, deps: Deps) -> AsyncIterator[Event]:
         summary = "Triage did not complete."
         error: str | None = None
         try:
-            if deps.settings.openai_api_key:
-                set_default_openai_key(deps.settings.openai_api_key)
+            if not deps.settings.openai_api_key:
+                raise RuntimeError(
+                    "OPENAI_API_KEY is not configured; add it to the repository .env and retry"
+                )
+            set_default_openai_key(deps.settings.openai_api_key)
             bundle = build_agents(
                 context,
                 mcp_servers=active_servers,
