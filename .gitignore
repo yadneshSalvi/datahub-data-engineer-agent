@@ -36,3 +36,6 @@ logs/
 
 # uv / build
 .python-version
+
+# frontend build
+frontend/dist/

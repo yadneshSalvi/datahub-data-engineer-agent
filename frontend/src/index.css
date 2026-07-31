@@ -1,0 +1,93 @@
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/jetbrains-mono";
+@import "tailwindcss";
+
+@theme {
+  --color-bg: oklch(0.145 0.012 265);
+  --color-surface: oklch(0.185 0.014 265);
+  --color-surface-2: oklch(0.222 0.016 265);
+  --color-border: oklch(0.285 0.018 265);
+  --color-border-strong: oklch(0.365 0.022 265);
+  --color-fg: oklch(0.965 0.004 265);
+  --color-fg-muted: oklch(0.735 0.012 265);
+  --color-fg-subtle: oklch(0.575 0.014 265);
+  --color-brand: oklch(0.685 0.185 285);
+  --color-brand-dim: oklch(0.485 0.135 285);
+  --color-critical: oklch(0.640 0.215 25);
+  --color-warn: oklch(0.775 0.165 75);
+  --color-ok: oklch(0.735 0.155 155);
+  --color-info: oklch(0.720 0.135 235);
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+  --radius-card: 14px;
+}
+
+:root[data-theme="light"] {
+  --color-bg: oklch(0.975 0.006 265);
+  --color-surface: oklch(0.995 0.003 265);
+  --color-surface-2: oklch(0.948 0.010 265);
+  --color-border: oklch(0.875 0.018 265);
+  --color-border-strong: oklch(0.765 0.025 265);
+  --color-fg: oklch(0.205 0.018 265);
+  --color-fg-muted: oklch(0.425 0.020 265);
+  --color-fg-subtle: oklch(0.555 0.018 265);
+  --color-brand: oklch(0.555 0.205 285);
+  --color-brand-dim: oklch(0.705 0.125 285);
+  --color-critical: oklch(0.535 0.210 25);
+  --color-warn: oklch(0.595 0.150 70);
+  --color-ok: oklch(0.505 0.145 155);
+  --color-info: oklch(0.535 0.145 235);
+}
+
+* { box-sizing: border-box; }
+html { background: var(--color-bg); color-scheme: dark; }
+:root[data-theme="light"] { color-scheme: light; }
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-color: var(--color-bg);
+  background-image:
+    radial-gradient(circle at 9% -8%, color-mix(in oklch, var(--color-brand) 14%, transparent), transparent 29rem),
+    radial-gradient(circle, color-mix(in oklch, var(--color-fg) 3.5%, transparent) 1px, transparent 1px);
+  background-position: 0 0, 0 0;
+  background-size: auto, 32px 32px;
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, select, textarea { margin: 0; border: 0; outline: 0; background: none; color: inherit; font: inherit; }
+button, [role="button"] { cursor: pointer; }
+button:disabled, [aria-disabled="true"] { cursor: not-allowed; }
+a { color: inherit; text-decoration: none; }
+svg { display: block; }
+::selection { background: color-mix(in oklch, var(--color-brand) 35%, transparent); color: var(--color-fg); }
+
+:where(button, a, input, select, textarea, [role="button"], [tabindex]):focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-brand);
+  border-radius: 6px;
+}
+
+* { scrollbar-width: thin; scrollbar-color: var(--color-border-strong) transparent; }
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { border: 2px solid transparent; border-radius: 999px; background: var(--color-border-strong); background-clip: padding-box; }
+*::-webkit-scrollbar-thumb:hover { background: var(--color-fg-subtle); background-clip: padding-box; }
+
+.tabular-nums { font-variant-numeric: tabular-nums; }
+.card-highlight { position: relative; overflow: hidden; }
+.card-highlight::before {
+  position: absolute; inset: 0 12% auto; height: 1px; content: ""; pointer-events: none;
+  background: linear-gradient(90deg, transparent, color-mix(in oklch, var(--color-fg) 17%, transparent), transparent);
+}
+.section-label { color: var(--color-fg-subtle); font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
