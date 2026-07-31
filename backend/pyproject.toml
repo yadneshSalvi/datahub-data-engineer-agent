@@ -1,0 +1,47 @@
+[project]
+name = "oncall-agent"
+version = "0.1.0"
+description = "DataHub integration core for the On-Call Data Engineer Agent"
+requires-python = ">=3.12"
+dependencies = [
+  "acryl-datahub",
+  "httpx",
+  "pydantic>=2.12",
+  "pydantic-settings",
+  "python-dotenv",
+  "sqlglot",
+  "sqlparse",
+]
+
+[dependency-groups]
+dev = [
+  "pytest",
+  "pytest-asyncio",
+  "respx",
+  "ruff",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/oncall_agent"]
+
+[tool.pytest.ini_options]
+addopts = "-m 'not live'"
+filterwarnings = [
+  "ignore::datahub.errors.ExperimentalWarning",
+  "ignore::datahub.errors.IngestionAttributionWarning",
+  'ignore:add_fine_grained_upstream_lineage\(\) is deprecated:DeprecationWarning',
+]
+markers = ["live: tests that require the local DataHub GMS"]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
