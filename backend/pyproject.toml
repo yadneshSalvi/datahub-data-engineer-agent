@@ -6,6 +6,7 @@ requires-python = ">=3.12"
 dependencies = [
   "acryl-datahub",
   "httpx",
+  "openai-agents==0.19.1",
   "pydantic>=2.12",
   "pydantic-settings",
   "python-dotenv",

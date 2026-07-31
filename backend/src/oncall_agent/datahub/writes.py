@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import time
 import warnings
 from collections.abc import Iterable, Mapping, Sequence
@@ -22,7 +23,7 @@ from datahub.sdk import Tag, TagUrn
 from datahub.specific.dataset import DatasetPatchBuilder
 
 from oncall_agent.config import get_settings
-from oncall_agent.datahub.client import execute_graphql, get_client, get_graph
+from oncall_agent.datahub.client import datahub_url_for, execute_graphql, get_client, get_graph
 from oncall_agent.datahub.reads import list_open_incidents
 from oncall_agent.datahub.urns import is_our_dataset_urn, qualified_name_from_urn
 
@@ -367,3 +368,82 @@ def encode_postmortem(value: Mapping[str, Any]) -> str:
     """Encode a post-mortem mapping deterministically for deduplicated property storage."""
 
     return json.dumps(value, sort_keys=True, separators=(",", ":"))
+
+
+def write_postmortem_artifacts(
+    postmortem: Mapping[str, Any],
+    *,
+    markdown_body: str,
+) -> dict[str, Any]:
+    """Idempotently write all four verified DataHub post-mortem surfaces.
+
+    Each surface is attempted independently so a partial DataHub failure does not prevent the
+    remaining durable artifacts from being created. The returned ``errors`` mapping is empty on a
+    complete write and names the failed surfaces otherwise.
+    """
+
+    root_cause_urn = str(postmortem["root_cause_urn"])
+    symptom_urn = str(postmortem["symptom_urn"])
+    incident_id = str(postmortem["incident_id"])
+    _assert_safe_target(root_cause_urn)
+    _assert_safe_target(symptom_urn)
+    safe_incident_id = re.sub(r"[^A-Za-z0-9_-]", "-", incident_id).strip("-")
+    document_urn = f"urn:li:document:oncall-postmortem-{safe_incident_id}"
+    link = f"{get_settings().frontend_url.rstrip('/')}/memory/{incident_id}"
+    encoded = encode_postmortem(postmortem)
+    errors: dict[str, str] = {}
+
+    try:
+        ensure_structured_property_definition()
+        set_structured_property(root_cause_urn, [encoded], append=True)
+    except Exception as exc:  # continue with the other three independently durable surfaces
+        log.exception("Structured-property post-mortem write failed")
+        errors["structured_property"] = str(exc)
+
+    try:
+        document_urn = write_document(
+            incident_id=safe_incident_id,
+            title=str(postmortem["title"]),
+            markdown_body=markdown_body,
+            root_cause_urn=root_cause_urn,
+            symptom_urn=symptom_urn,
+        )
+    except Exception as exc:
+        log.exception("Document post-mortem write failed")
+        errors["document"] = str(exc)
+
+    try:
+        add_link(root_cause_urn, link, f"On-Call post-mortem {incident_id}")
+    except Exception as exc:
+        log.exception("Institutional-memory link write failed")
+        errors["link"] = str(exc)
+
+    try:
+        entity = get_client().entities.get(root_cause_urn)
+        current = dict(entity.custom_properties or {})
+        previous_id = current.get("oncall.last_incident_id")
+        count = int(current.get("oncall.incident_count", "0") or 0)
+        if previous_id != incident_id:
+            count += 1
+        patch_custom_properties(
+            root_cause_urn,
+            {
+                "oncall.last_incident_id": incident_id,
+                "oncall.last_root_cause": str(postmortem["root_cause_name"]),
+                "oncall.incident_count": str(count),
+            },
+        )
+    except Exception as exc:
+        log.exception("Post-mortem custom-property patch failed")
+        errors["custom_properties"] = str(exc)
+
+    return {
+        "postmortem_id": incident_id,
+        "document_urn": document_urn,
+        "datahub_urls": {
+            "structured_property": datahub_url_for(root_cause_urn),
+            "document": datahub_url_for(document_urn),
+            "link": link,
+        },
+        "errors": errors,
+    }

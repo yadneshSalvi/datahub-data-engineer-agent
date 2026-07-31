@@ -1,0 +1,14 @@
+{
+  "body_markdown": "`trips_raw` \u2192 `stg_trips` \u2192 `fct_trips` \u2192 `agg_zone_demand`.\n\nThe source is 31.01h stale against a 6h SLA and frozen at 1,284,500 rows. Downstream `agg_zone_demand` has only 90 rows versus 500..40000, down 99.58%. Highest-usage impacts are `fct_trips` (2,121 queries/30d), `agg_daily_rides` (1,673), and `fct_revenue` (1,169).\n\nHuman action: restore `trips_raw.pickup_ts` ingestion, rerun `stg_trips` and all dependents, then verify source/staging freshness and downstream row-count assertions. Triage preserved evidence only; the pipeline is not fixed.",
+  "incident_urn": null,
+  "owner_urns": [
+    "urn:li:corpuser:maya.chen",
+    "urn:li:corpGroup:data-platform",
+    "urn:li:corpuser:sam.patel",
+    "urn:li:corpGroup:analytics",
+    "urn:li:corpuser:raj.iyer",
+    "urn:li:corpGroup:finance"
+  ],
+  "run_id": "run_78508d6fac034227",
+  "subject": "[HIGH] trips_raw stall collapsing agg_zone_demand volume"
+}

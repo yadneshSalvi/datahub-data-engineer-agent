@@ -11,7 +11,7 @@ from typing import Any, Literal
 import datahub.metadata.schema_classes as models
 
 from oncall_agent.config import get_settings
-from oncall_agent.datahub.client import execute_graphql, get_graph
+from oncall_agent.datahub.client import execute_graphql, get_client, get_graph
 from oncall_agent.datahub.urns import (
     entity_type_from_urn,
     infer_layer,
@@ -86,6 +86,15 @@ LINEAGE_QUERY = """
 query l($input: SearchAcrossLineageInput!) {
   searchAcrossLineage(input: $input) {
     total searchResults { degree entity { urn type } paths { path { urn type } } } } }
+"""
+
+POSTMORTEM_SEARCH_QUERY = """
+query postmortems($input: SearchAcrossEntitiesInput!) {
+  searchAcrossEntities(input: $input) {
+    total
+    searchResults { entity { urn type } }
+  }
+}
 """
 
 log = logging.getLogger(__name__)
@@ -254,6 +263,38 @@ def get_usage_stats(dataset_urn: str) -> dict[str, Any]:
     """Return monthly usage buckets and aggregations for a dataset."""
 
     return _profile_usage(dataset_urn).get("usageStats") or {}
+
+
+_CONSUMER_PROPERTY_ASPECTS = {
+    "CHART": models.ChartInfoClass,
+    "DASHBOARD": models.DashboardInfoClass,
+    "MLMODEL": models.MLModelPropertiesClass,
+}
+
+
+def get_consumer_usage(entity_urn: str) -> dict[str, Any]:
+    """Return the seeded ``weekly_views`` audience size for a chart, dashboard or ML model.
+
+    OSS DataHub has no usage aspect for these entity types that we can populate, and the MCP
+    ``get_entities`` tool omits their custom properties entirely — so the agent otherwise scores
+    every dashboard at zero and the blast-radius ranking collapses. Read the properties aspect
+    directly instead.
+    """
+
+    entity_type = entity_type_from_urn(entity_urn)
+    aspect_type = _CONSUMER_PROPERTY_ASPECTS.get(entity_type)
+    if aspect_type is None:
+        return {"urn": entity_urn, "entity_type": entity_type, "weekly_views": None}
+    aspect = get_graph().get_aspect(entity_urn=entity_urn, aspect_type=aspect_type)
+    properties = dict(getattr(aspect, "customProperties", None) or {}) if aspect else {}
+    raw_views = properties.get("weekly_views")
+    return {
+        "urn": entity_urn,
+        "entity_type": entity_type,
+        "name": short_display_name(entity_urn),
+        "weekly_views": int(raw_views) if raw_views is not None and raw_views.isdigit() else None,
+        "custom_properties": properties,
+    }
 
 
 def get_owners(entity_urn: str) -> list[dict[str, Any]]:
@@ -481,3 +522,72 @@ def get_lineage_graph(focus_urn: str) -> dict[str, Any]:
     upstream = (upstream_data.get("searchAcrossLineage") or {}).get("searchResults") or []
     downstream = (downstream_data.get("searchAcrossLineage") or {}).get("searchResults") or []
     return assemble_lineage_graph(focus_urn, upstream, downstream)
+
+
+def get_lineage_native(
+    source_urn: str,
+    *,
+    direction: Literal["upstream", "downstream"] = "upstream",
+    max_hops: int = 1,
+    source_column: str | None = None,
+    count: int = 100,
+) -> list[dict[str, Any]]:
+    """Return a compact native-SDK lineage result for recall and MCP degradation."""
+
+    results = get_client().lineage.get_lineage(
+        source_urn=source_urn,
+        source_column=source_column,
+        direction=direction,
+        max_hops=max_hops,
+        count=count,
+    )
+    compact: list[dict[str, Any]] = []
+    for item in results:
+        compact.append(
+            {
+                "urn": item.urn,
+                "type": str(item.type).upper(),
+                "hops": int(item.hops),
+                "name": item.name or short_display_name(item.urn),
+                "platform": item.platform,
+                "paths": [
+                    {
+                        "urn": path.urn,
+                        "name": path.entity_name,
+                        "column": path.column_name,
+                    }
+                    for path in (item.paths or [])
+                ],
+            }
+        )
+    return sorted(compact, key=lambda value: (value["hops"], value["urn"]))
+
+
+def search_postmortem_datasets() -> list[str]:
+    """Search the verified structured-property recall index and return dataset URNs."""
+
+    search_input = {
+        "types": ["DATASET"],
+        "query": "*",
+        "start": 0,
+        "count": 50,
+        "orFilters": [
+            {
+                "and": [
+                    {
+                        "field": "structuredProperties.oncall.postmortem",
+                        "condition": "EXISTS",
+                        "values": [],
+                        "negated": False,
+                    }
+                ]
+            }
+        ],
+    }
+    data = execute_graphql(POSTMORTEM_SEARCH_QUERY, {"input": search_input})
+    search = data.get("searchAcrossEntities") or {}
+    return [
+        str(entity["urn"])
+        for result in search.get("searchResults") or []
+        if (entity := result.get("entity") or {}).get("urn")
+    ]

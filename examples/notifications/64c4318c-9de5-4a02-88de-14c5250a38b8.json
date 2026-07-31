@@ -1,0 +1,14 @@
+{
+  "body_markdown": "**Causal chain:** `raw.trips_raw` \u2192 `staging.stg_trips` \u2192 `marts.fct_trips` \u2192 `marts.agg_daily_rides`.\n\nThe source `trips_raw` is 26.02 hours stale against a 6-hour SLA and has no upstreams, confirming it as the intrinsic root cause. Downstream, `stg_trips` and `fct_trips` fell from 1,281,900 to 3,120 rows, and `agg_daily_rides` fell from 182 to 4 rows (asserted floor 25). Highest-usage impacts are `fct_trips` (2,121 queries/30d), `agg_daily_rides` (1,673), and `fct_revenue` (1,169). Please restore the stalled `pickup_ts` source feed, rerun `stg_trips` and all dependent models, then verify freshness and row-count assertions. Incident: `urn:li:incident:64c4318c-9de5-4a02-88de-14c5250a38b8`.",
+  "incident_urn": "urn:li:incident:64c4318c-9de5-4a02-88de-14c5250a38b8",
+  "owner_urns": [
+    "urn:li:corpuser:maya.chen",
+    "urn:li:corpGroup:data-platform",
+    "urn:li:corpuser:sam.patel",
+    "urn:li:corpGroup:analytics",
+    "urn:li:corpuser:raj.iyer",
+    "urn:li:corpGroup:finance"
+  ],
+  "run_id": "run_ae5450fde2a14dfd",
+  "subject": "HIGH: trips_raw pickup_ts stall is collapsing agg_daily_rides volume"
+}
