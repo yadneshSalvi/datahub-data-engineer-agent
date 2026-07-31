@@ -1,0 +1,791 @@
+{
+  "a": {
+    "id": "run_c47c5d9bd22f40b6",
+    "created_at": "2026-07-31T20:50:04.353Z",
+    "finished_at": "2026-07-31T20:53:33.259Z",
+    "status": "succeeded",
+    "trigger_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+    "trigger_name": "agg_daily_rides",
+    "signal_kind": "assertion",
+    "signal_detail": "1 of 1 assertions are failing",
+    "scenario": "stale_upstream",
+    "root_cause_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+    "root_cause_name": "raw.trips_raw",
+    "incident_urn": "urn:li:incident:56de1e0c-77f6-45d1-a6ad-e9cad29d58b9",
+    "postmortem_id": "run_c47c5d9bd22f40b6",
+    "summary": "`agg_daily_rides` collapsed to 4 rows from 182, failing its 25-row minimum. Root cause is the stalled `raw.trips_raw` feed: 26.02 hours stale against a 6-hour SLA, with no upstream dependency. The blast radius covers 15 entities, led by Exec Daily Ops (3,100 weekly views), `fct_trips` (2,121 monthly queries), and Rides by Hour (1,840 weekly views). Incident `56de1e0c-77f6-45d1-a6ad-e9cad29d58b9` is in INVESTIGATION; tags, notifications, and post-mortem were completed. A human must restore/backfill the raw feed, validate `pickup_ts`, rerun downstream pipelines, and confirm freshness and row-count assertions before marking it fixed.",
+    "duration_s": 208.9,
+    "time_to_root_cause_s": 65.514,
+    "tool_calls": 71,
+    "hops_walked": 3,
+    "recall_used": 0,
+    "recalled_ids": [],
+    "causal_path": [
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+        "name": "agg_daily_rides",
+        "hops_from_symptom": 0,
+        "verdict": "broken",
+        "evidence": [
+          "Row count 4 vs expected 25..400 and previous 182 (-97.8%).",
+          "Freshness healthy at 1.21h/6h; four-field schema intact."
+        ]
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+        "name": "fct_trips",
+        "hops_from_symptom": 1,
+        "verdict": "broken",
+        "evidence": [
+          "Row count 3,120 vs expected 50,000..2,000,000 and previous 1,281,900 (-99.76%).",
+          "Freshness healthy at 1.21h/6h; pickup_zone_id null count passed at 0."
+        ]
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+        "name": "stg_trips",
+        "hops_from_symptom": 2,
+        "verdict": "broken",
+        "evidence": [
+          "Row count 3,120 vs expected 50,000..2,500,000 and previous 1,281,900 (-99.76%).",
+          "Freshness 25.01h vs 6h SLA, breaching by 19.01h."
+        ]
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+        "name": "raw.trips_raw",
+        "hops_from_symptom": 3,
+        "verdict": "root_cause",
+        "evidence": [
+          "Freshness 26.02h vs 6h SLA, breaching by 20.02h.",
+          "Row count unchanged at 1,284,500; pickup_ts is the implicated non-null timestamp field.",
+          "No upstream parent exists; stop rule satisfied."
+        ]
+      }
+    ],
+    "blast_radius": [
+      {
+        "urn": "urn:li:dashboard:(looker,oncall_demo_exec_daily_ops)",
+        "name": "Exec Daily Ops",
+        "entity_type": "DASHBOARD",
+        "hops": 5,
+        "usage_score": 3100,
+        "owners": [
+          "Dana Wu",
+          "Exec"
+        ],
+        "severity": "critical"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+        "name": "fct_trips",
+        "entity_type": "DATASET",
+        "hops": 2,
+        "usage_score": 2121,
+        "owners": [
+          "Sam Patel",
+          "Analytics"
+        ],
+        "severity": "critical"
+      },
+      {
+        "urn": "urn:li:chart:(looker,oncall_demo_rides_by_hour)",
+        "name": "Rides by Hour",
+        "entity_type": "CHART",
+        "hops": 4,
+        "usage_score": 1840,
+        "owners": [],
+        "severity": "high"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+        "name": "agg_daily_rides",
+        "entity_type": "DATASET",
+        "hops": 3,
+        "usage_score": 1673,
+        "owners": [
+          "Sam Patel",
+          "Analytics"
+        ],
+        "severity": "high"
+      },
+      {
+        "urn": "urn:li:chart:(looker,oncall_demo_revenue_trend)",
+        "name": "Revenue Trend",
+        "entity_type": "CHART",
+        "hops": 4,
+        "usage_score": 1420,
+        "owners": [],
+        "severity": "high"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_revenue,PROD)",
+        "name": "fct_revenue",
+        "entity_type": "DATASET",
+        "hops": 2,
+        "usage_score": 1169,
+        "owners": [
+          "Raj Iyer",
+          "Finance"
+        ],
+        "severity": "high"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_driver_earnings,PROD)",
+        "name": "agg_driver_earnings",
+        "entity_type": "DATASET",
+        "hops": 3,
+        "usage_score": 1043,
+        "owners": [
+          "Raj Iyer",
+          "Finance"
+        ],
+        "severity": "high"
+      },
+      {
+        "urn": "urn:li:chart:(looker,oncall_demo_zone_heatmap)",
+        "name": "Zone Demand Heatmap",
+        "entity_type": "CHART",
+        "hops": 4,
+        "usage_score": 960,
+        "owners": [],
+        "severity": "medium"
+      },
+      {
+        "urn": "urn:li:dashboard:(looker,oncall_demo_finance_review)",
+        "name": "Finance Revenue Review",
+        "entity_type": "DASHBOARD",
+        "hops": 5,
+        "usage_score": 870,
+        "owners": [
+          "Raj Iyer",
+          "Finance"
+        ],
+        "severity": "medium"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+        "name": "agg_zone_demand",
+        "entity_type": "DATASET",
+        "hops": 3,
+        "usage_score": 868,
+        "owners": [
+          "Sam Patel",
+          "Analytics"
+        ],
+        "severity": "medium"
+      },
+      {
+        "urn": "urn:li:dashboard:(looker,oncall_demo_driver_ops)",
+        "name": "Driver Ops",
+        "entity_type": "DASHBOARD",
+        "hops": 5,
+        "usage_score": 410,
+        "owners": [
+          "Nina Alvarez",
+          "Ml Platform"
+        ],
+        "severity": "low"
+      },
+      {
+        "urn": "urn:li:chart:(looker,oncall_demo_driver_leaderboard)",
+        "name": "Driver Leaderboard",
+        "entity_type": "CHART",
+        "hops": 4,
+        "usage_score": 380,
+        "owners": [],
+        "severity": "low"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.ml.trip_eta_features,PROD)",
+        "name": "trip_eta_features",
+        "entity_type": "DATASET",
+        "hops": 3,
+        "usage_score": 364,
+        "owners": [
+          "Nina Alvarez",
+          "Ml Platform"
+        ],
+        "severity": "low"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+        "name": "stg_trips",
+        "entity_type": "DATASET",
+        "hops": 1,
+        "usage_score": 91,
+        "owners": [
+          "Sam Patel",
+          "Analytics"
+        ],
+        "severity": "low"
+      }
+    ],
+    "actions": [
+      {
+        "action": "incident",
+        "summary": "Active critical volume incident",
+        "urns": [
+          "urn:li:incident:56de1e0c-77f6-45d1-a6ad-e9cad29d58b9",
+          "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)"
+        ],
+        "datahub_url": "http://localhost:9002/incident/urn:li:incident:56de1e0c-77f6-45d1-a6ad-e9cad29d58b9",
+        "detail": "agg_daily_rides volume collapse caused by stale raw.trips_raw feed",
+        "ok": true
+      },
+      {
+        "action": "tag",
+        "summary": "Applied oncall_root_cause to 1 assets (1 changed)",
+        "urns": [
+          "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)"
+        ],
+        "datahub_url": null,
+        "detail": "column_paths=['pickup_ts']",
+        "ok": true
+      },
+      {
+        "action": "tag",
+        "summary": "Applied oncall_impacted to 14 assets (7 changed)",
+        "urns": [
+          "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+          "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+          "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_revenue,PROD)",
+          "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+          "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_driver_earnings,PROD)",
+          "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+          "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.ml.trip_eta_features,PROD)",
+          "urn:li:dashboard:(looker,oncall_demo_driver_ops)",
+          "urn:li:dashboard:(looker,oncall_demo_exec_daily_ops)",
+          "urn:li:dashboard:(looker,oncall_demo_finance_review)",
+          "urn:li:chart:(looker,oncall_demo_driver_leaderboard)",
+          "urn:li:chart:(looker,oncall_demo_revenue_trend)",
+          "urn:li:chart:(looker,oncall_demo_rides_by_hour)",
+          "urn:li:chart:(looker,oncall_demo_zone_heatmap)"
+        ],
+        "datahub_url": null,
+        "detail": "column_paths=[]",
+        "ok": true
+      },
+      {
+        "action": "notify",
+        "summary": "Notified 6 owners: CRITICAL: stale raw.trips_raw feed collapsed agg_daily_rides",
+        "urns": [
+          "urn:li:corpuser:maya.chen",
+          "urn:li:corpGroup:data-platform",
+          "urn:li:corpuser:dana.wu",
+          "urn:li:corpGroup:exec",
+          "urn:li:corpuser:sam.patel",
+          "urn:li:corpGroup:analytics"
+        ],
+        "datahub_url": null,
+        "detail": "mock receipt: examples/notifications/56de1e0c-77f6-45d1-a6ad-e9cad29d58b9.json\n`raw.trips_raw` → `stg_trips` → `fct_trips` → `agg_daily_rides`.\n\nThe source `raw.trips_raw` has no upstreams and is 26.02 hours stale against a 6-hour SLA. The inherited volume loss leaves `fct_trips` at 3,120 rows versus a 50,000 minimum and `agg_daily_rides` at 4 rows versus 182 previously.\n\nTop ranked impacts are Exec Daily Ops (3,100 weekly views), `fct_trips` (2,121 queries/30d), and Rides by Hour (1,840 weekly views; no direct catalog owner). Incident: `urn:li:incident:56de1e0c-77f6-45d1-",
+        "ok": true
+      },
+      {
+        "action": "resolve",
+        "summary": "Incident moved to INVESTIGATION",
+        "urns": [
+          "urn:li:incident:56de1e0c-77f6-45d1-a6ad-e9cad29d58b9"
+        ],
+        "datahub_url": "http://localhost:9002/incident/urn:li:incident:56de1e0c-77f6-45d1-a6ad-e9cad29d58b9",
+        "detail": "Root cause confirmed as stale source feed at raw.trips_raw (26.02h stale vs 6h SLA; no upstreams). Evidence, blast radius, tags, owner notifications, and post-mortem are preserved. Human remediation is still required to restore/backfill ingestion, rerun downstream pipelines, and validate assertions; no data was modified and the pipeline is not claimed fixed.",
+        "ok": true
+      }
+    ],
+    "findings": [
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+        "name": "agg_daily_rides",
+        "check": "assertion",
+        "verdict": "broken",
+        "detail": "Row-count assertion failed: observed 4 rows versus expected 25..400."
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+        "name": "agg_daily_rides",
+        "check": "row_count",
+        "verdict": "broken",
+        "detail": "Latest row count is 4 versus 182 previously, a 97.8% decrease."
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+        "name": "agg_daily_rides",
+        "check": "freshness",
+        "verdict": "healthy",
+        "detail": "1.21 hours stale against a 6-hour SLA; freshness is not breaching."
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+        "name": "agg_daily_rides",
+        "check": "schema",
+        "verdict": "healthy",
+        "detail": "Schema is present with 4 non-null fields: avg_fare, avg_trip_minutes, day, rides."
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+        "name": "fct_trips",
+        "check": "assertion",
+        "verdict": "broken",
+        "detail": "Row-count assertion failed at 3,120 versus expected floor 50,000; pickup_zone_id null-count assertion passed at 0."
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+        "name": "fct_trips",
+        "check": "row_count",
+        "verdict": "broken",
+        "detail": "Latest row count is 3,120 versus 1,281,900 previously, a 99.76% decrease."
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+        "name": "fct_trips",
+        "check": "freshness",
+        "verdict": "healthy",
+        "detail": "1.21 hours stale against a 6-hour SLA; freshness is healthy despite severe volume loss."
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+        "name": "stg_trips",
+        "check": "assertion",
+        "verdict": "broken",
+        "detail": "Row-count assertion failed: 3,120 rows versus expected 50,000..2,500,000."
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+        "name": "stg_trips",
+        "check": "row_count",
+        "verdict": "broken",
+        "detail": "Latest row count is 3,120 versus 1,281,900 previously, down 99.76%."
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+        "name": "stg_trips",
+        "check": "freshness",
+        "verdict": "broken",
+        "detail": "25.01 hours stale against a 6-hour SLA, breaching by 19.01 hours."
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_zones,PROD)",
+        "name": "stg_zones",
+        "check": "assertion",
+        "verdict": "healthy",
+        "detail": "No assertions are configured or failing."
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_zones,PROD)",
+        "name": "stg_zones",
+        "check": "row_count",
+        "verdict": "healthy",
+        "detail": "Row count is stable at 265 versus 265 previously (0.0% change)."
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_zones,PROD)",
+        "name": "stg_zones",
+        "check": "freshness",
+        "verdict": "healthy",
+        "detail": "33.61 hours stale against a 168-hour SLA; within SLA by 134.39 hours."
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+        "name": "trips_raw",
+        "check": "assertion",
+        "verdict": "healthy",
+        "detail": "No assertions are configured or failing."
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+        "name": "trips_raw",
+        "check": "row_count",
+        "verdict": "healthy",
+        "detail": "Row count is stable at 1,284,500 versus 1,284,500 previously (0.0% change)."
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+        "name": "trips_raw",
+        "check": "freshness",
+        "verdict": "broken",
+        "detail": "26.02 hours stale against a 6-hour SLA, breaching by 20.02 hours."
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+        "name": "trips_raw",
+        "check": "freshness",
+        "verdict": "broken",
+        "detail": "ROOT CAUSE: raw.trips_raw is a source node with no upstreams and is 26.02 hours stale against a 6-hour SLA (20.02-hour breach); the stalled feed's non-null pickup_ts field is the implicated column."
+      }
+    ],
+    "error": null
+  },
+  "b": {
+    "id": "run_d7d8f9f635e54121",
+    "created_at": "2026-07-31T21:12:39.328Z",
+    "finished_at": "2026-07-31T21:15:29.104Z",
+    "status": "succeeded",
+    "trigger_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+    "trigger_name": "agg_daily_rides",
+    "signal_kind": "assertion",
+    "signal_detail": "Manual assertion triage requested over HTTP",
+    "scenario": "stale_upstream",
+    "root_cause_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+    "root_cause_name": "raw.trips_raw",
+    "incident_urn": "urn:li:incident:56de1e0c-77f6-45d1-a6ad-e9cad29d58b9",
+    "postmortem_id": "run_d7d8f9f635e54121",
+    "summary": "`agg_daily_rides` collapsed from 182 to 4 rows, failing its expected 25–400 range. Root cause is `raw.trips_raw`, stale 26.39 hours against a 6-hour SLA with no upstream dependencies. Blast radius covers 15 assets; top impacts include Exec Daily Ops, `fct_trips`, and Rides by Hour. Owners were notified, 14 assets tagged, and incident `56de1e0c-77f6-45d1-a6ad-e9cad29d58b9` remains under investigation. A human must restore/backfill ingestion, verify `pickup_ts` advances, rerun downstream pipelines, and validate freshness and row-count assertions.",
+    "duration_s": 169.774,
+    "time_to_root_cause_s": 38.606,
+    "tool_calls": 50,
+    "hops_walked": 3,
+    "recall_used": 1,
+    "recalled_ids": [
+      "run_d4beaf8a4f834584",
+      "run_c47c5d9bd22f40b6"
+    ],
+    "causal_path": [
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+        "name": "agg_daily_rides",
+        "hops_from_symptom": 0,
+        "verdict": "broken",
+        "evidence": [
+          "Row count 4 versus expected 25..400; previous 182, down 97.8%.",
+          "Freshness healthy at 1.58 hours versus a 6-hour SLA.",
+          "Four non-null schema fields remain intact."
+        ]
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+        "name": "fct_trips",
+        "hops_from_symptom": 1,
+        "verdict": "degraded",
+        "evidence": [
+          "Current lineage health reports 1 of 2 assertions failing.",
+          "Its failure is downstream of the confirmed stale raw feed."
+        ]
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+        "name": "stg_trips",
+        "hops_from_symptom": 2,
+        "verdict": "degraded",
+        "evidence": [
+          "Current lineage health reports its single assertion failing.",
+          "It is the first transformation downstream of raw.trips_raw."
+        ]
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+        "name": "raw.trips_raw",
+        "hops_from_symptom": 3,
+        "verdict": "root_cause",
+        "evidence": [
+          "Freshness 26.39 hours versus a 6-hour SLA, 20.39 hours overdue.",
+          "Last update 2026-07-30T18:49:54.282Z.",
+          "Row count unchanged at 1,284,500 versus 1,284,500.",
+          "pickup_ts is a non-null timestamp; no assertions are defined.",
+          "One-hop upstream lineage total is zero, satisfying the stop rule."
+        ]
+      }
+    ],
+    "blast_radius": [
+      {
+        "urn": "urn:li:dashboard:(looker,oncall_demo_exec_daily_ops)",
+        "name": "Exec Daily Ops",
+        "entity_type": "DASHBOARD",
+        "hops": 5,
+        "usage_score": 3100,
+        "owners": [
+          "Dana Wu",
+          "Exec"
+        ],
+        "severity": "critical"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+        "name": "fct_trips",
+        "entity_type": "DATASET",
+        "hops": 2,
+        "usage_score": 2121,
+        "owners": [
+          "Sam Patel",
+          "Analytics"
+        ],
+        "severity": "critical"
+      },
+      {
+        "urn": "urn:li:chart:(looker,oncall_demo_rides_by_hour)",
+        "name": "Rides by Hour",
+        "entity_type": "CHART",
+        "hops": 4,
+        "usage_score": 1840,
+        "owners": [],
+        "severity": "high"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+        "name": "agg_daily_rides",
+        "entity_type": "DATASET",
+        "hops": 3,
+        "usage_score": 1673,
+        "owners": [
+          "Sam Patel",
+          "Analytics"
+        ],
+        "severity": "high"
+      },
+      {
+        "urn": "urn:li:chart:(looker,oncall_demo_revenue_trend)",
+        "name": "Revenue Trend",
+        "entity_type": "CHART",
+        "hops": 4,
+        "usage_score": 1420,
+        "owners": [],
+        "severity": "high"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_revenue,PROD)",
+        "name": "fct_revenue",
+        "entity_type": "DATASET",
+        "hops": 2,
+        "usage_score": 1169,
+        "owners": [
+          "Raj Iyer",
+          "Finance"
+        ],
+        "severity": "high"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_driver_earnings,PROD)",
+        "name": "agg_driver_earnings",
+        "entity_type": "DATASET",
+        "hops": 3,
+        "usage_score": 1043,
+        "owners": [
+          "Raj Iyer",
+          "Finance"
+        ],
+        "severity": "high"
+      },
+      {
+        "urn": "urn:li:chart:(looker,oncall_demo_zone_heatmap)",
+        "name": "Zone Demand Heatmap",
+        "entity_type": "CHART",
+        "hops": 4,
+        "usage_score": 960,
+        "owners": [],
+        "severity": "medium"
+      },
+      {
+        "urn": "urn:li:dashboard:(looker,oncall_demo_finance_review)",
+        "name": "Finance Revenue Review",
+        "entity_type": "DASHBOARD",
+        "hops": 5,
+        "usage_score": 870,
+        "owners": [
+          "Raj Iyer",
+          "Finance"
+        ],
+        "severity": "medium"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+        "name": "agg_zone_demand",
+        "entity_type": "DATASET",
+        "hops": 3,
+        "usage_score": 868,
+        "owners": [
+          "Sam Patel",
+          "Analytics"
+        ],
+        "severity": "medium"
+      },
+      {
+        "urn": "urn:li:dashboard:(looker,oncall_demo_driver_ops)",
+        "name": "Driver Ops",
+        "entity_type": "DASHBOARD",
+        "hops": 5,
+        "usage_score": 410,
+        "owners": [
+          "Nina Alvarez",
+          "Ml Platform"
+        ],
+        "severity": "low"
+      },
+      {
+        "urn": "urn:li:chart:(looker,oncall_demo_driver_leaderboard)",
+        "name": "Driver Leaderboard",
+        "entity_type": "CHART",
+        "hops": 4,
+        "usage_score": 380,
+        "owners": [],
+        "severity": "low"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.ml.trip_eta_features,PROD)",
+        "name": "trip_eta_features",
+        "entity_type": "DATASET",
+        "hops": 3,
+        "usage_score": 364,
+        "owners": [
+          "Nina Alvarez",
+          "Ml Platform"
+        ],
+        "severity": "low"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+        "name": "stg_trips",
+        "entity_type": "DATASET",
+        "hops": 1,
+        "usage_score": 91,
+        "owners": [
+          "Sam Patel",
+          "Analytics"
+        ],
+        "severity": "low"
+      }
+    ],
+    "actions": [
+      {
+        "action": "incident",
+        "summary": "Active critical volume incident",
+        "urns": [
+          "urn:li:incident:56de1e0c-77f6-45d1-a6ad-e9cad29d58b9",
+          "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)"
+        ],
+        "datahub_url": "http://localhost:9002/incident/urn:li:incident:56de1e0c-77f6-45d1-a6ad-e9cad29d58b9",
+        "detail": "agg_daily_rides volume collapse caused by stale raw.trips_raw feed",
+        "ok": true
+      },
+      {
+        "action": "tag",
+        "summary": "Applied oncall_root_cause to 1 assets (0 changed)",
+        "urns": [
+          "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)"
+        ],
+        "datahub_url": null,
+        "detail": "column_paths=['pickup_ts']",
+        "ok": true
+      },
+      {
+        "action": "tag",
+        "summary": "Applied oncall_impacted to 14 assets (0 changed)",
+        "urns": [
+          "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+          "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_driver_earnings,PROD)",
+          "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+          "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_revenue,PROD)",
+          "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+          "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.ml.trip_eta_features,PROD)",
+          "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+          "urn:li:dashboard:(looker,oncall_demo_driver_ops)",
+          "urn:li:dashboard:(looker,oncall_demo_exec_daily_ops)",
+          "urn:li:dashboard:(looker,oncall_demo_finance_review)",
+          "urn:li:chart:(looker,oncall_demo_driver_leaderboard)",
+          "urn:li:chart:(looker,oncall_demo_revenue_trend)",
+          "urn:li:chart:(looker,oncall_demo_rides_by_hour)",
+          "urn:li:chart:(looker,oncall_demo_zone_heatmap)"
+        ],
+        "datahub_url": null,
+        "detail": "column_paths=[]",
+        "ok": true
+      },
+      {
+        "action": "notify",
+        "summary": "Notified 6 owners: CRITICAL: stale raw.trips_raw collapsed agg_daily_rides",
+        "urns": [
+          "urn:li:corpuser:maya.chen",
+          "urn:li:corpGroup:data-platform",
+          "urn:li:corpuser:dana.wu",
+          "urn:li:corpGroup:exec",
+          "urn:li:corpuser:sam.patel",
+          "urn:li:corpGroup:analytics"
+        ],
+        "datahub_url": null,
+        "detail": "mock receipt: examples/notifications/56de1e0c-77f6-45d1-a6ad-e9cad29d58b9.json\n**Causal chain:** `raw.trips_raw` (26.39h stale vs 6h SLA; no upstreams) → `stg_trips` → `fct_trips` → `agg_daily_rides` (4 rows vs expected 25..400; -97.8%).\n\nTop measured impacts are Exec Daily Ops (3,100 weekly views), `fct_trips` (2,121 queries/30d), and Rides by Hour (1,840 weekly views; no direct catalog owner). There are 15 downstream entities total. Incident: `urn:li:incident:56de1e0c-77f6-45d1-a6ad-e9cad29d58b9`.\n\nHuman action required: restore and backfill ingestion into `raw.trips_raw",
+        "ok": true
+      },
+      {
+        "action": "resolve",
+        "summary": "Incident moved to INVESTIGATION",
+        "urns": [
+          "urn:li:incident:56de1e0c-77f6-45d1-a6ad-e9cad29d58b9"
+        ],
+        "datahub_url": "http://localhost:9002/incident/urn:li:incident:56de1e0c-77f6-45d1-a6ad-e9cad29d58b9",
+        "detail": "Root cause confirmed and evidence preserved: raw.trips_raw is 26.39h stale against a 6h SLA with no upstreams, causing the agg_daily_rides volume failure. Human remediation is still required to restore/backfill ingestion and rerun/validate downstream pipelines; no warehouse data was changed.",
+        "ok": true
+      }
+    ],
+    "findings": [
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+        "name": "agg_daily_rides",
+        "check": "assertion",
+        "verdict": "broken",
+        "detail": "Row-count assertion FAILURE: observed 4, expected 25..400."
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+        "name": "agg_daily_rides",
+        "check": "row_count",
+        "verdict": "broken",
+        "detail": "Latest row count 4 versus previous 182, a -97.8% change."
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+        "name": "agg_daily_rides",
+        "check": "freshness",
+        "verdict": "healthy",
+        "detail": "1.58 hours stale against a 6-hour SLA; not breaching."
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+        "name": "agg_daily_rides",
+        "check": "schema",
+        "verdict": "healthy",
+        "detail": "Schema intact with four non-null fields: avg_fare, avg_trip_minutes, day, rides."
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+        "name": "trips_raw",
+        "check": "freshness",
+        "verdict": "broken",
+        "detail": "ROOT CAUSE: raw.trips_raw is 26.39 hours stale against a 6-hour SLA (20.39 hours over) and has zero upstream dependencies, satisfying the stop rule."
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+        "name": "trips_raw",
+        "check": "assertion",
+        "verdict": "unknown",
+        "detail": "No assertions are defined on raw.trips_raw."
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+        "name": "trips_raw",
+        "check": "row_count",
+        "verdict": "healthy",
+        "detail": "Row count is unchanged at 1,284,500 versus 1,284,500 (0.0%)."
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+        "name": "trips_raw",
+        "check": "schema",
+        "verdict": "healthy",
+        "detail": "Eight-field schema is present; pickup_ts is a non-null timestamp field."
+      }
+    ],
+    "error": null
+  },
+  "deltas": {
+    "time_to_root_cause_s": {
+      "absolute": -26.908,
+      "pct": -41.072
+    },
+    "tool_calls": {
+      "absolute": -21,
+      "pct": -29.577
+    },
+    "hops_walked": {
+      "absolute": 0,
+      "pct": 0.0
+    }
+  }
+}

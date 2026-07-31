@@ -1,0 +1,22 @@
+{
+  "urn": "urn:li:incident:56de1e0c-77f6-45d1-a6ad-e9cad29d58b9",
+  "incidentType": "VOLUME",
+  "customType": null,
+  "title": "agg_daily_rides volume collapse caused by stale raw.trips_raw feed",
+  "description": "Causal chain: `raw.trips_raw` → `stg_trips` → `fct_trips` → `agg_daily_rides`.\n\nLive evidence: `raw.trips_raw` is a source node with no upstreams and is 26.02 hours stale against a 6-hour SLA. `stg_trips` is 25.01 hours stale and fell from 1,281,900 to 3,120 rows. `fct_trips` has 3,120 rows versus its 50,000 minimum. The symptom `agg_daily_rides` has 4 rows versus 182 previously and expected 25..400.\n\nBlast radius contains 15 downstream entities, including Exec Daily Ops (3,100 weekly views), Rides by Hour (1,840), and fct_trips (2,121 queries/30d). Human remediation is required: restore/backfill the trips ingestion at `raw.trips_raw`, rerun downstream pipelines, and validate assertions before marking fixed.",
+  "priority": "CRITICAL",
+  "startedAt": null,
+  "incidentStatus": {
+    "state": "ACTIVE",
+    "stage": "INVESTIGATION",
+    "message": "Root cause confirmed and evidence preserved: raw.trips_raw is 26.39h stale against a 6h SLA with no upstreams, causing the agg_daily_rides volume failure. Human remediation is still required to restore/backfill ingestion and rerun/validate downstream pipelines; no warehouse data was changed.",
+    "lastUpdated": {
+      "time": 1785532521662,
+      "actor": "urn:li:corpuser:__datahub_system"
+    }
+  },
+  "created": {
+    "time": 1785531116914,
+    "actor": "urn:li:corpuser:__datahub_system"
+  }
+}
