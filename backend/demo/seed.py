@@ -55,6 +55,7 @@ from oncall_agent.datahub.reads import (
     HEALTH_SIGNALS_QUERY,
     _search_input,
     get_freshness,
+    missing_indexed_upstream_edges,
 )
 from oncall_agent.datahub.writes import ensure_structured_property_definition, ensure_tag
 
@@ -432,10 +433,30 @@ def verify_seed(*, timeout_seconds: float = 90.0) -> dict[str, int]:
     deadline = time.monotonic() + timeout_seconds
     passing_assertions = 0
     healthy_datasets = 0
+    indexed_total = 0
+    unexpected_datasets: list[str] = []
+    missing_datasets: list[str] = []
+    missing_indexed_edges: list[str] = []
+    expected_dataset_urns = {item.urn for item in DATASETS}
+    expected_lineage_edges = [
+        (
+            next(item.urn for item in DATASETS if item.key == edge.upstream),
+            next(item.urn for item in DATASETS if item.key == edge.downstream),
+        )
+        for edge in LINEAGE
+    ]
     while time.monotonic() < deadline:
         passing_assertions = _assert_latest_results_passing()
         health_data = execute_graphql(HEALTH_SIGNALS_QUERY, {"input": _search_input()})
         search = health_data.get("searchAcrossEntities") or {}
+        indexed_total = int(search.get("total") or 0)
+        indexed_dataset_urns = {
+            str(entity["urn"])
+            for result in search.get("searchResults") or []
+            if (entity := result.get("entity") or {}).get("urn")
+        }
+        unexpected_datasets = sorted(indexed_dataset_urns - expected_dataset_urns)
+        missing_datasets = sorted(expected_dataset_urns - indexed_dataset_urns)
         healthy_datasets = sum(
             all(
                 item.get("status") == "PASS"
@@ -443,18 +464,23 @@ def verify_seed(*, timeout_seconds: float = 90.0) -> dict[str, int]:
             )
             for result in search.get("searchResults") or []
         )
-        if search.get("total") == 15 and passing_assertions == 9 and healthy_datasets == 15:
+        if indexed_total == 15 and passing_assertions == 9 and healthy_datasets == 15:
             fresh = all(
                 not get_freshness(item.urn, sla_hours=item.sla_hours)["breached"]
                 for item in DATASETS
             )
-            if fresh:
+            missing_indexed_edges = missing_indexed_upstream_edges(expected_lineage_edges)
+            if fresh and not missing_indexed_edges:
                 break
         time.sleep(2)
     else:
         raise AssertionError(
-            f"Indexed invariants timed out: passing_assertions={passing_assertions}, "
-            f"healthy_datasets={healthy_datasets}"
+            "Indexed invariants timed out: "
+            f"datasets expected=15 observed={indexed_total} "
+            f"unexpected={unexpected_datasets or 'none'} missing={missing_datasets or 'none'}; "
+            f"passing_assertions expected=9 observed={passing_assertions}; "
+            f"healthy_datasets expected=15 observed={healthy_datasets}; "
+            f"lineage_edges_missing_from_index={missing_indexed_edges or 'none'}"
         )
 
     return {

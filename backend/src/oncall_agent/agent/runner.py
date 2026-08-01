@@ -268,6 +268,21 @@ def _root_name(context: TriageContext) -> str | None:
     return short_display_name(context.root_cause_urn) if context.root_cause_urn else None
 
 
+class InvalidDatasetError(RuntimeError):
+    """The trigger dataset is absent or cannot be verified through its durable aspect."""
+
+
+async def _require_trigger_dataset(trigger: TriggerSpec, deps: Deps) -> None:
+    try:
+        exists = await asyncio.to_thread(deps.dh.dataset_exists, trigger.dataset_urn)
+    except Exception as exc:
+        raise InvalidDatasetError(
+            f"Could not verify trigger dataset {trigger.dataset_urn}: {exc}"
+        ) from exc
+    if not exists:
+        raise InvalidDatasetError(f"Trigger dataset does not exist: {trigger.dataset_urn}")
+
+
 async def run_triage(trigger: TriggerSpec, deps: Deps) -> AsyncIterator[Event]:
     """Yield a complete live event stream while always persisting the drained run."""
 
@@ -303,6 +318,7 @@ async def run_triage(trigger: TriggerSpec, deps: Deps) -> AsyncIterator[Event]:
         summary = "Triage did not complete."
         error: str | None = None
         try:
+            await _require_trigger_dataset(trigger, deps)
             if not deps.settings.openai_api_key:
                 raise RuntimeError(
                     "OPENAI_API_KEY is not configured; add it to the repository .env and retry"
@@ -328,7 +344,17 @@ async def run_triage(trigger: TriggerSpec, deps: Deps) -> AsyncIterator[Event]:
             if result.final_output is None:
                 raise ModelBehaviorError("Agent stream ended without a final output")
             summary = str(result.final_output)
-            status = "cancelled" if cancel_requested.is_set() else "succeeded"
+            if cancel_requested.is_set():
+                status = "cancelled"
+            else:
+                await _require_trigger_dataset(trigger, deps)
+                status = "succeeded"
+        except InvalidDatasetError as exc:
+            status = "invalid"
+            error = f"{type(exc).__name__}: {exc}"
+            summary = f"Triage rejected: {exc}"
+            log.warning("Invalid triage target run_id=%s error=%s", run_id, error)
+            await emitter.emit(ErrorEvent(message=str(exc), where="dataset_validation"))
         except asyncio.CancelledError:
             status = "cancelled"
             error = "Run cancelled"
@@ -351,7 +377,7 @@ async def run_triage(trigger: TriggerSpec, deps: Deps) -> AsyncIterator[Event]:
             hops_walked = max((node.hops_from_symptom for node in context.causal_path), default=0)
             await emitter.emit(MetricEvent(name="tool_calls", value=context.tool_calls))
             await emitter.emit(MetricEvent(name="hops_walked", value=hops_walked))
-            public_status = "succeeded" if status == "succeeded" else "failed"
+            public_status = status if status in {"succeeded", "invalid"} else "failed"
             metrics = RunMetrics(
                 time_to_root_cause_s=context.time_to_root_cause_s,
                 tool_calls=context.tool_calls,

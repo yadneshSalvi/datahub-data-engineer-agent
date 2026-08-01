@@ -36,6 +36,7 @@ _ERROR_RESPONSES = {
     404: {"model": ErrorResponse},
     409: {"model": ErrorResponse},
     422: {"model": ErrorResponse},
+    503: {"model": ErrorResponse},
 }
 
 
@@ -120,6 +121,22 @@ async def create_run(body: RunCreateRequest, request: Request) -> RunAccepted:
             "dataset_outside_namespace",
             "Runs may only target datasets in the configured oncall namespace",
             "Choose a dataset whose platform is oncall and name starts with oncall_demo.",
+        )
+    try:
+        exists = await asyncio.to_thread(request.app.state.dh.dataset_exists, body.dataset_urn)
+    except Exception as exc:
+        raise ApiError(
+            503,
+            "dataset_existence_unverified",
+            f"DataHub could not verify the target dataset: {body.dataset_urn}",
+            "Retry when the index-independent aspect API is available; no run was started.",
+        ) from exc
+    if not exists:
+        raise ApiError(
+            404,
+            "dataset_not_found",
+            f"The target dataset does not exist: {body.dataset_urn}",
+            "Choose an existing oncall dataset; no run was started and no metadata was written.",
         )
     trigger = TriggerSpec(
         dataset_urn=body.dataset_urn,

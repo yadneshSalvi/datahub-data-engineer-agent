@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import time
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from itertools import pairwise
 from typing import Any, Literal
 
@@ -102,6 +102,37 @@ log = logging.getLogger(__name__)
 _GRAPH_ENTITY_TYPES = {"DATASET", "CHART", "DASHBOARD", "MLMODEL"}
 
 DEFAULT_FRESHNESS_SLA_HOURS = 24.0
+
+
+def dataset_exists(dataset_urn: str) -> bool:
+    """Return whether a dataset has its canonical index-independent key aspect."""
+
+    return (
+        get_graph().get_aspect(
+            entity_urn=dataset_urn,
+            aspect_type=models.DatasetKeyClass,
+        )
+        is not None
+    )
+
+
+def has_upstream_edges(dataset_urn: str) -> bool | None:
+    """Check the upstream-lineage aspect without relying on the search index.
+
+    ``True`` and ``False`` are authoritative aspect results. ``None`` means the aspect read
+    itself failed, so a caller must not interpret an empty search-backed lineage result as proof
+    that the dataset is a source node.
+    """
+
+    try:
+        aspect = get_graph().get_aspect(
+            entity_urn=dataset_urn,
+            aspect_type=models.UpstreamLineageClass,
+        )
+    except Exception:
+        log.warning("upstreamLineage aspect read failed for %s", dataset_urn, exc_info=True)
+        return None
+    return bool(aspect and aspect.upstreams)
 
 
 def _search_input() -> dict[str, Any]:
@@ -561,6 +592,112 @@ def get_lineage_native(
             }
         )
     return sorted(compact, key=lambda value: (value["hops"], value["urn"]))
+
+
+def _schema_field_path(field_urn: str, dataset_urn: str) -> str | None:
+    prefix = f"urn:li:schemaField:({dataset_urn},"
+    if not field_urn.startswith(prefix) or not field_urn.endswith(")"):
+        return None
+    return field_urn[len(prefix) : -1]
+
+
+def get_schema_drift(dataset_urn: str) -> dict[str, Any]:
+    """Compare live schema fields with columns referenced by direct downstream lineage.
+
+    Fine-grained lineage on each downstream is the durable declaration of which source columns
+    that consumer reads. A referenced source column missing from the source's live
+    ``schemaMetadata`` aspect is an intrinsic schema breach.
+    """
+
+    graph = get_graph()
+    schema = graph.get_aspect(
+        entity_urn=dataset_urn,
+        aspect_type=models.SchemaMetadataClass,
+    )
+    if schema is None:
+        return {
+            "urn": dataset_urn,
+            "missing_columns": [],
+            "added_columns": [],
+            "verdict": "unknown",
+            "guidance": "Live schemaMetadata is unavailable; do not treat schema as healthy.",
+        }
+
+    live_columns = {str(field.fieldPath) for field in schema.fields}
+    downstreams = get_lineage_native(dataset_urn, direction="downstream", max_hops=1)
+    dependency_columns: set[str] = set()
+    inspected_downstreams: list[str] = []
+    for downstream in downstreams:
+        if downstream.get("type") != "DATASET" or int(downstream.get("hops") or 0) != 1:
+            continue
+        downstream_urn = str(downstream["urn"])
+        lineage = graph.get_aspect(
+            entity_urn=downstream_urn,
+            aspect_type=models.UpstreamLineageClass,
+        )
+        if lineage is None:
+            continue
+        inspected_downstreams.append(downstream_urn)
+        for fine_grained in lineage.fineGrainedLineages or []:
+            for upstream_field in fine_grained.upstreams or []:
+                field_path = _schema_field_path(str(upstream_field), dataset_urn)
+                if field_path is not None:
+                    dependency_columns.add(field_path)
+
+    missing_columns = sorted(dependency_columns - live_columns)
+    if missing_columns:
+        verdict = "broken"
+        guidance = "Downstream lineage consumes columns absent from the live upstream schema."
+    elif dependency_columns:
+        verdict = "healthy"
+        guidance = "Every column referenced by direct downstream lineage exists in the live schema."
+    else:
+        verdict = "unknown"
+        guidance = "No direct downstream column dependencies were available for comparison."
+    return {
+        "urn": dataset_urn,
+        "missing_columns": missing_columns,
+        # Dependency lineage can prove removals but cannot distinguish a legitimate unused field
+        # from a newly added one. Keep this explicit rather than inventing a baseline.
+        "added_columns": [],
+        "verdict": verdict,
+        "dependency_columns": sorted(dependency_columns),
+        "downstreams_checked": sorted(set(inspected_downstreams)),
+        "guidance": guidance,
+    }
+
+
+def missing_indexed_upstream_edges(edges: Iterable[tuple[str, str]]) -> list[str]:
+    """Return expected upstream edges absent from the aspect or search-backed lineage read."""
+
+    expected_by_downstream: dict[str, set[str]] = {}
+    for upstream_urn, downstream_urn in edges:
+        expected_by_downstream.setdefault(downstream_urn, set()).add(upstream_urn)
+
+    missing: list[str] = []
+    graph = get_graph()
+    for downstream_urn, expected_upstreams in expected_by_downstream.items():
+        aspect = graph.get_aspect(
+            entity_urn=downstream_urn,
+            aspect_type=models.UpstreamLineageClass,
+        )
+        aspect_upstreams = {item.dataset for item in (aspect.upstreams if aspect else [])}
+        indexed_upstreams = {
+            str(item["urn"])
+            for item in get_lineage_native(
+                downstream_urn,
+                direction="upstream",
+                max_hops=1,
+            )
+            if int(item.get("hops") or 0) == 1
+        }
+        for upstream_urn in sorted(expected_upstreams):
+            edge = f"{upstream_urn}->{downstream_urn}"
+            if upstream_urn not in aspect_upstreams:
+                missing.append(f"{edge} (aspect)")
+            elif upstream_urn not in indexed_upstreams:
+                missing.append(f"{edge} (index)")
+    return missing
 
 
 def search_postmortem_datasets() -> list[str]:

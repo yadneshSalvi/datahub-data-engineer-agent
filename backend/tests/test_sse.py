@@ -5,14 +5,17 @@ from __future__ import annotations
 import asyncio
 import re
 from collections.abc import AsyncIterator
+from types import SimpleNamespace
 
 import httpx
 import pytest
 
 from oncall_agent.agent.events import MetricEvent, RunCompletedEvent, RunMetrics
 from oncall_agent.agent.models import TriggerSpec
+from oncall_agent.agent.runner import Deps, run_triage
 from oncall_agent.app import create_app
 from oncall_agent.config import Settings
+from oncall_agent.store import Store
 
 
 def _trigger() -> TriggerSpec:
@@ -156,6 +159,7 @@ async def test_app_starts_without_openai_key_and_run_fails_as_events(tmp_path) -
         transport=httpx.ASGITransport(app=app),
         base_url="http://test",
     ) as client:
+        app.state.dh.dataset_exists = lambda _urn: True
         response = await client.post(
             "/api/runs",
             json={
@@ -174,3 +178,55 @@ async def test_app_starts_without_openai_key_and_run_fails_as_events(tmp_path) -
         detail = await client.get(f"/api/runs/{run_id}")
         assert detail.json()["status"] == "failed"
         assert "OPENAI_API_KEY" in detail.json()["error"]
+
+
+@pytest.mark.asyncio
+async def test_post_rejects_nonexistent_dataset_without_starting_run(tmp_path) -> None:
+    settings = Settings(
+        db_path=str(tmp_path / "missing-post.db"),
+        mcp_enabled=False,
+        openai_api_key=None,
+        _env_file=None,
+    )
+    app = create_app(settings)
+    async with app.router.lifespan_context(app), httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app),
+        base_url="http://test",
+    ) as client:
+        app.state.dh.dataset_exists = lambda _urn: False
+        response = await client.post(
+            "/api/runs",
+            json={"dataset_urn": _trigger().dataset_urn, "signal_kind": "assertion"},
+        )
+
+        assert response.status_code == 404
+        assert response.json()["error"]["code"] == "dataset_not_found"
+        assert await app.state.store.count_runs() == 0
+
+
+@pytest.mark.asyncio
+async def test_missing_dataset_has_invalid_terminal_state(tmp_path) -> None:
+    store = await Store.open(tmp_path / "missing-terminal.db")
+    settings = Settings(
+        db_path=str(tmp_path / "unused.db"),
+        mcp_enabled=False,
+        openai_api_key=None,
+        _env_file=None,
+    )
+    facade = SimpleNamespace(dataset_exists=lambda _urn: False)
+    try:
+        events = [
+            event
+            async for event in run_triage(
+                _trigger(),
+                Deps(store=store, dh=facade, settings=settings),
+            )
+        ]
+        terminal = next(event for event in events if event.kind == "run_completed")
+        run = await store.get_run(terminal.run_id)
+
+        assert terminal.status == "invalid"
+        assert run is not None and run["status"] == "invalid"
+        assert "does not exist" in run["error"]
+    finally:
+        await store.close()

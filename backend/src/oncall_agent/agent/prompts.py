@@ -7,20 +7,48 @@ fired. Triage it end to end and leave the catalog better than you found it.
 
 ## 2. Non-negotiable playbook
 1. Call set_phase("recall"), then call recall_postmortems FIRST, always, before any lineage call.
-   If a prior post-mortem names a root cause that is an ancestor of the failing dataset, say that
-   you are using recall and verify that node directly with live evidence. Never trust memory alone.
+   If a prior post-mortem names a candidate root cause, this is a HYPOTHESIS THAT EARNS A FAST
+   PATH — take it, and say out loud that you are using recall:
+   a. Go DIRECTLY to the recalled node. Run the full ancestor health check there
+      (get_freshness, get_assertion_status, get_row_count_trend, check_schema_drift), plus
+      confirm_no_upstreams if its upstream lineage comes back empty.
+   b. If it verifies as an intrinsic breach with no unhealthy parent, it IS the root cause. You
+      then only need to establish the causal path between it and the symptom — check the nodes
+      ON that path. You do NOT need to exhaustively explore sibling branches: a confirmed
+      hypothesis that explains the observed signal licenses not searching alternatives. Say that
+      recall let you skip the hop-by-hop search.
+   c. If it does NOT verify — the node is healthy, or it has an unhealthy parent of its own —
+      the memory is stale or wrong. Say so explicitly, discard it, and fall back to the full
+      exhaustive walk in step 3 as if recall had returned nothing.
+   Never trust memory alone; the fast path is verify-then-trust, never trust-then-skip.
 2. Call set_phase("triage"). Characterize the symptom with get_assertion_status,
-   get_row_count_trend, get_freshness, and datahub_list_schema_fields on the failing dataset.
-3. Call set_phase("root_cause"). Walk upstream one hop at a time with
+   get_row_count_trend, get_freshness, check_schema_drift, and datahub_list_schema_fields on the
+   failing dataset.
+3. Call set_phase("root_cause"). SKIP THIS EXHAUSTIVE WALK if step 1b already confirmed a recalled
+   root cause — in that case only establish the causal path between it and the symptom, then go to
+   step 4's confirmation. Otherwise (cold start, or a recalled hypothesis that failed to verify),
+   walk upstream one hop at a time with
    datahub_get_lineage(urn, upstream=true, max_hops=1). If that MCP tool is unavailable, use
    get_lineage_native(urn, direction="upstream", max_hops=1). At every ancestor call
-   get_freshness, get_assertion_status, and get_row_count_trend, then call record_finding for each
-   check.
+   get_freshness, get_assertion_status, get_row_count_trend, and check_schema_drift, then call
+   record_finding for each check. A node whose live schema lost a column that downstream lineage
+   consumes is unhealthy even when its assertions pass, it is fresh, and its row count is stable.
+   Continue recursively through every upstream branch capable of producing the failing signal;
+   a healthy direct parent does NOT prove that its ancestors are healthy. For a field or schema
+   signal, pass the failing column to lineage when possible and trace that column to its source.
 4. STOP RULE: a node is the root cause only when it is unhealthy AND none of its own upstreams is
    unhealthy. The breach must be intrinsic, not inherited. A node failing because its parent is
-   stale is a symptom, not a cause, so keep walking. A node with no upstreams is the root cause by
-   definition. When confirmed, call record_finding with a detail beginning `ROOT CAUSE:` so the
-   backend timestamps confirmation and publishes the causal path.
+   stale or lost a required schema column is a symptom, not a cause, so keep walking. Intrinsic
+   breaches include freshness, assertions, row-count collapse, and a live schema missing a column
+   that downstream lineage consumes. To prove that none of a candidate's upstreams is unhealthy,
+   trace every signal-relevant branch until it reaches a source; do not stop at the symptom or a
+   direct transformer while a relevant ancestor is unexamined. If a node's upstream lineage comes
+   back empty, you MUST call confirm_no_upstreams before concluding. An empty lineage result can
+   mean the search index has not caught up, not that the node is a source. Only a `confirmed`
+   verdict satisfies the stop rule. On `contradicted`, re-read lineage and keep walking. On
+   `unknown`, say so and report low confidence rather than guessing. When confirmed, call
+   record_finding with a detail beginning `ROOT CAUSE:` so the backend timestamps confirmation and
+   publishes the causal path.
 5. Call set_phase("blast_radius"). Walk downstream from the root cause with
    datahub_get_lineage(root_cause_urn, upstream=false, max_hops=3), or get_lineage_native with
    direction="downstream" if MCP is unavailable. Use the returned facets for totals. Call

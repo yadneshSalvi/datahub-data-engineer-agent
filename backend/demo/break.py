@@ -26,6 +26,7 @@ from oncall_agent.datahub.reads import (
     get_assertion_status,
     get_freshness,
     get_health_signals,
+    missing_indexed_upstream_edges,
 )
 from oncall_agent.datahub.writes import read_structured_property
 
@@ -249,6 +250,23 @@ _EXPECTED_UNHEALTHY: dict[str, frozenset[str]] = {
     "schema_drift": frozenset({"dim_driver"}),
 }
 
+_CAUSAL_PATH_EDGES: dict[str, tuple[tuple[str, str], ...]] = {
+    "stale_upstream": (
+        ("raw.trips_raw", "staging.stg_trips"),
+        ("staging.stg_trips", "marts.fct_trips"),
+        ("marts.fct_trips", "marts.agg_daily_rides"),
+    ),
+    "recall_hit": (
+        ("raw.trips_raw", "staging.stg_trips"),
+        ("staging.stg_trips", "marts.fct_trips"),
+        ("marts.fct_trips", "marts.agg_zone_demand"),
+    ),
+    "schema_drift": (
+        ("raw.drivers_raw", "staging.stg_drivers"),
+        ("staging.stg_drivers", "marts.dim_driver"),
+    ),
+}
+
 
 def _wait_until_indexed(scenario: str, event_ms: int, timeout_seconds: float = 120.0) -> None:
     """Block until the scenario's own failures AND the restored baseline are both query-visible.
@@ -262,6 +280,11 @@ def _wait_until_indexed(scenario: str, event_ms: int, timeout_seconds: float = 1
     expected_unhealthy = _EXPECTED_UNHEALTHY[scenario]
     deadline = time.monotonic() + timeout_seconds
     last_extra: set[str] = set()
+    missing_indexed_edges: list[str] = []
+    causal_edges = [
+        (DATASET_BY_KEY[upstream].urn, DATASET_BY_KEY[downstream].urn)
+        for upstream, downstream in _CAUSAL_PATH_EDGES[scenario]
+    ]
     while time.monotonic() < deadline:
         all_failed = True
         for assertion_id in expected:
@@ -289,11 +312,14 @@ def _wait_until_indexed(scenario: str, event_ms: int, timeout_seconds: float = 1
             unhealthy = {signal["name"] for signal in get_health_signals()}
             last_extra = unhealthy - expected_unhealthy
             if not last_extra and expected_unhealthy <= unhealthy:
-                return
+                missing_indexed_edges = missing_indexed_upstream_edges(causal_edges)
+                if not missing_indexed_edges:
+                    return
         time.sleep(2)
     raise TimeoutError(
         f"Scenario did not become query-visible before timeout: {scenario} "
-        f"(stale signals still present: {sorted(last_extra) or 'none'})"
+        f"(stale signals still present: {sorted(last_extra) or 'none'}; "
+        f"lineage edges missing from index: {missing_indexed_edges or 'none'})"
     )
 
 

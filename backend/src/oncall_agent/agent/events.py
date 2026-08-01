@@ -202,10 +202,10 @@ class RunMetrics(BaseModel):
 
 
 class RunCompletedEvent(EventBase):
-    """Terminal event for successful and failed runs."""
+    """Terminal event for successful, failed, and invalid runs."""
 
     kind: Literal["run_completed"] = "run_completed"
-    status: Literal["succeeded", "failed"]
+    status: Literal["succeeded", "failed", "invalid"]
     summary: str
     metrics: RunMetrics
     duration_s: float

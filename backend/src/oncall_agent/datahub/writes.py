@@ -24,7 +24,7 @@ from datahub.specific.dataset import DatasetPatchBuilder
 
 from oncall_agent.config import get_settings
 from oncall_agent.datahub.client import datahub_url_for, execute_graphql, get_client, get_graph
-from oncall_agent.datahub.reads import list_open_incidents
+from oncall_agent.datahub.reads import dataset_exists, list_open_incidents
 from oncall_agent.datahub.urns import is_our_dataset_urn, qualified_name_from_urn
 
 log = logging.getLogger(__name__)
@@ -53,6 +53,11 @@ def _assert_safe_target(urn: str) -> None:
         raise ValueError(f"Refusing to modify an entity outside the oncall namespace: {urn}")
 
 
+def _assert_existing_dataset(urn: str) -> None:
+    if urn.startswith("urn:li:dataset:") and not dataset_exists(urn):
+        raise ValueError(f"Refusing to modify a dataset that does not exist: {urn}")
+
+
 def ensure_tag(name: str, display_name: str, description: str, color: str) -> str:
     """Upsert a deterministic tag entity and return its URN."""
 
@@ -68,6 +73,7 @@ def apply_tags(entity_urn: str, tag_names: Iterable[str], *, fields: Iterable[st
     """Add tags to an entity and optional dataset fields, writing only when state changes."""
 
     _assert_safe_target(entity_urn)
+    _assert_existing_dataset(entity_urn)
     entity = get_client().entities.get(entity_urn)
     changed = False
     current = {item.tag for item in (entity.tags or [])}
@@ -123,6 +129,7 @@ def raise_incident(
     """Raise one active incident per resource/type/title and return its URN."""
 
     _assert_safe_target(resource_urn)
+    _assert_existing_dataset(resource_urn)
     key = (resource_urn, incident_type, title)
     cached = _incident_cache.get(key)
     if cached is not None:

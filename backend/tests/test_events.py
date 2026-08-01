@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from types import SimpleNamespace
 
 import pytest
 
@@ -30,7 +31,8 @@ from oncall_agent.agent.events import (
     TriggerPayload,
     event_from_json,
 )
-from oncall_agent.agent.models import BlastRadiusItem, CausalNode
+from oncall_agent.agent.models import BlastRadiusItem, CausalNode, Finding
+from oncall_agent.agent.tools_native import _build_causal_path
 
 
 def _events():
@@ -140,3 +142,41 @@ async def test_emitter_assigns_monotonic_sequence_numbers() -> None:
     assert [event.seq for event in emitter.events] == [1, 2, 3]
     assert {event.run_id for event in emitter.events} == {"run-test"}
     assert all(event.ts.endswith("Z") for event in emitter.events)
+
+
+def test_causal_path_excludes_examined_healthy_branches() -> None:
+    symptom = Finding(
+        urn="urn:symptom",
+        name="symptom",
+        check="row_count",
+        verdict="broken",
+        detail="collapsed",
+    )
+    healthy_branch = Finding(
+        urn="urn:healthy",
+        name="healthy",
+        check="freshness",
+        verdict="healthy",
+        detail="within SLA",
+    )
+    unknown_branch_check = Finding(
+        urn="urn:healthy",
+        name="healthy",
+        check="assertion",
+        verdict="unknown",
+        detail="no assertion configured",
+    )
+    root = Finding(
+        urn="urn:root",
+        name="root",
+        check="freshness",
+        verdict="broken",
+        detail="ROOT CAUSE: stale source",
+    )
+
+    path = _build_causal_path(
+        SimpleNamespace(findings=[symptom, healthy_branch, unknown_branch_check, root]),
+        "urn:root",
+    )
+
+    assert [node.urn for node in path] == ["urn:symptom", "urn:root"]

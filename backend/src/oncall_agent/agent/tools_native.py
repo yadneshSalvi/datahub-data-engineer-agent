@@ -195,7 +195,17 @@ async def set_phase(
 
 
 def _build_causal_path(context: TriageContext, root_urn: str) -> list[CausalNode]:
-    urns = list(dict.fromkeys(item.urn for item in context.findings))
+    ordered_urns = list(dict.fromkeys(item.urn for item in context.findings))
+    urns = [
+        urn
+        for urn in ordered_urns
+        if urn == root_urn
+        or any(
+            item.verdict in {"degraded", "broken"}
+            for item in context.findings
+            if item.urn == urn
+        )
+    ]
     nodes: list[CausalNode] = []
     priority = {"unknown": 0, "healthy": 1, "degraded": 2, "broken": 3}
     for index, urn in enumerate(urns):
@@ -366,6 +376,71 @@ async def get_row_count_trend(ctx: ToolContext[TriageContext], dataset_urn: str)
         detail=f"latest={latest_count}, previous={previous_count}, change={pct_change}%",
     )
     return _compact_json(payload)
+
+
+@function_tool
+async def check_schema_drift(ctx: ToolContext[TriageContext], dataset_urn: str) -> str:
+    """Check live schema against columns that direct downstream lineage consumes.
+
+    This check is mandatory at every node in every signal-relevant upstream branch, continuing to
+    a confirmed source even when a direct parent looks healthy. A missing dependency column is an
+    intrinsic breach even when assertions, freshness, and row-count trend look healthy.
+    """
+
+    context = _bump(ctx)
+    payload = await asyncio.to_thread(context.dh.get_schema_drift, dataset_urn)
+    missing = [str(item) for item in payload.get("missing_columns") or []]
+    verdict = str(payload.get("verdict") or "unknown")
+    detail = (
+        f"missing downstream dependency columns: {', '.join(missing)}"
+        if missing
+        else str(payload.get("guidance") or "Schema comparison unavailable")
+    )
+    await _emit_read_finding(
+        context,
+        urn=dataset_urn,
+        check="schema",
+        verdict=verdict,
+        detail=detail,
+    )
+    return _compact_json(payload)
+
+
+@function_tool
+async def confirm_no_upstreams(ctx: ToolContext[TriageContext], dataset_urn: str) -> str:
+    """Confirm an empty search-backed lineage result before declaring a source root cause.
+
+    This tool is mandatory whenever an upstream lineage read returns empty.
+    """
+
+    context = _bump(ctx)
+    has_edges = await asyncio.to_thread(context.dh.has_upstream_edges, dataset_urn)
+    if has_edges is None:
+        verdict = "unknown"
+        guidance = "Aspect read failed. Do NOT declare root cause here; retry."
+    elif has_edges:
+        verdict = "contradicted"
+        guidance = (
+            "The lineage index returned no upstreams but the upstreamLineage aspect HAS them; "
+            "the index is stale. Re-read lineage for this node and keep walking. Do NOT stop here."
+        )
+    else:
+        verdict = "confirmed"
+        guidance = "Genuine source node. The stop rule is satisfied."
+    await _emit_read_finding(
+        context,
+        urn=dataset_urn,
+        check="lineage",
+        verdict="healthy" if has_edges is False else "unknown",
+        detail=f"source-node check: {verdict}",
+    )
+    return _compact_json(
+        {
+            "urn": dataset_urn,
+            "verdict": verdict,
+            "guidance": guidance,
+        }
+    )
 
 
 @function_tool
@@ -815,6 +890,8 @@ NATIVE_TOOLS = [
     get_assertion_status,
     get_freshness,
     get_row_count_trend,
+    check_schema_drift,
+    confirm_no_upstreams,
     get_usage_stats,
     get_owners,
     list_open_incidents,

@@ -198,7 +198,7 @@ async def _triage(args: argparse.Namespace, settings: Settings) -> int:
         failed = False
         async for event in run_triage(trigger, deps):
             render_event(event)
-            if event.kind == "run_completed" and event.status == "failed":
+            if event.kind == "run_completed" and event.status != "succeeded":
                 failed = True
         return 1 if failed else 0
     finally:

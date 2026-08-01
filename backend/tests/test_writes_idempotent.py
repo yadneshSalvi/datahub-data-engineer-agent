@@ -6,6 +6,7 @@ from types import SimpleNamespace
 from typing import Any
 
 import httpx
+import pytest
 import respx
 
 import oncall_agent.datahub.writes as writes
@@ -57,6 +58,7 @@ def test_tag_helpers_are_effectively_idempotent(monkeypatch: Any) -> None:
     entities = FakeEntities(entity)
     client = SimpleNamespace(entities=entities)
     monkeypatch.setattr(writes, "get_client", lambda: client)
+    monkeypatch.setattr(writes, "dataset_exists", lambda _urn: True)
 
     writes.ensure_tag("oncall_impacted", "Impacted", "desc", "#F59E0B")
     writes.ensure_tag("oncall_impacted", "Impacted", "desc", "#F59E0B")
@@ -70,8 +72,9 @@ def test_tag_helpers_are_effectively_idempotent(monkeypatch: Any) -> None:
 
 
 @respx.mock
-def test_raise_incident_reuses_the_first_artifact() -> None:
+def test_raise_incident_reuses_the_first_artifact(monkeypatch: Any) -> None:
     writes._incident_cache.clear()
+    monkeypatch.setattr(writes, "dataset_exists", lambda _urn: True)
     resource = dataset_urn("marts.fct_trips")
     incident = "urn:li:incident:stable-fixture"
     route = respx.post("http://gms.test/api/graphql")
@@ -90,6 +93,21 @@ def test_raise_incident_reuses_the_first_artifact() -> None:
     assert writes.raise_incident(resource, **kwargs) == incident
     assert writes.raise_incident(resource, **kwargs) == incident
     assert route.call_count == 2
+
+
+def test_dataset_writes_refuse_nonexistent_targets(monkeypatch: Any) -> None:
+    missing = dataset_urn("raw.ghost")
+    monkeypatch.setattr(writes, "dataset_exists", lambda _urn: False)
+
+    with pytest.raises(ValueError, match="does not exist"):
+        writes.apply_tags(missing, ["oncall_impacted"])
+    with pytest.raises(ValueError, match="does not exist"):
+        writes.raise_incident(
+            missing,
+            incident_type="FRESHNESS",
+            title="ghost",
+            description="must not materialize",
+        )
 
 
 def test_document_urn_is_deterministic(monkeypatch: Any) -> None:

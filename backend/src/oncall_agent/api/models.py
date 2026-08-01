@@ -134,7 +134,7 @@ class RunRecord(ApiModel):
     id: str
     created_at: str
     finished_at: str | None = None
-    status: Literal["running", "succeeded", "failed", "cancelled"]
+    status: Literal["running", "succeeded", "failed", "cancelled", "invalid"]
     trigger_urn: str
     trigger_name: str
     signal_kind: str

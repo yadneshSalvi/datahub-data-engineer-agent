@@ -31,7 +31,7 @@ graph LR
     MCP --> RCA
     MCP --> Blast
 
-    DH -->|"OSS-gap reads"| Native["Python SDK + GraphQL<br/>14 native tools"]
+    DH -->|"OSS-gap reads"| Native["Python SDK + GraphQL<br/>17 native tools"]
     Native --> Health
     Native --> Recall
     RCA --> Native
@@ -47,8 +47,9 @@ graph LR
 ```
 
 Catalog reads use the pinned `uvx mcp-server-datahub@0.6.0` server and its six exposed tools.
-Writes and OSS gaps use fourteen always-available native tools backed by the DataHub Python SDK
-and GraphQL; a conditional native-lineage tool is enabled if MCP is unavailable. This split is
+Writes and OSS gaps use seventeen native tools backed by the DataHub Python SDK and GraphQL —
+sixteen always available, plus a native-lineage fallback that is enabled only when MCP is
+unavailable. This split is
 intentional: on OSS, MCP's `get_dataset_assertions` is Cloud-only, so it cannot provide the
 trigger. The app derives that feed from `Dataset.health`, then uses native reads for assertion
 status, freshness, usage, incidents, and the structured-property recall index.
@@ -94,16 +95,39 @@ agent had never triaged, whose root cause sits **three lineage hops upstream**. 
 `demo/reset.py --keep-memory` restored the warehouse to health while deliberately preserving the
 post-mortem — so the only difference is what the agent remembered.
 
-| Run             |                                  Recall | Time to root cause | Tool calls |
-| --------------- | --------------------------------------: | -----------------: | ---------: |
-| Cold incident   |                         No prior memory |             65.5 s |         71 |
-| Repeat incident | Prior post-mortem recalled and verified |               38 s |         50 |
+| Run                                    |                                  Recall | Time to root cause | Tool calls |
+| -------------------------------------- | --------------------------------------: | -----------------: | ---------: |
+| Cold — symptom on `agg_daily_rides`     |                         No prior memory |            111.0 s |         93 |
+| Repeat — symptom on `agg_zone_demand`   | Prior post-mortem recalled and verified |             23.2 s |         71 |
 
-`GET /api/compare` reports **41% less time to root cause and 30% fewer tool calls**. Both runs
-reached the same correct root cause, and the repeat run still verified it against live evidence
-rather than trusting memory alone. The checked-in
-[comparison snapshot](examples/snapshots/compare.json) contains the complete source records; the
-[cold and recall post-mortems](examples/README.md) are the exact artifacts those runs generated.
+`GET /api/compare` reports **79% less time to root cause and 24% fewer tool calls**.
+
+The saving is structural, not a shortcut. Cold, the agent must walk every upstream branch capable
+of producing the signal and prove each one healthy — it examined and cleared the `stg_zones` /
+`raw.zones_raw` branch before concluding. With a recalled hypothesis it goes straight to
+`raw.trips_raw`, runs the full health check there, and — once that node verifies as an intrinsic
+breach with no unhealthy parent — only has to establish the causal path back to the symptom. A
+confirmed hypothesis that explains the signal licenses not searching the alternatives. If the
+recalled node fails verification, the agent says so, discards the memory and falls back to the
+full walk.
+
+Both figures include the mandatory live schema check at every examined node and the
+index-independent source-node corroboration before the stop rule, so they are not comparable to
+figures from earlier revisions of this README. The checked-in
+[comparison snapshot](examples/snapshots/compare.json) is the verbatim `/api/compare` response for
+this exact pair, and the [cold and recall post-mortems](examples/README.md) plus both full event
+logs under `examples/runs/` are the artifacts these two runs generated.
+
+**Time to root cause is not the whole run.** These two runs took **285.7 s** and **182.6 s**
+end to end; the rest is blast-radius ranking, the DataHub write-backs, authoring the post-mortem
+and resolving the incident. Expect a full triage to take roughly two to five minutes of wall clock.
+
+**On "15" versus "16" downstream entities.** The agent's own prose sometimes says sixteen. Both
+numbers are real and they count different things: DataHub's lineage facets return **16** downstream
+entities from `raw.trips_raw`, one of which is an `MLFeature`. The ranked blast radius contains
+**15** — 7 datasets, 4 charts, 3 dashboards and 1 ML model — because we only rank entity types we
+can attach a defensible usage score and owner to. Fifteen is the number to trust; it is what gets
+tagged and what the Blast Radius tab shows.
 
 These are two runs on one seeded warehouse, not a benchmark — reproduce them yourself with the
 demo walkthrough below.
@@ -140,7 +164,7 @@ configurable with `DATAHUB_UI_URL`.
 2. Open the Command Deck, arm `stale_upstream`, wait for the signal inbox, and triage
    `agg_daily_rides`. Watch recall report a cold start and the upstream causal path converge on
    `raw.trips_raw`.
-3. Open the blast-radius and action tabs. The triage tags **14 impacted assets** and notifies
+3. Open the blast-radius and action tabs. The triage tags **15 impacted assets** and notifies
    **6 owners**. Follow the links into DataHub to inspect the incident, dataset and column tags,
    structured property, Document, institutional-memory link, and merged custom properties.
 4. Heal the demo without deleting memory: `./scripts/reset.sh --keep-memory`.
@@ -172,13 +196,14 @@ that primary graph count.
 
 ## Screens
 
-Screenshot slots live under `docs/screens/*.png`. They are intentionally placeholders until the
-demo capture; no screenshot is represented as generated in this repository.
+Real captures of the running app at 1440x900, taken from the two runs described above.
 
-- `docs/screens/command-deck.png` — healthy catalog, scenario controls, and signal inbox.
-- `docs/screens/live-triage.png` — streamed reasoning timeline beside the causal lineage path.
-- `docs/screens/blast-radius.png` — usage-ranked downstream assets and resolved owners.
-- `docs/screens/memory-compare.png` — recalled post-mortem and cold-versus-recall metrics.
+| | |
+| --- | --- |
+| ![Command Deck](docs/screens/command-deck.png) | **Command Deck** — signal inbox, memory-loop metrics, catalog health. |
+| ![Live Triage](docs/screens/live-triage.png) | **Live Triage** — streamed reasoning beside the causal path, with the root cause and symptom marked on the lineage canvas. |
+| ![Run comparison](docs/screens/memory-compare.png) | **Compare** — the cold run against the memory-assisted run on the same root cause. |
+| ![Lineage Explorer](docs/screens/blast-radius.png) | **Lineage Explorer** — whole-namespace topology with the health overlay. |
 
 ## Known limitations: OSS vs Cloud
 
@@ -225,7 +250,21 @@ around in this codebase. We are writing them up here in case they are useful ups
 5. **Asymmetric GraphQL fields fail the entire query.** `FineGrainedLineage.confidenceScore` is
    accepted by the Python write model but does not exist on the read schema; requesting it fails the
    whole query rather than that field. Same class: `CustomAssertionInfo.entity`,
-   `SchemaFieldRef.fieldPath`, `institutionalMemory.elements[].actor`.
+   `SchemaFieldRef.fieldPath`.
+
+   **Correction.** An earlier version of this list also named
+   `institutionalMemory.elements[].actor` as a missing field. That was our misdiagnosis, and it is
+   wrong: the field exists, is `NON_NULL`, and its type is `ResolvedActor` — a **union** of
+   `CorpUser | CorpGroup`. Selecting it bare fails with
+   `Validation error (SubselectionRequired@[...])`, not "field undefined". The correct form is an
+   inline fragment, which we verified returns cleanly:
+
+   ```graphql
+   institutionalMemory { elements { url actor { ... on CorpUser { urn } ... on CorpGroup { urn } } } }
+   ```
+
+   We are leaving the correction visible rather than quietly deleting the claim, since the rest of
+   this list asks to be taken on trust.
 
 Timing observed for anyone building similar tooling: lineage becomes queryable ~5 s after write,
 but **assertion run events took ~50 s to index**, so state-change verification needs a ~2 minute
@@ -239,7 +278,7 @@ frontend/                        React UI, SSE replay, lineage and memory views
 scripts/                         One-command development, seed, and reset wrappers
 examples/                        Real API snapshots and generated run artifacts
 skill/datahub-incident-triage/   Reusable DataHub incident-triage skill
-docs/screens/                    Reserved demo screenshot paths
+docs/screens/                    Real UI captures used in this README
 ```
 
 ## Tests

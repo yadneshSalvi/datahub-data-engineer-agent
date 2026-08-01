@@ -104,7 +104,7 @@ class TriageReport(StrictModel):
     """Structured in-memory summary used to finalize a run record."""
 
     run_id: str
-    status: Literal["succeeded", "failed", "cancelled"]
+    status: Literal["succeeded", "failed", "cancelled", "invalid"]
     summary: str
     root_cause_urn: str | None
     root_cause_name: str | None
