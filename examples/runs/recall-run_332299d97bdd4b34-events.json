@@ -1,0 +1,3901 @@
+[
+  {
+    "seq": 1,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:06:34.460Z",
+    "kind": "run_started",
+    "trigger": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+      "name": "agg_zone_demand",
+      "signal_kind": "assertion",
+      "signal_detail": "1 of 1 assertions are failing"
+    },
+    "model": "gpt-5.6-sol"
+  },
+  {
+    "seq": 2,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:06:38.884Z",
+    "kind": "tool_call",
+    "call_id": "call_PJTSO8IvKvcoq03ETxDywKsI",
+    "tool": "set_phase",
+    "origin": "native",
+    "args": {
+      "phase": "recall",
+      "note": "Starting with incident-memory recall before any lineage, as required; any recalled cause will be treated only as a hypothesis and verified against live health."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 3,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:06:38.887Z",
+    "kind": "phase",
+    "phase": "recall",
+    "note": "Starting with incident-memory recall before any lineage, as required; any recalled cause will be treated only as a hypothesis and verified against live health.",
+    "phase_index": 0
+  },
+  {
+    "seq": 4,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:06:38.889Z",
+    "kind": "tool_result",
+    "call_id": "call_PJTSO8IvKvcoq03ETxDywKsI",
+    "tool": "set_phase",
+    "ok": true,
+    "duration_ms": 5,
+    "summary": "{\"phase\": \"recall\", \"accepted\": true}",
+    "payload": {
+      "phase": "recall",
+      "accepted": true
+    }
+  },
+  {
+    "seq": 5,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:06:40.518Z",
+    "kind": "tool_call",
+    "call_id": "call_QVF8xcI38zCXVlpwHEDY3H6t",
+    "tool": "recall_postmortems",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+      "max_hops": 3
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 6,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:06:45.469Z",
+    "kind": "recall",
+    "found": 1,
+    "top": {
+      "incident_id": "run_93130e4fb6f84e58",
+      "root_cause_name": "trips_raw",
+      "relevance": 49.999,
+      "hops_away": 3
+    },
+    "all": [
+      {
+        "incident_id": "run_93130e4fb6f84e58",
+        "root_cause_name": "trips_raw",
+        "relevance": 49.999,
+        "hops_away": 3
+      }
+    ]
+  },
+  {
+    "seq": 7,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:06:45.473Z",
+    "kind": "tool_result",
+    "call_id": "call_QVF8xcI38zCXVlpwHEDY3H6t",
+    "tool": "recall_postmortems",
+    "ok": true,
+    "duration_ms": 4956,
+    "summary": "{\"found\": 1, \"postmortems\": [{\"incident_id\": \"run_93130e4fb6f84e58\", \"root_cause_urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)\", \"root_cause_name\": \"trips_raw\", \"symptom\": \"agg_daily_rides row-count assertion failed: 4 rows observed versus 25..400 expected; previo",
+    "payload": {
+      "found": 1,
+      "postmortems": [
+        {
+          "incident_id": "run_93130e4fb6f84e58",
+          "root_cause_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+          "root_cause_name": "trips_raw",
+          "symptom": "agg_daily_rides row-count assertion failed: 4 rows observed versus 25..400 expected; previous count 182 (-97.8%).",
+          "causal_path": [
+            {
+              "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+              "name": "agg_daily_rides",
+              "hops_from_symptom": 0,
+              "verdict": "broken",
+              "evidence": [
+                "Assertion observed 4 rows versus expected 25..400.",
+                "Row count fell from 182 to 4 (-97.8%).",
+                "Freshness remained healthy at 1.21h versus 6h SLA."
+              ]
+            },
+            {
+              "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+              "name": "fct_trips",
+              "hops_from_symptom": 1,
+              "verdict": "broken",
+              "evidence": [
+                "Assertion observed 3,120 rows versus expected 50,000..2,000,000.",
+                "Row count fell from 1,281,900 to 3,120 (-99.76%).",
+                "Freshness was 1.21h versus 6h SLA; schema was healthy."
+              ]
+            },
+            {
+              "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+              "name": "stg_trips",
+              "hops_from_symptom": 2,
+              "verdict": "broken",
+              "evidence": [
+                "Assertion observed 3,120 rows versus expected 50,000..2,500,000.",
+                "Row count fell from 1,281,900 to 3,120 (-99.76%).",
+                "Freshness was 25.02h versus 6h SLA; schema including pickup_ts was healthy."
+              ]
+            },
+            {
+              "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+              "name": "trips_raw",
+              "hops_from_symptom": 3,
+              "verdict": "root_cause",
+              "evidence": [
+                "Freshness was 26.02h versus 6h SLA, 20.02h beyond SLA.",
+                "Row count was stable at 1,284,500; required schema including pickup_ts was present.",
+                "One-hop upstream lineage was empty and confirm_no_upstreams returned confirmed."
+              ]
+            }
+          ],
+          "evidence": [
+            "Run ID: run_93130e4fb6f84e58.",
+            "Healthy sibling branch excluded: stg_zones and zones_raw each had 265 rows, healthy schema, and freshness within the 168h SLA; zones_raw was confirmed as a source.",
+            "pickup_ts on trips_raw was tagged oncall_root_cause; seven downstream datasets were tagged oncall_impacted; owners were notified.",
+            "Active DataHub incident: urn:li:incident:oncall-b4b3a0fa025b93c7cb83b8799547adc7."
+          ],
+          "resolution": "Restore raw trips ingestion, then rerun stg_trips -> fct_trips -> all downstream aggregates and features. Validate trips_raw freshness and downstream row-count assertions before declaring recovery.",
+          "detected_at": "2026-08-01T02:05:05Z",
+          "relevance": 49.999,
+          "hops_away": 3
+        }
+      ]
+    }
+  },
+  {
+    "seq": 8,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:06:48.236Z",
+    "kind": "tool_call",
+    "call_id": "call_1VP7E0hWWRCttoUvO6vzJdN8",
+    "tool": "set_phase",
+    "origin": "native",
+    "args": {
+      "phase": "root_cause",
+      "note": "Recall found trips_raw as a prior root-cause hypothesis three hops upstream. I am using the recall fast path: verify that node directly with all four live health checks and its own upstream lineage before trusting memory."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 9,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:06:48.255Z",
+    "kind": "phase",
+    "phase": "root_cause",
+    "note": "Recall found trips_raw as a prior root-cause hypothesis three hops upstream. I am using the recall fast path: verify that node directly with all four live health checks and its own upstream lineage before trusting memory.",
+    "phase_index": 2
+  },
+  {
+    "seq": 10,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:06:48.256Z",
+    "kind": "tool_result",
+    "call_id": "call_1VP7E0hWWRCttoUvO6vzJdN8",
+    "tool": "set_phase",
+    "ok": true,
+    "duration_ms": 20,
+    "summary": "{\"phase\": \"root_cause\", \"accepted\": true}",
+    "payload": {
+      "phase": "root_cause",
+      "accepted": true
+    }
+  },
+  {
+    "seq": 11,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:06:53.032Z",
+    "kind": "tool_call",
+    "call_id": "call_bcngD77bDoSB6pKzTC2BL4Am",
+    "tool": "get_freshness",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 12,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:06:53.039Z",
+    "kind": "tool_call",
+    "call_id": "call_2V6Gw7qXEjLvfNYRJRrKedfm",
+    "tool": "get_assertion_status",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 13,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:06:53.048Z",
+    "kind": "tool_call",
+    "call_id": "call_sZjsTQl1xWroP9qAJt4Kgt5E",
+    "tool": "get_row_count_trend",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 14,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:06:53.050Z",
+    "kind": "tool_call",
+    "call_id": "call_Rd9LOegXltmkUZTTAAb2fIdl",
+    "tool": "check_schema_drift",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 15,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:06:53.052Z",
+    "kind": "tool_call",
+    "call_id": "call_XIwIciSkXZna1dldc2UAPoDI",
+    "tool": "datahub_get_lineage",
+    "origin": "mcp",
+    "args": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+      "column": null,
+      "query": "*",
+      "filter": null,
+      "upstream": true,
+      "max_hops": 1,
+      "max_results": 30,
+      "offset": 0
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 16,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:06:54.317Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+    "name": "trips_raw",
+    "check": "assertion",
+    "verdict": "healthy",
+    "detail": "0 of 0 assertions failing"
+  },
+  {
+    "seq": 17,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:06:54.325Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+    "name": "trips_raw",
+    "check": "row_count",
+    "verdict": "healthy",
+    "detail": "latest=1284500, previous=1284500, change=0.0%"
+  },
+  {
+    "seq": 18,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:06:54.327Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+    "name": "trips_raw",
+    "check": "freshness",
+    "verdict": "broken",
+    "detail": "31.01h stale against 6.0h SLA"
+  },
+  {
+    "seq": 19,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:00.354Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+    "name": "trips_raw",
+    "check": "schema",
+    "verdict": "healthy",
+    "detail": "Every column referenced by direct downstream lineage exists in the live schema."
+  },
+  {
+    "seq": 20,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:00.357Z",
+    "kind": "tool_result",
+    "call_id": "call_bcngD77bDoSB6pKzTC2BL4Am",
+    "tool": "get_freshness",
+    "ok": true,
+    "duration_ms": 7325,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)\", \"last_updated_iso\": \"2026-07-30T19:06:10.576000Z\", \"hours_stale\": 31.01, \"sla_hours\": 6.0, \"breaching\": true, \"margin_hours\": 25.01}",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+      "last_updated_iso": "2026-07-30T19:06:10.576000Z",
+      "hours_stale": 31.01,
+      "sla_hours": 6.0,
+      "breaching": true,
+      "margin_hours": 25.01
+    }
+  },
+  {
+    "seq": 21,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:00.357Z",
+    "kind": "tool_result",
+    "call_id": "call_2V6Gw7qXEjLvfNYRJRrKedfm",
+    "tool": "get_assertion_status",
+    "ok": true,
+    "duration_ms": 7318,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)\", \"total\": 0, \"failing\": 0, \"assertions\": []}",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+      "total": 0,
+      "failing": 0,
+      "assertions": []
+    }
+  },
+  {
+    "seq": 22,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:00.357Z",
+    "kind": "tool_result",
+    "call_id": "call_sZjsTQl1xWroP9qAJt4Kgt5E",
+    "tool": "get_row_count_trend",
+    "ok": true,
+    "duration_ms": 7309,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)\", \"latest_row_count\": 1284500, \"previous_row_count\": 1284500, \"pct_change\": 0.0, \"profiled_at\": 1785549970576}",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+      "latest_row_count": 1284500,
+      "previous_row_count": 1284500,
+      "pct_change": 0.0,
+      "profiled_at": 1785549970576
+    }
+  },
+  {
+    "seq": 23,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:00.357Z",
+    "kind": "tool_result",
+    "call_id": "call_Rd9LOegXltmkUZTTAAb2fIdl",
+    "tool": "check_schema_drift",
+    "ok": true,
+    "duration_ms": 7306,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)\", \"missing_columns\": [], \"added_columns\": [], \"verdict\": \"healthy\", \"dependency_columns\": [\"driver_id\", \"dropoff_ts\", \"dropoff_zone_id\", \"fare_amount\", \"pickup_ts\", \"pickup_zone_id\", \"trip_id\"], \"downstreams_checked\"",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+      "missing_columns": [],
+      "added_columns": [],
+      "verdict": "healthy",
+      "dependency_columns": [
+        "driver_id",
+        "dropoff_ts",
+        "dropoff_zone_id",
+        "fare_amount",
+        "pickup_ts",
+        "pickup_zone_id",
+        "trip_id"
+      ],
+      "downstreams_checked": [
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)"
+      ],
+      "guidance": "Every column referenced by direct downstream lineage exists in the live schema."
+    }
+  },
+  {
+    "seq": 24,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:00.357Z",
+    "kind": "tool_result",
+    "call_id": "call_XIwIciSkXZna1dldc2UAPoDI",
+    "tool": "datahub_get_lineage",
+    "ok": true,
+    "duration_ms": 7305,
+    "summary": "{\"type\": \"text\", \"text\": \"{\\\"upstreams\\\":{\\\"total\\\":0,\\\"facets\\\":[{\\\"field\\\":\\\"degree\\\",\\\"displayName\\\":\\\"Degree of Dependencies\\\",\\\"aggregations\\\":[{\\\"value\\\":\\\"1\\\",\\\"count\\\":0},{\\\"value\\\":\\\"2\\\",\\\"count\\\":0},{\\\"value\\\":\\\"3+\\\",\\\"count\\\":0}]}]}}\"}",
+    "payload": {
+      "type": "text",
+      "text": "{\"upstreams\":{\"total\":0,\"facets\":[{\"field\":\"degree\",\"displayName\":\"Degree of Dependencies\",\"aggregations\":[{\"value\":\"1\",\"count\":0},{\"value\":\"2\",\"count\":0},{\"value\":\"3+\",\"count\":0}]}]}}"
+    }
+  },
+  {
+    "seq": 25,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:01.897Z",
+    "kind": "tool_call",
+    "call_id": "call_HJvANQKOVkBej1tQesvixHpX",
+    "tool": "confirm_no_upstreams",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 26,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:01.915Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+    "name": "trips_raw",
+    "check": "lineage",
+    "verdict": "healthy",
+    "detail": "source-node check: confirmed"
+  },
+  {
+    "seq": 27,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:01.917Z",
+    "kind": "tool_result",
+    "call_id": "call_HJvANQKOVkBej1tQesvixHpX",
+    "tool": "confirm_no_upstreams",
+    "ok": true,
+    "duration_ms": 19,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)\", \"verdict\": \"confirmed\", \"guidance\": \"Genuine source node. The stop rule is satisfied.\"}",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+      "verdict": "confirmed",
+      "guidance": "Genuine source node. The stop rule is satisfied."
+    }
+  },
+  {
+    "seq": 28,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:07.291Z",
+    "kind": "tool_call",
+    "call_id": "call_DdHPw6yIUZU6ooT9CHvOGpFB",
+    "tool": "record_finding",
+    "origin": "native",
+    "args": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+      "check": "freshness",
+      "verdict": "broken",
+      "detail": "ROOT CAUSE: trips_raw is 31.01 hours stale against a 6-hour SLA (25.01 hours beyond SLA); upstream lineage is empty and confirm_no_upstreams returned confirmed."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 29,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:07.380Z",
+    "kind": "tool_call",
+    "call_id": "call_HZ3gp5FNTjYlma0puHNB6ujb",
+    "tool": "record_finding",
+    "origin": "native",
+    "args": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+      "check": "assertion",
+      "verdict": "healthy",
+      "detail": "No assertions are configured and none are failing (0 of 0)."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 30,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:07.381Z",
+    "kind": "tool_call",
+    "call_id": "call_OKc22Tlg9HyNN8yPudhwgYyH",
+    "tool": "record_finding",
+    "origin": "native",
+    "args": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+      "check": "row_count",
+      "verdict": "healthy",
+      "detail": "Row count is stable at 1,284,500 versus 1,284,500 previously (0.0% change)."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 31,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:07.381Z",
+    "kind": "tool_call",
+    "call_id": "call_WtJfjsSt6r4lL7xtIEsPMrxJ",
+    "tool": "record_finding",
+    "origin": "native",
+    "args": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+      "check": "schema",
+      "verdict": "healthy",
+      "detail": "All downstream dependency columns are present, including pickup_ts; no missing or added columns."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 32,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:07.642Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+    "name": "trips_raw",
+    "check": "freshness",
+    "verdict": "broken",
+    "detail": "ROOT CAUSE: trips_raw is 31.01 hours stale against a 6-hour SLA (25.01 hours beyond SLA); upstream lineage is empty and confirm_no_upstreams returned confirmed."
+  },
+  {
+    "seq": 33,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:07.642Z",
+    "kind": "causal_path",
+    "nodes": [
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+        "name": "trips_raw",
+        "hops_from_symptom": 0,
+        "verdict": "root_cause",
+        "evidence": [
+          "ROOT CAUSE: trips_raw is 31.01 hours stale against a 6-hour SLA (25.01 hours beyond SLA); upstream lineage is empty and confirm_no_upstreams returned confirmed."
+        ]
+      }
+    ]
+  },
+  {
+    "seq": 34,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:07.642Z",
+    "kind": "metric",
+    "name": "time_to_root_cause_s",
+    "value": 33.182
+  },
+  {
+    "seq": 35,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:07.642Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+    "name": "trips_raw",
+    "check": "assertion",
+    "verdict": "healthy",
+    "detail": "No assertions are configured and none are failing (0 of 0)."
+  },
+  {
+    "seq": 36,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:07.642Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+    "name": "trips_raw",
+    "check": "row_count",
+    "verdict": "healthy",
+    "detail": "Row count is stable at 1,284,500 versus 1,284,500 previously (0.0% change)."
+  },
+  {
+    "seq": 37,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:07.642Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+    "name": "trips_raw",
+    "check": "schema",
+    "verdict": "healthy",
+    "detail": "All downstream dependency columns are present, including pickup_ts; no missing or added columns."
+  },
+  {
+    "seq": 38,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:07.644Z",
+    "kind": "tool_result",
+    "call_id": "call_DdHPw6yIUZU6ooT9CHvOGpFB",
+    "tool": "record_finding",
+    "ok": true,
+    "duration_ms": 353,
+    "summary": "{\"recorded\": true, \"root_cause_confirmed\": true}",
+    "payload": {
+      "recorded": true,
+      "root_cause_confirmed": true
+    }
+  },
+  {
+    "seq": 39,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:07.644Z",
+    "kind": "tool_result",
+    "call_id": "call_HZ3gp5FNTjYlma0puHNB6ujb",
+    "tool": "record_finding",
+    "ok": true,
+    "duration_ms": 264,
+    "summary": "{\"recorded\": true, \"root_cause_confirmed\": false}",
+    "payload": {
+      "recorded": true,
+      "root_cause_confirmed": false
+    }
+  },
+  {
+    "seq": 40,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:07.644Z",
+    "kind": "tool_result",
+    "call_id": "call_OKc22Tlg9HyNN8yPudhwgYyH",
+    "tool": "record_finding",
+    "ok": true,
+    "duration_ms": 263,
+    "summary": "{\"recorded\": true, \"root_cause_confirmed\": false}",
+    "payload": {
+      "recorded": true,
+      "root_cause_confirmed": false
+    }
+  },
+  {
+    "seq": 41,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:07.644Z",
+    "kind": "tool_result",
+    "call_id": "call_WtJfjsSt6r4lL7xtIEsPMrxJ",
+    "tool": "record_finding",
+    "ok": true,
+    "duration_ms": 263,
+    "summary": "{\"recorded\": true, \"root_cause_confirmed\": false}",
+    "payload": {
+      "recorded": true,
+      "root_cause_confirmed": false
+    }
+  },
+  {
+    "seq": 42,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:11.125Z",
+    "kind": "tool_call",
+    "call_id": "call_EP0Jpo4bkqa6BKe8fJtGugHr",
+    "tool": "set_phase",
+    "origin": "native",
+    "args": {
+      "phase": "triage",
+      "note": "The recalled hypothesis verified: trips_raw has an intrinsic freshness breach and is a confirmed source. I will now characterize the current agg_zone_demand symptom before establishing only the causal path; recall lets me skip exhaustive sibling-branch exploration."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 43,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:11.137Z",
+    "kind": "phase",
+    "phase": "triage",
+    "note": "The recalled hypothesis verified: trips_raw has an intrinsic freshness breach and is a confirmed source. I will now characterize the current agg_zone_demand symptom before establishing only the causal path; recall lets me skip exhaustive sibling-branch exploration.",
+    "phase_index": 1
+  },
+  {
+    "seq": 44,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:11.138Z",
+    "kind": "tool_result",
+    "call_id": "call_EP0Jpo4bkqa6BKe8fJtGugHr",
+    "tool": "set_phase",
+    "ok": true,
+    "duration_ms": 14,
+    "summary": "{\"phase\": \"triage\", \"accepted\": true}",
+    "payload": {
+      "phase": "triage",
+      "accepted": true
+    }
+  },
+  {
+    "seq": 45,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:14.944Z",
+    "kind": "tool_call",
+    "call_id": "call_hre5rAtGbZWGgbBztaWKf6X3",
+    "tool": "get_assertion_status",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 46,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:14.962Z",
+    "kind": "tool_call",
+    "call_id": "call_xt5MXPfF9M6OHdJZRYOglEjT",
+    "tool": "get_row_count_trend",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 47,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:15.116Z",
+    "kind": "tool_call",
+    "call_id": "call_bicVSBf1VTPYUlknJVz5aMgt",
+    "tool": "get_freshness",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 48,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:15.116Z",
+    "kind": "tool_call",
+    "call_id": "call_5CEONyNC36JLZ3IqIsgEMapf",
+    "tool": "check_schema_drift",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 49,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:15.122Z",
+    "kind": "tool_call",
+    "call_id": "call_hFefBg76Pa3Y50M0dxSeC50S",
+    "tool": "datahub_list_schema_fields",
+    "origin": "mcp",
+    "args": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+      "keywords": null,
+      "limit": 100,
+      "offset": 0
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 50,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:18.505Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+    "name": "agg_zone_demand",
+    "check": "row_count",
+    "verdict": "degraded",
+    "detail": "latest=90, previous=21400, change=-99.58%"
+  },
+  {
+    "seq": 51,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:24.570Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+    "name": "agg_zone_demand",
+    "check": "assertion",
+    "verdict": "broken",
+    "detail": "1 of 1 assertions failing"
+  },
+  {
+    "seq": 52,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:24.603Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+    "name": "agg_zone_demand",
+    "check": "freshness",
+    "verdict": "healthy",
+    "detail": "1.22h stale against 6.0h SLA"
+  },
+  {
+    "seq": 53,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:33.621Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+    "name": "agg_zone_demand",
+    "check": "schema",
+    "verdict": "unknown",
+    "detail": "No direct downstream column dependencies were available for comparison."
+  },
+  {
+    "seq": 54,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:33.626Z",
+    "kind": "tool_result",
+    "call_id": "call_hre5rAtGbZWGgbBztaWKf6X3",
+    "tool": "get_assertion_status",
+    "ok": true,
+    "duration_ms": 18681,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)\", \"total\": 1, \"failing\": 1, \"assertions\": [{\"urn\": \"urn:li:assertion:oncall-agg_zone_demand-rowcount\", \"type\": \"DATASET\", \"description\": \"marts.agg_zone_demand row_count must satisfy BETWEEN: 500..40000\", \"la",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+      "total": 1,
+      "failing": 1,
+      "assertions": [
+        {
+          "urn": "urn:li:assertion:oncall-agg_zone_demand-rowcount",
+          "type": "DATASET",
+          "description": "marts.agg_zone_demand row_count must satisfy BETWEEN: 500..40000",
+          "latest": {
+            "result": "FAILURE",
+            "timestamp": 1785549970576,
+            "observed": "90",
+            "expected": "500..40000"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 55,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:33.626Z",
+    "kind": "tool_result",
+    "call_id": "call_xt5MXPfF9M6OHdJZRYOglEjT",
+    "tool": "get_row_count_trend",
+    "ok": true,
+    "duration_ms": 18664,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)\", \"latest_row_count\": 90, \"previous_row_count\": 21400, \"pct_change\": -99.58, \"profiled_at\": 1785549970576}",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+      "latest_row_count": 90,
+      "previous_row_count": 21400,
+      "pct_change": -99.58,
+      "profiled_at": 1785549970576
+    }
+  },
+  {
+    "seq": 56,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:33.626Z",
+    "kind": "tool_result",
+    "call_id": "call_bicVSBf1VTPYUlknJVz5aMgt",
+    "tool": "get_freshness",
+    "ok": true,
+    "duration_ms": 18510,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)\", \"last_updated_iso\": \"2026-08-01T00:54:10.576000Z\", \"hours_stale\": 1.22, \"sla_hours\": 6.0, \"breaching\": false, \"margin_hours\": -4.78}",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+      "last_updated_iso": "2026-08-01T00:54:10.576000Z",
+      "hours_stale": 1.22,
+      "sla_hours": 6.0,
+      "breaching": false,
+      "margin_hours": -4.78
+    }
+  },
+  {
+    "seq": 57,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:33.626Z",
+    "kind": "tool_result",
+    "call_id": "call_5CEONyNC36JLZ3IqIsgEMapf",
+    "tool": "check_schema_drift",
+    "ok": true,
+    "duration_ms": 18510,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)\", \"missing_columns\": [], \"added_columns\": [], \"verdict\": \"unknown\", \"dependency_columns\": [], \"downstreams_checked\": [], \"guidance\": \"No direct downstream column dependencies were available for comparison.\"}",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+      "missing_columns": [],
+      "added_columns": [],
+      "verdict": "unknown",
+      "dependency_columns": [],
+      "downstreams_checked": [],
+      "guidance": "No direct downstream column dependencies were available for comparison."
+    }
+  },
+  {
+    "seq": 58,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:33.626Z",
+    "kind": "tool_result",
+    "call_id": "call_hFefBg76Pa3Y50M0dxSeC50S",
+    "tool": "datahub_list_schema_fields",
+    "ok": true,
+    "duration_ms": 18504,
+    "summary": "{\"type\": \"text\", \"text\": \"{\\\"urn\\\":\\\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)\\\",\\\"fields\\\":[{\\\"fieldPath\\\":\\\"day\\\",\\\"nativeDataType\\\":\\\"date\\\",\\\"nullable\\\":false},{\\\"fieldPath\\\":\\\"pickup_zone_id\\\",\\\"nativeDataType\\\":\\\"int\\\",\\\"nullable\\\":false},{\\\"fieldPath\\\"",
+    "payload": {
+      "type": "text",
+      "text": "{\"urn\":\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)\",\"fields\":[{\"fieldPath\":\"day\",\"nativeDataType\":\"date\",\"nullable\":false},{\"fieldPath\":\"pickup_zone_id\",\"nativeDataType\":\"int\",\"nullable\":false},{\"fieldPath\":\"pickup_zone_name\",\"nativeDataType\":\"string\",\"nullable\":false},{\"fieldPath\":\"rides\",\"nativeDataType\":\"long\",\"nullable\":false},{\"fieldPath\":\"surge_avg\",\"nativeDataType\":\"double\",\"nullable\":false}],\"totalFields\":5,\"returned\":5,\"remainingCount\":0,\"matchingCount\":null,\"offset\":0}"
+    }
+  },
+  {
+    "seq": 59,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:39.705Z",
+    "kind": "tool_call",
+    "call_id": "call_GgLCeSphRsMIVEAJtN8gqh3F",
+    "tool": "record_finding",
+    "origin": "native",
+    "args": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+      "check": "assertion",
+      "verdict": "broken",
+      "detail": "The sole assertion failed: observed row count 90 versus expected 500..40,000."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 60,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:39.730Z",
+    "kind": "tool_call",
+    "call_id": "call_ciB22sJCWmZDQSCp2a80gvwz",
+    "tool": "record_finding",
+    "origin": "native",
+    "args": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+      "check": "row_count",
+      "verdict": "broken",
+      "detail": "Row count fell from 21,400 to 90, a 99.58% decrease."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 61,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:39.836Z",
+    "kind": "tool_call",
+    "call_id": "call_53pCWDquuqikXsD81zVYloZj",
+    "tool": "record_finding",
+    "origin": "native",
+    "args": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+      "check": "freshness",
+      "verdict": "healthy",
+      "detail": "Dataset is 1.22 hours stale against a 6-hour SLA, within SLA by 4.78 hours."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 62,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:39.836Z",
+    "kind": "tool_call",
+    "call_id": "call_EbOZl3pyYltBfebRAOVUBq60",
+    "tool": "record_finding",
+    "origin": "native",
+    "args": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+      "check": "schema",
+      "verdict": "unknown",
+      "detail": "Live schema has five fields, but no direct downstream column dependencies were available for drift comparison."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 63,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:40.090Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+    "name": "agg_zone_demand",
+    "check": "assertion",
+    "verdict": "broken",
+    "detail": "The sole assertion failed: observed row count 90 versus expected 500..40,000."
+  },
+  {
+    "seq": 64,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:40.090Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+    "name": "agg_zone_demand",
+    "check": "row_count",
+    "verdict": "broken",
+    "detail": "Row count fell from 21,400 to 90, a 99.58% decrease."
+  },
+  {
+    "seq": 65,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:40.090Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+    "name": "agg_zone_demand",
+    "check": "freshness",
+    "verdict": "healthy",
+    "detail": "Dataset is 1.22 hours stale against a 6-hour SLA, within SLA by 4.78 hours."
+  },
+  {
+    "seq": 66,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:40.090Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+    "name": "agg_zone_demand",
+    "check": "schema",
+    "verdict": "unknown",
+    "detail": "Live schema has five fields, but no direct downstream column dependencies were available for drift comparison."
+  },
+  {
+    "seq": 67,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:40.094Z",
+    "kind": "tool_result",
+    "call_id": "call_GgLCeSphRsMIVEAJtN8gqh3F",
+    "tool": "record_finding",
+    "ok": true,
+    "duration_ms": 390,
+    "summary": "{\"recorded\": true, \"root_cause_confirmed\": false}",
+    "payload": {
+      "recorded": true,
+      "root_cause_confirmed": false
+    }
+  },
+  {
+    "seq": 68,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:40.094Z",
+    "kind": "tool_result",
+    "call_id": "call_ciB22sJCWmZDQSCp2a80gvwz",
+    "tool": "record_finding",
+    "ok": true,
+    "duration_ms": 365,
+    "summary": "{\"recorded\": true, \"root_cause_confirmed\": false}",
+    "payload": {
+      "recorded": true,
+      "root_cause_confirmed": false
+    }
+  },
+  {
+    "seq": 69,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:40.094Z",
+    "kind": "tool_result",
+    "call_id": "call_53pCWDquuqikXsD81zVYloZj",
+    "tool": "record_finding",
+    "ok": true,
+    "duration_ms": 259,
+    "summary": "{\"recorded\": true, \"root_cause_confirmed\": false}",
+    "payload": {
+      "recorded": true,
+      "root_cause_confirmed": false
+    }
+  },
+  {
+    "seq": 70,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:40.094Z",
+    "kind": "tool_result",
+    "call_id": "call_EbOZl3pyYltBfebRAOVUBq60",
+    "tool": "record_finding",
+    "ok": true,
+    "duration_ms": 259,
+    "summary": "{\"recorded\": true, \"root_cause_confirmed\": false}",
+    "payload": {
+      "recorded": true,
+      "root_cause_confirmed": false
+    }
+  },
+  {
+    "seq": 71,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:42.214Z",
+    "kind": "tool_call",
+    "call_id": "call_R4G3y7p95yqIZ9rYQrSzmmeO",
+    "tool": "set_phase",
+    "origin": "native",
+    "args": {
+      "phase": "root_cause",
+      "note": "Live evidence confirms the recalled trips_raw hypothesis, so memory is current rather than stale. I am using recall to skip the exhaustive hop-by-hop sibling search and will inspect only the path from trips_raw to agg_zone_demand."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 72,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:42.227Z",
+    "kind": "phase",
+    "phase": "root_cause",
+    "note": "Live evidence confirms the recalled trips_raw hypothesis, so memory is current rather than stale. I am using recall to skip the exhaustive hop-by-hop sibling search and will inspect only the path from trips_raw to agg_zone_demand.",
+    "phase_index": 2
+  },
+  {
+    "seq": 73,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:42.228Z",
+    "kind": "tool_result",
+    "call_id": "call_R4G3y7p95yqIZ9rYQrSzmmeO",
+    "tool": "set_phase",
+    "ok": true,
+    "duration_ms": 14,
+    "summary": "{\"phase\": \"root_cause\", \"accepted\": true}",
+    "payload": {
+      "phase": "root_cause",
+      "accepted": true
+    }
+  },
+  {
+    "seq": 74,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:44.092Z",
+    "kind": "tool_call",
+    "call_id": "call_P2i2M5mwMyB02xXWHzjpn5I4",
+    "tool": "datahub_get_lineage_paths_between",
+    "origin": "mcp",
+    "args": {
+      "source_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+      "target_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+      "source_column": null,
+      "target_column": null,
+      "direction": "downstream"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 75,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:44.491Z",
+    "kind": "tool_result",
+    "call_id": "call_P2i2M5mwMyB02xXWHzjpn5I4",
+    "tool": "datahub_get_lineage_paths_between",
+    "ok": true,
+    "duration_ms": 398,
+    "summary": "{\"type\": \"text\", \"text\": \"{\\\"metadata\\\":{\\\"queryType\\\":\\\"lineage-path-trace\\\",\\\"direction\\\":\\\"downstream\\\",\\\"pathType\\\":\\\"dataset-level\\\",\\\"fields\\\":{\\\"paths\\\":{\\\"description\\\":\\\"Array of lineage paths showing transformation chains from source to target\\\",\\\"structure\\\":\\\"Each path contains alternati",
+    "payload": {
+      "type": "text",
+      "text": "{\"metadata\":{\"queryType\":\"lineage-path-trace\",\"direction\":\"downstream\",\"pathType\":\"dataset-level\",\"fields\":{\"paths\":{\"description\":\"Array of lineage paths showing transformation chains from source to target\",\"structure\":\"Each path contains alternating entities (SCHEMA_FIELD or DATASET) and optional transformation QUERY entities\",\"queryEntities\":\"QUERY entities are returned as URNs only. Use get_entities(query_urn) to fetch SQL statement and other query details.\"}}},\"source\":{\"urn\":\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)\"},\"target\":{\"urn\":\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)\"},\"pathCount\":1,\"paths\":[{\"path\":[{\"urn\":\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)\",\"type\":\"DATASET\"},{\"urn\":\"urn:li:query:fdfcc81e90fb321486b5ff370906667eecec1f0aef2963fbf7201bc19273a381\",\"type\":\"QUERY\"},{\"urn\":\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)\",\"type\":\"DATASET\"},{\"urn\":\"urn:li:query:046047be77d4fdce81f6bd3949eaba61f65207aa8cd560293b618d9dfde8783e\",\"type\":\"QUERY\"},{\"urn\":\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)\",\"type\":\"DATASET\"},{\"urn\":\"urn:li:query:03819cc2cde3a774ccebadfad8d5feaa2ec643edbe0becaf7adf038a9227decb\",\"type\":\"QUERY\"},{\"urn\":\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)\",\"type\":\"DATASET\"}]}]}"
+    }
+  },
+  {
+    "seq": 76,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.343Z",
+    "kind": "tool_call",
+    "call_id": "call_gICO3HHYo4S1nosp1kWS5H8D",
+    "tool": "get_freshness",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 77,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.344Z",
+    "kind": "tool_call",
+    "call_id": "call_P3ctT7ESrTUEDF1ZFXARsydi",
+    "tool": "get_assertion_status",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 78,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.345Z",
+    "kind": "tool_call",
+    "call_id": "call_deouTWp8hj398HMpDJwMF58p",
+    "tool": "get_row_count_trend",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 79,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.349Z",
+    "kind": "tool_call",
+    "call_id": "call_deOGIkl7x5MqLX6jmopqqXB7",
+    "tool": "check_schema_drift",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 80,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.349Z",
+    "kind": "tool_call",
+    "call_id": "call_RjGO1AjwEAdnin5l8yy1wM7m",
+    "tool": "get_freshness",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 81,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.349Z",
+    "kind": "tool_call",
+    "call_id": "call_GCnTjloRFAVtAsi955SwNc5G",
+    "tool": "get_assertion_status",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 82,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.360Z",
+    "kind": "tool_call",
+    "call_id": "call_Vxar9l3M09tJgQM4u4Qn6v07",
+    "tool": "get_row_count_trend",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 83,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.360Z",
+    "kind": "tool_call",
+    "call_id": "call_D5zNrQ0thElEtXkKLP11Qaqo",
+    "tool": "check_schema_drift",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 84,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.575Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+    "name": "stg_trips",
+    "check": "schema",
+    "verdict": "healthy",
+    "detail": "Every column referenced by direct downstream lineage exists in the live schema."
+  },
+  {
+    "seq": 85,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.584Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+    "name": "fct_trips",
+    "check": "schema",
+    "verdict": "healthy",
+    "detail": "Every column referenced by direct downstream lineage exists in the live schema."
+  },
+  {
+    "seq": 86,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.674Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+    "name": "stg_trips",
+    "check": "row_count",
+    "verdict": "degraded",
+    "detail": "latest=3120, previous=1281900, change=-99.76%"
+  },
+  {
+    "seq": 87,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.684Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+    "name": "fct_trips",
+    "check": "row_count",
+    "verdict": "degraded",
+    "detail": "latest=3120, previous=1281900, change=-99.76%"
+  },
+  {
+    "seq": 88,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.686Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+    "name": "fct_trips",
+    "check": "assertion",
+    "verdict": "broken",
+    "detail": "1 of 2 assertions failing"
+  },
+  {
+    "seq": 89,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.696Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+    "name": "stg_trips",
+    "check": "assertion",
+    "verdict": "broken",
+    "detail": "1 of 1 assertions failing"
+  },
+  {
+    "seq": 90,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.700Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+    "name": "stg_trips",
+    "check": "freshness",
+    "verdict": "broken",
+    "detail": "30.03h stale against 6.0h SLA"
+  },
+  {
+    "seq": 91,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.700Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+    "name": "fct_trips",
+    "check": "freshness",
+    "verdict": "healthy",
+    "detail": "1.23h stale against 6.0h SLA"
+  },
+  {
+    "seq": 92,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.702Z",
+    "kind": "tool_result",
+    "call_id": "call_gICO3HHYo4S1nosp1kWS5H8D",
+    "tool": "get_freshness",
+    "ok": true,
+    "duration_ms": 358,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)\", \"last_updated_iso\": \"2026-07-30T20:06:10.576000Z\", \"hours_stale\": 30.03, \"sla_hours\": 6.0, \"breaching\": true, \"margin_hours\": 24.03}",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+      "last_updated_iso": "2026-07-30T20:06:10.576000Z",
+      "hours_stale": 30.03,
+      "sla_hours": 6.0,
+      "breaching": true,
+      "margin_hours": 24.03
+    }
+  },
+  {
+    "seq": 93,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.702Z",
+    "kind": "tool_result",
+    "call_id": "call_P3ctT7ESrTUEDF1ZFXARsydi",
+    "tool": "get_assertion_status",
+    "ok": true,
+    "duration_ms": 357,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)\", \"total\": 1, \"failing\": 1, \"assertions\": [{\"urn\": \"urn:li:assertion:oncall-stg_trips-rowcount\", \"type\": \"DATASET\", \"description\": \"staging.stg_trips row_count must satisfy BETWEEN: 50000..2500000\", \"latest\": {\"r",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+      "total": 1,
+      "failing": 1,
+      "assertions": [
+        {
+          "urn": "urn:li:assertion:oncall-stg_trips-rowcount",
+          "type": "DATASET",
+          "description": "staging.stg_trips row_count must satisfy BETWEEN: 50000..2500000",
+          "latest": {
+            "result": "FAILURE",
+            "timestamp": 1785549970576,
+            "observed": "3120",
+            "expected": "50000..2500000"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 94,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.702Z",
+    "kind": "tool_result",
+    "call_id": "call_deouTWp8hj398HMpDJwMF58p",
+    "tool": "get_row_count_trend",
+    "ok": true,
+    "duration_ms": 357,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)\", \"latest_row_count\": 3120, \"previous_row_count\": 1281900, \"pct_change\": -99.76, \"profiled_at\": 1785549970576}",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+      "latest_row_count": 3120,
+      "previous_row_count": 1281900,
+      "pct_change": -99.76,
+      "profiled_at": 1785549970576
+    }
+  },
+  {
+    "seq": 95,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.702Z",
+    "kind": "tool_result",
+    "call_id": "call_deOGIkl7x5MqLX6jmopqqXB7",
+    "tool": "check_schema_drift",
+    "ok": true,
+    "duration_ms": 353,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)\", \"missing_columns\": [], \"added_columns\": [], \"verdict\": \"healthy\", \"dependency_columns\": [\"driver_id\", \"dropoff_zone_id\", \"fare_amount\", \"pickup_ts\", \"pickup_zone_id\", \"trip_id\", \"trip_minutes\"], \"downstreams_ch",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+      "missing_columns": [],
+      "added_columns": [],
+      "verdict": "healthy",
+      "dependency_columns": [
+        "driver_id",
+        "dropoff_zone_id",
+        "fare_amount",
+        "pickup_ts",
+        "pickup_zone_id",
+        "trip_id",
+        "trip_minutes"
+      ],
+      "downstreams_checked": [
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_revenue,PROD)",
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)"
+      ],
+      "guidance": "Every column referenced by direct downstream lineage exists in the live schema."
+    }
+  },
+  {
+    "seq": 96,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.702Z",
+    "kind": "tool_result",
+    "call_id": "call_RjGO1AjwEAdnin5l8yy1wM7m",
+    "tool": "get_freshness",
+    "ok": true,
+    "duration_ms": 353,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)\", \"last_updated_iso\": \"2026-08-01T00:54:10.576000Z\", \"hours_stale\": 1.23, \"sla_hours\": 6.0, \"breaching\": false, \"margin_hours\": -4.77}",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+      "last_updated_iso": "2026-08-01T00:54:10.576000Z",
+      "hours_stale": 1.23,
+      "sla_hours": 6.0,
+      "breaching": false,
+      "margin_hours": -4.77
+    }
+  },
+  {
+    "seq": 97,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.702Z",
+    "kind": "tool_result",
+    "call_id": "call_GCnTjloRFAVtAsi955SwNc5G",
+    "tool": "get_assertion_status",
+    "ok": true,
+    "duration_ms": 353,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)\", \"total\": 2, \"failing\": 1, \"assertions\": [{\"urn\": \"urn:li:assertion:oncall-fct_trips-rowcount\", \"type\": \"DATASET\", \"description\": \"marts.fct_trips row_count must satisfy BETWEEN: 50000..2000000\", \"latest\": {\"resul",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+      "total": 2,
+      "failing": 1,
+      "assertions": [
+        {
+          "urn": "urn:li:assertion:oncall-fct_trips-rowcount",
+          "type": "DATASET",
+          "description": "marts.fct_trips row_count must satisfy BETWEEN: 50000..2000000",
+          "latest": {
+            "result": "FAILURE",
+            "timestamp": 1785549970576,
+            "observed": "3120",
+            "expected": "50000..2000000"
+          }
+        },
+        {
+          "urn": "urn:li:assertion:oncall-fct_trips-zone-notnull",
+          "type": "DATASET",
+          "description": "marts.fct_trips.pickup_zone_id null_count must satisfy EQUAL_TO: 0",
+          "latest": {
+            "result": "SUCCESS",
+            "timestamp": 1785549970576,
+            "observed": "0",
+            "expected": "0"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 98,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.702Z",
+    "kind": "tool_result",
+    "call_id": "call_Vxar9l3M09tJgQM4u4Qn6v07",
+    "tool": "get_row_count_trend",
+    "ok": true,
+    "duration_ms": 342,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)\", \"latest_row_count\": 3120, \"previous_row_count\": 1281900, \"pct_change\": -99.76, \"profiled_at\": 1785549970576}",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+      "latest_row_count": 3120,
+      "previous_row_count": 1281900,
+      "pct_change": -99.76,
+      "profiled_at": 1785549970576
+    }
+  },
+  {
+    "seq": 99,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:07:50.702Z",
+    "kind": "tool_result",
+    "call_id": "call_D5zNrQ0thElEtXkKLP11Qaqo",
+    "tool": "check_schema_drift",
+    "ok": true,
+    "duration_ms": 342,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)\", \"missing_columns\": [], \"added_columns\": [], \"verdict\": \"healthy\", \"dependency_columns\": [\"fare_amount\", \"pickup_ts\", \"pickup_zone_id\", \"pickup_zone_name\", \"trip_id\", \"trip_minutes\"], \"downstreams_checked\": [\"urn:",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+      "missing_columns": [],
+      "added_columns": [],
+      "verdict": "healthy",
+      "dependency_columns": [
+        "fare_amount",
+        "pickup_ts",
+        "pickup_zone_id",
+        "pickup_zone_name",
+        "trip_id",
+        "trip_minutes"
+      ],
+      "downstreams_checked": [
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.ml.trip_eta_features,PROD)"
+      ],
+      "guidance": "Every column referenced by direct downstream lineage exists in the live schema."
+    }
+  },
+  {
+    "seq": 100,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:00.717Z",
+    "kind": "tool_call",
+    "call_id": "call_C6R43u7EFXfKW34t1iRfWofp",
+    "tool": "record_finding",
+    "origin": "native",
+    "args": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+      "check": "freshness",
+      "verdict": "broken",
+      "detail": "stg_trips is 30.03 hours stale against a 6-hour SLA (24.03 hours beyond), inherited along the path from stale source trips_raw."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 101,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:00.773Z",
+    "kind": "tool_call",
+    "call_id": "call_GoW9p0rqA941GeFZ3xQAOUDb",
+    "tool": "record_finding",
+    "origin": "native",
+    "args": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+      "check": "assertion",
+      "verdict": "broken",
+      "detail": "Row-count assertion observed 3,120 versus expected 50,000..2,500,000."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 102,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:00.813Z",
+    "kind": "tool_call",
+    "call_id": "call_RZBE5JHTqn4bxBLxoKtD1K6i",
+    "tool": "record_finding",
+    "origin": "native",
+    "args": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+      "check": "row_count",
+      "verdict": "broken",
+      "detail": "Row count fell from 1,281,900 to 3,120 (-99.76%)."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 103,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:00.851Z",
+    "kind": "tool_call",
+    "call_id": "call_TYSCuWytxlnho1EwNvElBlgD",
+    "tool": "record_finding",
+    "origin": "native",
+    "args": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+      "check": "schema",
+      "verdict": "healthy",
+      "detail": "All downstream dependency columns are present, including pickup_ts; no schema drift."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 104,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:00.886Z",
+    "kind": "tool_call",
+    "call_id": "call_0zjlJAfM3KsoDwQstb9KB4p2",
+    "tool": "record_finding",
+    "origin": "native",
+    "args": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+      "check": "freshness",
+      "verdict": "healthy",
+      "detail": "fct_trips is 1.23 hours stale against a 6-hour SLA, within SLA by 4.77 hours."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 105,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:01.020Z",
+    "kind": "tool_call",
+    "call_id": "call_xG5NChYiYr3pMo56lYvtaZuT",
+    "tool": "record_finding",
+    "origin": "native",
+    "args": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+      "check": "assertion",
+      "verdict": "broken",
+      "detail": "One of two assertions fails: row count 3,120 versus expected 50,000..2,000,000; pickup_zone_id null count remains 0 as expected."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 106,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:01.141Z",
+    "kind": "tool_call",
+    "call_id": "call_GGFDDYWfsscOjcggWxL4Sd8m",
+    "tool": "record_finding",
+    "origin": "native",
+    "args": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+      "check": "row_count",
+      "verdict": "broken",
+      "detail": "Row count fell from 1,281,900 to 3,120 (-99.76%)."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 107,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:01.150Z",
+    "kind": "tool_call",
+    "call_id": "call_2tV6hKlfSV7dricT7JG0GX5U",
+    "tool": "record_finding",
+    "origin": "native",
+    "args": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+      "check": "schema",
+      "verdict": "healthy",
+      "detail": "Every downstream dependency column is present, including pickup_ts; no schema drift."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 108,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:01.164Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+    "name": "stg_trips",
+    "check": "freshness",
+    "verdict": "broken",
+    "detail": "stg_trips is 30.03 hours stale against a 6-hour SLA (24.03 hours beyond), inherited along the path from stale source trips_raw."
+  },
+  {
+    "seq": 109,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:01.164Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+    "name": "stg_trips",
+    "check": "assertion",
+    "verdict": "broken",
+    "detail": "Row-count assertion observed 3,120 versus expected 50,000..2,500,000."
+  },
+  {
+    "seq": 110,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:01.164Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+    "name": "stg_trips",
+    "check": "row_count",
+    "verdict": "broken",
+    "detail": "Row count fell from 1,281,900 to 3,120 (-99.76%)."
+  },
+  {
+    "seq": 111,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:01.164Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+    "name": "stg_trips",
+    "check": "schema",
+    "verdict": "healthy",
+    "detail": "All downstream dependency columns are present, including pickup_ts; no schema drift."
+  },
+  {
+    "seq": 112,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:01.164Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+    "name": "fct_trips",
+    "check": "freshness",
+    "verdict": "healthy",
+    "detail": "fct_trips is 1.23 hours stale against a 6-hour SLA, within SLA by 4.77 hours."
+  },
+  {
+    "seq": 113,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:01.164Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+    "name": "fct_trips",
+    "check": "assertion",
+    "verdict": "broken",
+    "detail": "One of two assertions fails: row count 3,120 versus expected 50,000..2,000,000; pickup_zone_id null count remains 0 as expected."
+  },
+  {
+    "seq": 114,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:01.164Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+    "name": "fct_trips",
+    "check": "row_count",
+    "verdict": "broken",
+    "detail": "Row count fell from 1,281,900 to 3,120 (-99.76%)."
+  },
+  {
+    "seq": 115,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:01.165Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+    "name": "fct_trips",
+    "check": "schema",
+    "verdict": "healthy",
+    "detail": "Every downstream dependency column is present, including pickup_ts; no schema drift."
+  },
+  {
+    "seq": 116,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:01.168Z",
+    "kind": "tool_result",
+    "call_id": "call_C6R43u7EFXfKW34t1iRfWofp",
+    "tool": "record_finding",
+    "ok": true,
+    "duration_ms": 451,
+    "summary": "{\"recorded\": true, \"root_cause_confirmed\": false}",
+    "payload": {
+      "recorded": true,
+      "root_cause_confirmed": false
+    }
+  },
+  {
+    "seq": 117,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:01.168Z",
+    "kind": "tool_result",
+    "call_id": "call_GoW9p0rqA941GeFZ3xQAOUDb",
+    "tool": "record_finding",
+    "ok": true,
+    "duration_ms": 394,
+    "summary": "{\"recorded\": true, \"root_cause_confirmed\": false}",
+    "payload": {
+      "recorded": true,
+      "root_cause_confirmed": false
+    }
+  },
+  {
+    "seq": 118,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:01.168Z",
+    "kind": "tool_result",
+    "call_id": "call_RZBE5JHTqn4bxBLxoKtD1K6i",
+    "tool": "record_finding",
+    "ok": true,
+    "duration_ms": 355,
+    "summary": "{\"recorded\": true, \"root_cause_confirmed\": false}",
+    "payload": {
+      "recorded": true,
+      "root_cause_confirmed": false
+    }
+  },
+  {
+    "seq": 119,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:01.168Z",
+    "kind": "tool_result",
+    "call_id": "call_TYSCuWytxlnho1EwNvElBlgD",
+    "tool": "record_finding",
+    "ok": true,
+    "duration_ms": 317,
+    "summary": "{\"recorded\": true, \"root_cause_confirmed\": false}",
+    "payload": {
+      "recorded": true,
+      "root_cause_confirmed": false
+    }
+  },
+  {
+    "seq": 120,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:01.168Z",
+    "kind": "tool_result",
+    "call_id": "call_0zjlJAfM3KsoDwQstb9KB4p2",
+    "tool": "record_finding",
+    "ok": true,
+    "duration_ms": 282,
+    "summary": "{\"recorded\": true, \"root_cause_confirmed\": false}",
+    "payload": {
+      "recorded": true,
+      "root_cause_confirmed": false
+    }
+  },
+  {
+    "seq": 121,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:01.168Z",
+    "kind": "tool_result",
+    "call_id": "call_xG5NChYiYr3pMo56lYvtaZuT",
+    "tool": "record_finding",
+    "ok": true,
+    "duration_ms": 147,
+    "summary": "{\"recorded\": true, \"root_cause_confirmed\": false}",
+    "payload": {
+      "recorded": true,
+      "root_cause_confirmed": false
+    }
+  },
+  {
+    "seq": 122,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:01.168Z",
+    "kind": "tool_result",
+    "call_id": "call_GGFDDYWfsscOjcggWxL4Sd8m",
+    "tool": "record_finding",
+    "ok": true,
+    "duration_ms": 27,
+    "summary": "{\"recorded\": true, \"root_cause_confirmed\": false}",
+    "payload": {
+      "recorded": true,
+      "root_cause_confirmed": false
+    }
+  },
+  {
+    "seq": 123,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:01.168Z",
+    "kind": "tool_result",
+    "call_id": "call_2tV6hKlfSV7dricT7JG0GX5U",
+    "tool": "record_finding",
+    "ok": true,
+    "duration_ms": 18,
+    "summary": "{\"recorded\": true, \"root_cause_confirmed\": false}",
+    "payload": {
+      "recorded": true,
+      "root_cause_confirmed": false
+    }
+  },
+  {
+    "seq": 124,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:03.161Z",
+    "kind": "tool_call",
+    "call_id": "call_DKFSFquNoRUhXHuIYyikZyOj",
+    "tool": "set_phase",
+    "origin": "native",
+    "args": {
+      "phase": "blast_radius",
+      "note": "Root cause is confirmed at source trips_raw. I will now walk downstream up to three hops, use facets for scope, and rank supported impacts by measured usage."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 125,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:03.177Z",
+    "kind": "phase",
+    "phase": "blast_radius",
+    "note": "Root cause is confirmed at source trips_raw. I will now walk downstream up to three hops, use facets for scope, and rank supported impacts by measured usage.",
+    "phase_index": 3
+  },
+  {
+    "seq": 126,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:03.178Z",
+    "kind": "tool_result",
+    "call_id": "call_DKFSFquNoRUhXHuIYyikZyOj",
+    "tool": "set_phase",
+    "ok": true,
+    "duration_ms": 17,
+    "summary": "{\"phase\": \"blast_radius\", \"accepted\": true}",
+    "payload": {
+      "phase": "blast_radius",
+      "accepted": true
+    }
+  },
+  {
+    "seq": 127,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:04.796Z",
+    "kind": "tool_call",
+    "call_id": "call_80yjFiCKcCkhzc9QvtA5ERDM",
+    "tool": "datahub_get_lineage",
+    "origin": "mcp",
+    "args": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+      "column": null,
+      "query": "*",
+      "filter": null,
+      "upstream": false,
+      "max_hops": 3,
+      "max_results": 100,
+      "offset": 0
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 128,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:05.072Z",
+    "kind": "tool_result",
+    "call_id": "call_80yjFiCKcCkhzc9QvtA5ERDM",
+    "tool": "datahub_get_lineage",
+    "ok": true,
+    "duration_ms": 276,
+    "summary": "{\"type\": \"text\", \"text\": \"{\\\"downstreams\\\":{\\\"total\\\":16,\\\"facets\\\":[{\\\"field\\\":\\\"degree\\\",\\\"displayName\\\":\\\"Degree of Dependencies\\\",\\\"aggregations\\\":[{\\\"value\\\":\\\"1\\\",\\\"count\\\":0},{\\\"value\\\":\\\"2\\\",\\\"count\\\":0},{\\\"value\\\":\\\"3+\\\",\\\"count\\\":0}]},{\\\"field\\\":\\\"_entityType\\\",\\\"displayName\\\":\\\"Type\\\",\\\"a",
+    "payload": {
+      "truncated": true,
+      "original_chars": 22571,
+      "preview": "{\"type\": \"text\", \"text\": \"{\\\"downstreams\\\":{\\\"total\\\":16,\\\"facets\\\":[{\\\"field\\\":\\\"degree\\\",\\\"displayName\\\":\\\"Degree of Dependencies\\\",\\\"aggregations\\\":[{\\\"value\\\":\\\"1\\\",\\\"count\\\":0},{\\\"value\\\":\\\"2\\\",\\\"count\\\":0},{\\\"value\\\":\\\"3+\\\",\\\"count\\\":0}]},{\\\"field\\\":\\\"_entityType\\\",\\\"displayName\\\":\\\"Type\\\",\\\"aggregations\\\":[{\\\"value\\\":\\\"DATASET\\\",\\\"count\\\":7},{\\\"value\\\":\\\"CHART\\\",\\\"count\\\":4},{\\\"value\\\":\\\"DASHBOARD\\\",\\\"count\\\":3}]},{\\\"field\\\":\\\"platform\\\",\\\"displayName\\\":\\\"Platform\\\",\\\"aggregations\\\":[{\\\"value\\\":\\\"urn:li:dataPlatform:looker\\\",\\\"count\\\":7,\\\"entity\\\":{\\\"urn\\\":\\\"urn:li:dataPlatform:looker\\\"}},{\\\"value\\\":\\\"urn:li:dataPlatform:oncall\\\",\\\"count\\\":7,\\\"entity\\\":{\\\"urn\\\":\\\"urn:li:dataPlatform:oncall\\\"}},{\\\"value\\\":\\\"urn:li:dataPlatform:mlflow\\\",\\\"count\\\":1,\\\"entity\\\":{\\\"urn\\\":\\\"urn:li:dataPlatform:mlflow\\\"}}]},{\\\"field\\\":\\\"domains\\\",\\\"displayName\\\":\\\"Domain\\\",\\\"aggregations\\\":[{\\\"value\\\":\\\"urn:li:domain:oncall_demo_rideflow\\\",\\\"count\\\":7,\\\"entity\\\":{\\\"urn\\\":\\\"urn:li:domain:oncall_demo_rideflow\\\"}}]},{\\\"field\\\":\\\"owners\\\",\\\"displayName\\\":\\\"Owned By\\\",\\\"aggregations\\\":[{\\\"value\\\":\\\"urn:li:corpuser:sam.patel\\\",\\\"count\\\":4,\\\"entity\\\":{\\\"urn\\\":\\\"urn:li:corpuser:sam.patel\\\"}},{\\\"value\\\":\\\"urn:li:corpGroup:analytics\\\",\\\"count\\\":4,\\\"entity\\\":{\\\"urn\\\":\\\"urn:li:corpGroup:analytics\\\"}},{\\\"value\\\":\\\"urn:li:corpGroup:finance\\\",\\\"count\\\":3,\\\"entity\\\":{\\\"urn\\\":\\\"urn:li:corpGroup:finance\\\"}}]},{\\\"field\\\":\\\"origin\\\",\\\"displayName\\\":\\\"Environment\\\",\\\"aggregations\\\":[{\\\"value\\\":\\\"PROD\\\",\\\"count\\\":8}]},{\\\"field\\\":\\\"_entityType\u241etypeNames\\\",\\\"displayName\\\":\\\"Type\u241eSub Type\\\",\\\"aggregations\\\":[{\\\"value\\\":\\\"DATASET\\\",\\\"count\\\":7},{\\\"value\\\":\\\"CHART\\\",\\\"count\\\":4},{\\\"value\\\":\\\"DASHBOARD\\\",\\\"count\\\":3}]},{\\\"field\\\":\\\"removed\\\",\\\"displayName\\\":\\\"removed\\\",\\\"aggregations\\\":[{\\\"value\\\":\\\"true\\\",\\\"count\\\":0}]},{\\\"field\\\":\\\"hasActiveIncidents\\\",\\\"displayName\\\":\\\"hasActiveIncidents\\\",\\\"aggregations\\\":[{\\\"value\\\":\\\"true\\\",\\\"count\\\":2},{\\\"value\\\":\\\"false\\\",\\\"count\\\":1}]},{\\\"field\\\":\\\"entity\\\",\\\"displayName\\\":\\\"Type\\\",\\\"aggregations\\\":[{\\\"value\\\":\\\"DATASET\\\",\\\"count\\\":7},{\\\"value\\\":\\\"CHART\\\",\\\"count\\\":4},{\\\"value\\\":\\\"DASHBOARD\\\",\\\"count\\\":3}]}],\\\"searchResults\\\":[{\\\"entity\\\":{\\\"urn\\\":\\\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)\\\",\\\"type\\\":\\\"DATASET\\\",\\\"name\\\":\\\"oncall_demo.marts.agg_daily_rides\\\",\\\"platform\\\":{\\\"urn\\\":\\\"urn:li:dataPlatform:oncall\\\",\\\"name\\\":\\\"oncall\\\"},\\\"editableProperties\\\":{\\\"description\\\":\\\"RideFlow demo warehouse table: marts.agg_daily_rides\\\"},\\\"properties\\\":{\\\"name\\\":\\\"oncall_demo.marts.agg_daily_rides\\\",\\\"customProperties\\\":[{\\\"key\\\":\\\"oncall.freshness_sla_hours\\\",\\\"value\\\":\\\"6\\\"},{\\\"key\\\":\\\"seeded_by\\\",\\\"value\\\":\\\"oncall-agent\\\"}]},\\\"ownership\\\":{\\\"owners\\\":[{\\\"owner\\\":{\\\"urn\\\":\\\"urn:li:corpuser:sam.patel\\\",\\\"properties\\\":{\\\"active\\\":true,\\\"displayName\\\":\\\"Sam Patel\\\",\\\"title\\\":\\\"Analytics Engineer\\\",\\\"email\\\":\\\"sam.patel@rideflow.example\\\"}},\\\"type\\\":\\\"TECHNICAL_OWNER\\\",\\\"ownershipType\\\":{\\\"urn\\\":\\\"urn:li:ownershipType:__system__technical_owner\\\",\\\"type\\\":\\\"CUSTOM_OWNERSHIP_TYPE\\\",\\\"info\\\":{\\\"name\\\":\\\"Technical Owner\\\",\\\"description\\\":\\\"Involved in the production, maintenance, or distribution of the asset(s).\\\"}}},{\\\"owner\\\":{\\\"urn\\\":\\\"urn:li:corpGroup:analytics\\\",\\\"name\\\":\\\"analytics\\\",\\\"properties\\\":{\\\"displayName\\\":\\\"Analytics\\\"},\\\"info\\\":{\\\"displayName\\\":\\\"Analytics\\\"}},\\\"type\\\":\\\"DATAOWNER\\\",\\\"ownershipType\\\":{\\\"urn\\\":\\\"urn:li:ownershipType:__system__dataowner\\\",\\\"type\\\":\\\"CUSTOM_OWNERSHIP_TYPE\\\"}}]},\\\"domain\\\":{\\\"domain\\\":{\\\"urn\\\":\\\"urn:li:domain:oncall_demo_rideflow\\\",\\\"properties\\\":{\\\"name\\\":\\\"RideFlow Analytics\\\",\\\"description\\\":\\\"Warehouse, BI, and ML assets for the RideFlow on-call demo\\\"},\\\"parentDomains\\\":{\\\"count\\\":0},\\\"entities\\\":{\\\"total\\\":15},\\\"dataProducts\\\":{\\\"total\\\":0},\\\"children\\\":{"
+    }
+  },
+  {
+    "seq": 129,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:10.141Z",
+    "kind": "tool_call",
+    "call_id": "call_kWYGTtV6T28qhxak8w1x6Q3L",
+    "tool": "get_usage_stats",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 130,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:10.142Z",
+    "kind": "tool_call",
+    "call_id": "call_OG6bqpKxWovYoUEvxsaIvNGO",
+    "tool": "get_usage_stats",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 131,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:10.150Z",
+    "kind": "tool_call",
+    "call_id": "call_flQDYD16bTvASieoKEdAOs5I",
+    "tool": "get_usage_stats",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_revenue,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 132,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:10.150Z",
+    "kind": "tool_call",
+    "call_id": "call_BRdu3pZrSWYlmA2Dn7esoQCq",
+    "tool": "get_usage_stats",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 133,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:10.150Z",
+    "kind": "tool_call",
+    "call_id": "call_LOQi3pYeAiKaBJuEi4uRY5eS",
+    "tool": "get_usage_stats",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 134,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:10.150Z",
+    "kind": "tool_call",
+    "call_id": "call_1sPPhRUBtAAbyYSaum6ztek1",
+    "tool": "get_usage_stats",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_driver_earnings,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 135,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:10.150Z",
+    "kind": "tool_call",
+    "call_id": "call_mFRW85ReQ00a8p0OYtRv7g6A",
+    "tool": "get_usage_stats",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.ml.trip_eta_features,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 136,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:10.150Z",
+    "kind": "tool_call",
+    "call_id": "call_kNQQC5BYqEUil5dT3iPHR5th",
+    "tool": "datahub_get_entities",
+    "origin": "mcp",
+    "args": {
+      "urns": [
+        "urn:li:chart:(looker,oncall_demo_driver_leaderboard)",
+        "urn:li:chart:(looker,oncall_demo_revenue_trend)",
+        "urn:li:chart:(looker,oncall_demo_rides_by_hour)",
+        "urn:li:chart:(looker,oncall_demo_zone_heatmap)",
+        "urn:li:dashboard:(looker,oncall_demo_driver_ops)",
+        "urn:li:dashboard:(looker,oncall_demo_exec_daily_ops)",
+        "urn:li:dashboard:(looker,oncall_demo_finance_review)",
+        "urn:li:mlModel:(urn:li:dataPlatform:mlflow,oncall_demo_eta_predictor,PROD)"
+      ]
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 137,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:10.455Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.ml.trip_eta_features,PROD)",
+    "name": "trip_eta_features",
+    "check": "usage",
+    "verdict": "unknown",
+    "detail": "364 queries and 1 users in 30d"
+  },
+  {
+    "seq": 138,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:10.484Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+    "name": "agg_zone_demand",
+    "check": "usage",
+    "verdict": "unknown",
+    "detail": "868 queries and 1 users in 30d"
+  },
+  {
+    "seq": 139,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:10.484Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+    "name": "stg_trips",
+    "check": "usage",
+    "verdict": "unknown",
+    "detail": "91 queries and 1 users in 30d"
+  },
+  {
+    "seq": 140,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:10.490Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+    "name": "fct_trips",
+    "check": "usage",
+    "verdict": "unknown",
+    "detail": "2121 queries and 1 users in 30d"
+  },
+  {
+    "seq": 141,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:10.490Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_driver_earnings,PROD)",
+    "name": "agg_driver_earnings",
+    "check": "usage",
+    "verdict": "unknown",
+    "detail": "1043 queries and 1 users in 30d"
+  },
+  {
+    "seq": 142,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:10.490Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+    "name": "agg_daily_rides",
+    "check": "usage",
+    "verdict": "unknown",
+    "detail": "1673 queries and 1 users in 30d"
+  },
+  {
+    "seq": 143,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:10.490Z",
+    "kind": "finding",
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_revenue,PROD)",
+    "name": "fct_revenue",
+    "check": "usage",
+    "verdict": "unknown",
+    "detail": "1169 queries and 1 users in 30d"
+  },
+  {
+    "seq": 144,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:10.598Z",
+    "kind": "tool_result",
+    "call_id": "call_kWYGTtV6T28qhxak8w1x6Q3L",
+    "tool": "get_usage_stats",
+    "ok": true,
+    "duration_ms": 457,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)\", \"queries_30d\": 91, \"unique_users\": 1, \"top_users\": [{\"urn\": \"urn:li:corpuser:sam.patel\", \"count\": 91}], \"top_fields\": [{\"field\": \"trip_id\", \"count\": 84}]}",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+      "queries_30d": 91,
+      "unique_users": 1,
+      "top_users": [
+        {
+          "urn": "urn:li:corpuser:sam.patel",
+          "count": 91
+        }
+      ],
+      "top_fields": [
+        {
+          "field": "trip_id",
+          "count": 84
+        }
+      ]
+    }
+  },
+  {
+    "seq": 145,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:10.598Z",
+    "kind": "tool_result",
+    "call_id": "call_OG6bqpKxWovYoUEvxsaIvNGO",
+    "tool": "get_usage_stats",
+    "ok": true,
+    "duration_ms": 456,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)\", \"queries_30d\": 2121, \"unique_users\": 1, \"top_users\": [{\"urn\": \"urn:li:corpuser:sam.patel\", \"count\": 2121}], \"top_fields\": [{\"field\": \"trip_id\", \"count\": 2114}]}",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+      "queries_30d": 2121,
+      "unique_users": 1,
+      "top_users": [
+        {
+          "urn": "urn:li:corpuser:sam.patel",
+          "count": 2121
+        }
+      ],
+      "top_fields": [
+        {
+          "field": "trip_id",
+          "count": 2114
+        }
+      ]
+    }
+  },
+  {
+    "seq": 146,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:10.598Z",
+    "kind": "tool_result",
+    "call_id": "call_flQDYD16bTvASieoKEdAOs5I",
+    "tool": "get_usage_stats",
+    "ok": true,
+    "duration_ms": 448,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_revenue,PROD)\", \"queries_30d\": 1169, \"unique_users\": 1, \"top_users\": [{\"urn\": \"urn:li:corpuser:raj.iyer\", \"count\": 1169}], \"top_fields\": [{\"field\": \"payment_id\", \"count\": 1162}]}",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_revenue,PROD)",
+      "queries_30d": 1169,
+      "unique_users": 1,
+      "top_users": [
+        {
+          "urn": "urn:li:corpuser:raj.iyer",
+          "count": 1169
+        }
+      ],
+      "top_fields": [
+        {
+          "field": "payment_id",
+          "count": 1162
+        }
+      ]
+    }
+  },
+  {
+    "seq": 147,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:10.598Z",
+    "kind": "tool_result",
+    "call_id": "call_BRdu3pZrSWYlmA2Dn7esoQCq",
+    "tool": "get_usage_stats",
+    "ok": true,
+    "duration_ms": 448,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)\", \"queries_30d\": 1673, \"unique_users\": 1, \"top_users\": [{\"urn\": \"urn:li:corpuser:sam.patel\", \"count\": 1673}], \"top_fields\": [{\"field\": \"day\", \"count\": 1666}]}",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+      "queries_30d": 1673,
+      "unique_users": 1,
+      "top_users": [
+        {
+          "urn": "urn:li:corpuser:sam.patel",
+          "count": 1673
+        }
+      ],
+      "top_fields": [
+        {
+          "field": "day",
+          "count": 1666
+        }
+      ]
+    }
+  },
+  {
+    "seq": 148,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:10.598Z",
+    "kind": "tool_result",
+    "call_id": "call_LOQi3pYeAiKaBJuEi4uRY5eS",
+    "tool": "get_usage_stats",
+    "ok": true,
+    "duration_ms": 448,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)\", \"queries_30d\": 868, \"unique_users\": 1, \"top_users\": [{\"urn\": \"urn:li:corpuser:sam.patel\", \"count\": 868}], \"top_fields\": [{\"field\": \"day\", \"count\": 861}]}",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+      "queries_30d": 868,
+      "unique_users": 1,
+      "top_users": [
+        {
+          "urn": "urn:li:corpuser:sam.patel",
+          "count": 868
+        }
+      ],
+      "top_fields": [
+        {
+          "field": "day",
+          "count": 861
+        }
+      ]
+    }
+  },
+  {
+    "seq": 149,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:10.598Z",
+    "kind": "tool_result",
+    "call_id": "call_1sPPhRUBtAAbyYSaum6ztek1",
+    "tool": "get_usage_stats",
+    "ok": true,
+    "duration_ms": 448,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_driver_earnings,PROD)\", \"queries_30d\": 1043, \"unique_users\": 1, \"top_users\": [{\"urn\": \"urn:li:corpuser:raj.iyer\", \"count\": 1043}], \"top_fields\": [{\"field\": \"day\", \"count\": 1036}]}",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_driver_earnings,PROD)",
+      "queries_30d": 1043,
+      "unique_users": 1,
+      "top_users": [
+        {
+          "urn": "urn:li:corpuser:raj.iyer",
+          "count": 1043
+        }
+      ],
+      "top_fields": [
+        {
+          "field": "day",
+          "count": 1036
+        }
+      ]
+    }
+  },
+  {
+    "seq": 150,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:10.598Z",
+    "kind": "tool_result",
+    "call_id": "call_mFRW85ReQ00a8p0OYtRv7g6A",
+    "tool": "get_usage_stats",
+    "ok": true,
+    "duration_ms": 448,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.ml.trip_eta_features,PROD)\", \"queries_30d\": 364, \"unique_users\": 1, \"top_users\": [{\"urn\": \"urn:li:corpuser:nina.alvarez\", \"count\": 364}], \"top_fields\": [{\"field\": \"trip_id\", \"count\": 357}]}",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.ml.trip_eta_features,PROD)",
+      "queries_30d": 364,
+      "unique_users": 1,
+      "top_users": [
+        {
+          "urn": "urn:li:corpuser:nina.alvarez",
+          "count": 364
+        }
+      ],
+      "top_fields": [
+        {
+          "field": "trip_id",
+          "count": 357
+        }
+      ]
+    }
+  },
+  {
+    "seq": 151,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:10.598Z",
+    "kind": "tool_result",
+    "call_id": "call_kNQQC5BYqEUil5dT3iPHR5th",
+    "tool": "datahub_get_entities",
+    "ok": true,
+    "duration_ms": 448,
+    "summary": "{\"type\": \"text\", \"text\": \"[{\\\"urn\\\":\\\"urn:li:chart:(looker,oncall_demo_driver_leaderboard)\\\",\\\"type\\\":\\\"CHART\\\",\\\"tool\\\":\\\"looker\\\",\\\"chartId\\\":\\\"oncall_demo_driver_leaderboard\\\",\\\"properties\\\":{\\\"name\\\":\\\"Driver Leaderboard\\\",\\\"description\\\":\\\"RideFlow demo chart: Driver Leaderboard\\\",\\\"externalUrl",
+    "payload": {
+      "truncated": true,
+      "original_chars": 7455,
+      "preview": "{\"type\": \"text\", \"text\": \"[{\\\"urn\\\":\\\"urn:li:chart:(looker,oncall_demo_driver_leaderboard)\\\",\\\"type\\\":\\\"CHART\\\",\\\"tool\\\":\\\"looker\\\",\\\"chartId\\\":\\\"oncall_demo_driver_leaderboard\\\",\\\"properties\\\":{\\\"name\\\":\\\"Driver Leaderboard\\\",\\\"description\\\":\\\"RideFlow demo chart: Driver Leaderboard\\\",\\\"externalUrl\\\":\\\"http://localhost:3001/demo/charts/oncall_demo_driver_leaderboard\\\",\\\"lastModified\\\":{\\\"time\\\":0}},\\\"platform\\\":{\\\"urn\\\":\\\"urn:li:dataPlatform:looker\\\",\\\"name\\\":\\\"looker\\\"},\\\"health\\\":[{\\\"type\\\":\\\"INCIDENTS\\\",\\\"status\\\":\\\"PASS\\\"}],\\\"relatedDocuments\\\":{\\\"start\\\":0,\\\"count\\\":10,\\\"total\\\":0}},{\\\"urn\\\":\\\"urn:li:chart:(looker,oncall_demo_revenue_trend)\\\",\\\"type\\\":\\\"CHART\\\",\\\"tool\\\":\\\"looker\\\",\\\"chartId\\\":\\\"oncall_demo_revenue_trend\\\",\\\"properties\\\":{\\\"name\\\":\\\"Revenue Trend\\\",\\\"description\\\":\\\"RideFlow demo chart: Revenue Trend\\\",\\\"externalUrl\\\":\\\"http://localhost:3001/demo/charts/oncall_demo_revenue_trend\\\",\\\"lastModified\\\":{\\\"time\\\":0}},\\\"platform\\\":{\\\"urn\\\":\\\"urn:li:dataPlatform:looker\\\",\\\"name\\\":\\\"looker\\\"},\\\"health\\\":[{\\\"type\\\":\\\"INCIDENTS\\\",\\\"status\\\":\\\"PASS\\\"}],\\\"relatedDocuments\\\":{\\\"start\\\":0,\\\"count\\\":10,\\\"total\\\":0}},{\\\"urn\\\":\\\"urn:li:chart:(looker,oncall_demo_rides_by_hour)\\\",\\\"type\\\":\\\"CHART\\\",\\\"tool\\\":\\\"looker\\\",\\\"chartId\\\":\\\"oncall_demo_rides_by_hour\\\",\\\"properties\\\":{\\\"name\\\":\\\"Rides by Hour\\\",\\\"description\\\":\\\"RideFlow demo chart: Rides by Hour\\\",\\\"externalUrl\\\":\\\"http://localhost:3001/demo/charts/oncall_demo_rides_by_hour\\\",\\\"lastModified\\\":{\\\"time\\\":0}},\\\"platform\\\":{\\\"urn\\\":\\\"urn:li:dataPlatform:looker\\\",\\\"name\\\":\\\"looker\\\"},\\\"health\\\":[{\\\"type\\\":\\\"INCIDENTS\\\",\\\"status\\\":\\\"PASS\\\"}],\\\"relatedDocuments\\\":{\\\"start\\\":0,\\\"count\\\":10,\\\"total\\\":0}},{\\\"urn\\\":\\\"urn:li:chart:(looker,oncall_demo_zone_heatmap)\\\",\\\"type\\\":\\\"CHART\\\",\\\"tool\\\":\\\"looker\\\",\\\"chartId\\\":\\\"oncall_demo_zone_heatmap\\\",\\\"properties\\\":{\\\"name\\\":\\\"Zone Demand Heatmap\\\",\\\"description\\\":\\\"RideFlow demo chart: Zone Demand Heatmap\\\",\\\"externalUrl\\\":\\\"http://localhost:3001/demo/charts/oncall_demo_zone_heatmap\\\",\\\"lastModified\\\":{\\\"time\\\":0}},\\\"platform\\\":{\\\"urn\\\":\\\"urn:li:dataPlatform:looker\\\",\\\"name\\\":\\\"looker\\\"},\\\"health\\\":[{\\\"type\\\":\\\"INCIDENTS\\\",\\\"status\\\":\\\"PASS\\\"}],\\\"relatedDocuments\\\":{\\\"start\\\":0,\\\"count\\\":10,\\\"total\\\":0}},{\\\"urn\\\":\\\"urn:li:dashboard:(looker,oncall_demo_driver_ops)\\\",\\\"type\\\":\\\"DASHBOARD\\\",\\\"tool\\\":\\\"looker\\\",\\\"dashboardId\\\":\\\"oncall_demo_driver_ops\\\",\\\"properties\\\":{\\\"name\\\":\\\"Driver Ops\\\",\\\"description\\\":\\\"RideFlow demo dashboard: Driver Ops\\\",\\\"externalUrl\\\":\\\"http://localhost:3001/demo/dashboards/oncall_demo_driver_ops\\\",\\\"lastModified\\\":{\\\"time\\\":0}},\\\"ownership\\\":{\\\"owners\\\":[{\\\"owner\\\":{\\\"urn\\\":\\\"urn:li:corpuser:nina.alvarez\\\",\\\"properties\\\":{\\\"active\\\":true,\\\"displayName\\\":\\\"Nina Alvarez\\\",\\\"title\\\":\\\"ML Platform Engineer\\\",\\\"email\\\":\\\"nina.alvarez@rideflow.example\\\"}},\\\"type\\\":\\\"TECHNICAL_OWNER\\\",\\\"ownershipType\\\":{\\\"urn\\\":\\\"urn:li:ownershipType:__system__technical_owner\\\",\\\"type\\\":\\\"CUSTOM_OWNERSHIP_TYPE\\\",\\\"info\\\":{\\\"name\\\":\\\"Technical Owner\\\",\\\"description\\\":\\\"Involved in the production, maintenance, or distribution of the asset(s).\\\"}}},{\\\"owner\\\":{\\\"urn\\\":\\\"urn:li:corpGroup:ml-platform\\\",\\\"name\\\":\\\"ml-platform\\\",\\\"properties\\\":{\\\"displayName\\\":\\\"Ml Platform\\\"},\\\"info\\\":{\\\"displayName\\\":\\\"Ml Platform\\\"}},\\\"type\\\":\\\"DATAOWNER\\\",\\\"ownershipType\\\":{\\\"urn\\\":\\\"urn:li:ownershipType:__system__dataowner\\\",\\\"type\\\":\\\"CUSTOM_OWNERSHIP_TYPE\\\"}}]},\\\"platform\\\":{\\\"urn\\\":\\\"urn:li:dataPlatform:looker\\\",\\\"name\\\":\\\"looker\\\"},\\\"health\\\":[{\\\"type\\\":\\\"INCIDENTS\\\",\\\"status\\\":\\\"PASS\\\"}],\\\"relatedDocuments\\\":{\\\"start\\\":0,\\\"count\\\":10,\\\"total\\\":0}},{\\\"urn\\\":\\\"urn:li:dashboard:(looker,oncall_demo_exec_daily_ops)\\\",\\\"type\\\":\\\"DASHBOARD\\\",\\\"tool\\\":\\\"looker\\\",\\\"dashboardId\\\":\\\"oncall_demo_exec_daily_ops\\\",\\\"properties\\\":{\\\"name\\\":\\\"Exec Daily Ops\\\",\\\"des"
+    }
+  },
+  {
+    "seq": 152,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.325Z",
+    "kind": "tool_call",
+    "call_id": "call_WguvyhCBsPf2BXTcLmUavies",
+    "tool": "get_usage_stats",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:chart:(looker,oncall_demo_driver_leaderboard)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 153,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.328Z",
+    "kind": "tool_call",
+    "call_id": "call_blPejrrbZzoKKCe1mjko2fjs",
+    "tool": "get_usage_stats",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:chart:(looker,oncall_demo_revenue_trend)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 154,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.480Z",
+    "kind": "tool_call",
+    "call_id": "call_EG8EW1v5xkFmGjCbIMPvXmNl",
+    "tool": "get_usage_stats",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:chart:(looker,oncall_demo_rides_by_hour)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 155,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.480Z",
+    "kind": "tool_call",
+    "call_id": "call_vFa2zE0CowkG3NVsbX0ywMyS",
+    "tool": "get_usage_stats",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:chart:(looker,oncall_demo_zone_heatmap)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 156,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.480Z",
+    "kind": "tool_call",
+    "call_id": "call_J8OB6F44vlShTKPbNaKMCdIR",
+    "tool": "get_usage_stats",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dashboard:(looker,oncall_demo_driver_ops)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 157,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.480Z",
+    "kind": "tool_call",
+    "call_id": "call_9KO3HFrBEgU4wK1d0CIdBVVM",
+    "tool": "get_usage_stats",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dashboard:(looker,oncall_demo_exec_daily_ops)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 158,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.481Z",
+    "kind": "tool_call",
+    "call_id": "call_MQ3mdobluhWIMw6xeSdoup8z",
+    "tool": "get_usage_stats",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dashboard:(looker,oncall_demo_finance_review)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 159,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.481Z",
+    "kind": "tool_call",
+    "call_id": "call_LZgnSlChQXFKcOBG3fuxjuNe",
+    "tool": "get_usage_stats",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:mlModel:(urn:li:dataPlatform:mlflow,oncall_demo_eta_predictor,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 160,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.747Z",
+    "kind": "finding",
+    "urn": "urn:li:chart:(looker,oncall_demo_revenue_trend)",
+    "name": "oncall_demo_revenue_trend",
+    "check": "usage",
+    "verdict": "unknown",
+    "detail": "weekly_views=1420"
+  },
+  {
+    "seq": 161,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.748Z",
+    "kind": "finding",
+    "urn": "urn:li:mlModel:(urn:li:dataPlatform:mlflow,oncall_demo_eta_predictor,PROD)",
+    "name": "oncall_demo_eta_predictor",
+    "check": "usage",
+    "verdict": "unknown",
+    "detail": "weekly_views=0"
+  },
+  {
+    "seq": 162,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.749Z",
+    "kind": "finding",
+    "urn": "urn:li:dashboard:(looker,oncall_demo_finance_review)",
+    "name": "oncall_demo_finance_review",
+    "check": "usage",
+    "verdict": "unknown",
+    "detail": "weekly_views=870"
+  },
+  {
+    "seq": 163,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.749Z",
+    "kind": "finding",
+    "urn": "urn:li:dashboard:(looker,oncall_demo_exec_daily_ops)",
+    "name": "oncall_demo_exec_daily_ops",
+    "check": "usage",
+    "verdict": "unknown",
+    "detail": "weekly_views=3100"
+  },
+  {
+    "seq": 164,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.749Z",
+    "kind": "finding",
+    "urn": "urn:li:chart:(looker,oncall_demo_rides_by_hour)",
+    "name": "oncall_demo_rides_by_hour",
+    "check": "usage",
+    "verdict": "unknown",
+    "detail": "weekly_views=1840"
+  },
+  {
+    "seq": 165,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.750Z",
+    "kind": "finding",
+    "urn": "urn:li:chart:(looker,oncall_demo_driver_leaderboard)",
+    "name": "oncall_demo_driver_leaderboard",
+    "check": "usage",
+    "verdict": "unknown",
+    "detail": "weekly_views=380"
+  },
+  {
+    "seq": 166,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.750Z",
+    "kind": "finding",
+    "urn": "urn:li:chart:(looker,oncall_demo_zone_heatmap)",
+    "name": "oncall_demo_zone_heatmap",
+    "check": "usage",
+    "verdict": "unknown",
+    "detail": "weekly_views=960"
+  },
+  {
+    "seq": 167,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.750Z",
+    "kind": "finding",
+    "urn": "urn:li:dashboard:(looker,oncall_demo_driver_ops)",
+    "name": "oncall_demo_driver_ops",
+    "check": "usage",
+    "verdict": "unknown",
+    "detail": "weekly_views=410"
+  },
+  {
+    "seq": 168,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.753Z",
+    "kind": "tool_result",
+    "call_id": "call_WguvyhCBsPf2BXTcLmUavies",
+    "tool": "get_usage_stats",
+    "ok": true,
+    "duration_ms": 428,
+    "summary": "{\"urn\": \"urn:li:chart:(looker,oncall_demo_driver_leaderboard)\", \"entity_type\": \"CHART\", \"name\": \"oncall_demo_driver_leaderboard\", \"weekly_views\": 380, \"custom_properties\": {\"seeded_by\": \"oncall-agent\", \"weekly_views\": \"380\"}}",
+    "payload": {
+      "urn": "urn:li:chart:(looker,oncall_demo_driver_leaderboard)",
+      "entity_type": "CHART",
+      "name": "oncall_demo_driver_leaderboard",
+      "weekly_views": 380,
+      "custom_properties": {
+        "seeded_by": "oncall-agent",
+        "weekly_views": "380"
+      }
+    }
+  },
+  {
+    "seq": 169,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.753Z",
+    "kind": "tool_result",
+    "call_id": "call_blPejrrbZzoKKCe1mjko2fjs",
+    "tool": "get_usage_stats",
+    "ok": true,
+    "duration_ms": 425,
+    "summary": "{\"urn\": \"urn:li:chart:(looker,oncall_demo_revenue_trend)\", \"entity_type\": \"CHART\", \"name\": \"oncall_demo_revenue_trend\", \"weekly_views\": 1420, \"custom_properties\": {\"seeded_by\": \"oncall-agent\", \"weekly_views\": \"1420\"}}",
+    "payload": {
+      "urn": "urn:li:chart:(looker,oncall_demo_revenue_trend)",
+      "entity_type": "CHART",
+      "name": "oncall_demo_revenue_trend",
+      "weekly_views": 1420,
+      "custom_properties": {
+        "seeded_by": "oncall-agent",
+        "weekly_views": "1420"
+      }
+    }
+  },
+  {
+    "seq": 170,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.753Z",
+    "kind": "tool_result",
+    "call_id": "call_EG8EW1v5xkFmGjCbIMPvXmNl",
+    "tool": "get_usage_stats",
+    "ok": true,
+    "duration_ms": 273,
+    "summary": "{\"urn\": \"urn:li:chart:(looker,oncall_demo_rides_by_hour)\", \"entity_type\": \"CHART\", \"name\": \"oncall_demo_rides_by_hour\", \"weekly_views\": 1840, \"custom_properties\": {\"seeded_by\": \"oncall-agent\", \"weekly_views\": \"1840\"}}",
+    "payload": {
+      "urn": "urn:li:chart:(looker,oncall_demo_rides_by_hour)",
+      "entity_type": "CHART",
+      "name": "oncall_demo_rides_by_hour",
+      "weekly_views": 1840,
+      "custom_properties": {
+        "seeded_by": "oncall-agent",
+        "weekly_views": "1840"
+      }
+    }
+  },
+  {
+    "seq": 171,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.753Z",
+    "kind": "tool_result",
+    "call_id": "call_vFa2zE0CowkG3NVsbX0ywMyS",
+    "tool": "get_usage_stats",
+    "ok": true,
+    "duration_ms": 273,
+    "summary": "{\"urn\": \"urn:li:chart:(looker,oncall_demo_zone_heatmap)\", \"entity_type\": \"CHART\", \"name\": \"oncall_demo_zone_heatmap\", \"weekly_views\": 960, \"custom_properties\": {\"seeded_by\": \"oncall-agent\", \"weekly_views\": \"960\"}}",
+    "payload": {
+      "urn": "urn:li:chart:(looker,oncall_demo_zone_heatmap)",
+      "entity_type": "CHART",
+      "name": "oncall_demo_zone_heatmap",
+      "weekly_views": 960,
+      "custom_properties": {
+        "seeded_by": "oncall-agent",
+        "weekly_views": "960"
+      }
+    }
+  },
+  {
+    "seq": 172,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.753Z",
+    "kind": "tool_result",
+    "call_id": "call_J8OB6F44vlShTKPbNaKMCdIR",
+    "tool": "get_usage_stats",
+    "ok": true,
+    "duration_ms": 273,
+    "summary": "{\"urn\": \"urn:li:dashboard:(looker,oncall_demo_driver_ops)\", \"entity_type\": \"DASHBOARD\", \"name\": \"oncall_demo_driver_ops\", \"weekly_views\": 410, \"custom_properties\": {\"seeded_by\": \"oncall-agent\", \"weekly_views\": \"410\"}}",
+    "payload": {
+      "urn": "urn:li:dashboard:(looker,oncall_demo_driver_ops)",
+      "entity_type": "DASHBOARD",
+      "name": "oncall_demo_driver_ops",
+      "weekly_views": 410,
+      "custom_properties": {
+        "seeded_by": "oncall-agent",
+        "weekly_views": "410"
+      }
+    }
+  },
+  {
+    "seq": 173,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.753Z",
+    "kind": "tool_result",
+    "call_id": "call_9KO3HFrBEgU4wK1d0CIdBVVM",
+    "tool": "get_usage_stats",
+    "ok": true,
+    "duration_ms": 273,
+    "summary": "{\"urn\": \"urn:li:dashboard:(looker,oncall_demo_exec_daily_ops)\", \"entity_type\": \"DASHBOARD\", \"name\": \"oncall_demo_exec_daily_ops\", \"weekly_views\": 3100, \"custom_properties\": {\"seeded_by\": \"oncall-agent\", \"weekly_views\": \"3100\"}}",
+    "payload": {
+      "urn": "urn:li:dashboard:(looker,oncall_demo_exec_daily_ops)",
+      "entity_type": "DASHBOARD",
+      "name": "oncall_demo_exec_daily_ops",
+      "weekly_views": 3100,
+      "custom_properties": {
+        "seeded_by": "oncall-agent",
+        "weekly_views": "3100"
+      }
+    }
+  },
+  {
+    "seq": 174,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.753Z",
+    "kind": "tool_result",
+    "call_id": "call_MQ3mdobluhWIMw6xeSdoup8z",
+    "tool": "get_usage_stats",
+    "ok": true,
+    "duration_ms": 272,
+    "summary": "{\"urn\": \"urn:li:dashboard:(looker,oncall_demo_finance_review)\", \"entity_type\": \"DASHBOARD\", \"name\": \"oncall_demo_finance_review\", \"weekly_views\": 870, \"custom_properties\": {\"seeded_by\": \"oncall-agent\", \"weekly_views\": \"870\"}}",
+    "payload": {
+      "urn": "urn:li:dashboard:(looker,oncall_demo_finance_review)",
+      "entity_type": "DASHBOARD",
+      "name": "oncall_demo_finance_review",
+      "weekly_views": 870,
+      "custom_properties": {
+        "seeded_by": "oncall-agent",
+        "weekly_views": "870"
+      }
+    }
+  },
+  {
+    "seq": 175,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:18.753Z",
+    "kind": "tool_result",
+    "call_id": "call_LZgnSlChQXFKcOBG3fuxjuNe",
+    "tool": "get_usage_stats",
+    "ok": true,
+    "duration_ms": 272,
+    "summary": "{\"urn\": \"urn:li:mlModel:(urn:li:dataPlatform:mlflow,oncall_demo_eta_predictor,PROD)\", \"entity_type\": \"MLMODEL\", \"name\": \"oncall_demo_eta_predictor\", \"weekly_views\": 0, \"custom_properties\": {\"serving_qps\": \"240\", \"seeded_by\": \"oncall-agent\", \"weekly_views\": \"0\"}}",
+    "payload": {
+      "urn": "urn:li:mlModel:(urn:li:dataPlatform:mlflow,oncall_demo_eta_predictor,PROD)",
+      "entity_type": "MLMODEL",
+      "name": "oncall_demo_eta_predictor",
+      "weekly_views": 0,
+      "custom_properties": {
+        "serving_qps": "240",
+        "seeded_by": "oncall-agent",
+        "weekly_views": "0"
+      }
+    }
+  },
+  {
+    "seq": 176,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:25.048Z",
+    "kind": "tool_call",
+    "call_id": "call_NU31ZGXDrh4OeUYsQ59BBWAn",
+    "tool": "get_owners",
+    "origin": "native",
+    "args": {
+      "urns": [
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_revenue,PROD)",
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_driver_earnings,PROD)",
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.ml.trip_eta_features,PROD)",
+        "urn:li:chart:(looker,oncall_demo_driver_leaderboard)",
+        "urn:li:chart:(looker,oncall_demo_revenue_trend)",
+        "urn:li:chart:(looker,oncall_demo_rides_by_hour)",
+        "urn:li:chart:(looker,oncall_demo_zone_heatmap)",
+        "urn:li:dashboard:(looker,oncall_demo_driver_ops)",
+        "urn:li:dashboard:(looker,oncall_demo_exec_daily_ops)",
+        "urn:li:dashboard:(looker,oncall_demo_finance_review)",
+        "urn:li:mlModel:(urn:li:dataPlatform:mlflow,oncall_demo_eta_predictor,PROD)"
+      ]
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 177,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:25.277Z",
+    "kind": "metric",
+    "name": "owners_assets_read",
+    "value": 16
+  },
+  {
+    "seq": 178,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:25.278Z",
+    "kind": "tool_result",
+    "call_id": "call_NU31ZGXDrh4OeUYsQ59BBWAn",
+    "tool": "get_owners",
+    "ok": true,
+    "duration_ms": 230,
+    "summary": "{\"assets\": [{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)\", \"owners\": [{\"urn\": \"urn:li:corpuser:maya.chen\", \"type\": \"TECHNICAL_OWNER\", \"is_group\": false, \"name\": \"Maya Chen\", \"email\": \"maya.chen@rideflow.example\", \"title\": \"Staff Data Engineer\"}, {\"urn\": \"urn:li",
+    "payload": {
+      "truncated": true,
+      "original_chars": 5157,
+      "preview": "{\"assets\": [{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)\", \"owners\": [{\"urn\": \"urn:li:corpuser:maya.chen\", \"type\": \"TECHNICAL_OWNER\", \"is_group\": false, \"name\": \"Maya Chen\", \"email\": \"maya.chen@rideflow.example\", \"title\": \"Staff Data Engineer\"}, {\"urn\": \"urn:li:corpGroup:data-platform\", \"type\": \"DATAOWNER\", \"is_group\": true, \"name\": \"Data Platform\", \"email\": null, \"title\": null}]}, {\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)\", \"owners\": [{\"urn\": \"urn:li:corpuser:sam.patel\", \"type\": \"TECHNICAL_OWNER\", \"is_group\": false, \"name\": \"Sam Patel\", \"email\": \"sam.patel@rideflow.example\", \"title\": \"Analytics Engineer\"}, {\"urn\": \"urn:li:corpGroup:analytics\", \"type\": \"DATAOWNER\", \"is_group\": true, \"name\": \"Analytics\", \"email\": null, \"title\": null}]}, {\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)\", \"owners\": [{\"urn\": \"urn:li:corpuser:sam.patel\", \"type\": \"TECHNICAL_OWNER\", \"is_group\": false, \"name\": \"Sam Patel\", \"email\": \"sam.patel@rideflow.example\", \"title\": \"Analytics Engineer\"}, {\"urn\": \"urn:li:corpGroup:analytics\", \"type\": \"DATAOWNER\", \"is_group\": true, \"name\": \"Analytics\", \"email\": null, \"title\": null}]}, {\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_revenue,PROD)\", \"owners\": [{\"urn\": \"urn:li:corpuser:raj.iyer\", \"type\": \"TECHNICAL_OWNER\", \"is_group\": false, \"name\": \"Raj Iyer\", \"email\": \"raj.iyer@rideflow.example\", \"title\": \"Data Engineer, Finance\"}, {\"urn\": \"urn:li:corpGroup:finance\", \"type\": \"DATAOWNER\", \"is_group\": true, \"name\": \"Finance\", \"email\": null, \"title\": null}]}, {\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)\", \"owners\": [{\"urn\": \"urn:li:corpuser:sam.patel\", \"type\": \"TECHNICAL_OWNER\", \"is_group\": false, \"name\": \"Sam Patel\", \"email\": \"sam.patel@rideflow.example\", \"title\": \"Analytics Engineer\"}, {\"urn\": \"urn:li:corpGroup:analytics\", \"type\": \"DATAOWNER\", \"is_group\": true, \"name\": \"Analytics\", \"email\": null, \"title\": null}]}, {\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)\", \"owners\": [{\"urn\": \"urn:li:corpuser:sam.patel\", \"type\": \"TECHNICAL_OWNER\", \"is_group\": false, \"name\": \"Sam Patel\", \"email\": \"sam.patel@rideflow.example\", \"title\": \"Analytics Engineer\"}, {\"urn\": \"urn:li:corpGroup:analytics\", \"type\": \"DATAOWNER\", \"is_group\": true, \"name\": \"Analytics\", \"email\": null, \"title\": null}]}, {\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_driver_earnings,PROD)\", \"owners\": [{\"urn\": \"urn:li:corpuser:raj.iyer\", \"type\": \"TECHNICAL_OWNER\", \"is_group\": false, \"name\": \"Raj Iyer\", \"email\": \"raj.iyer@rideflow.example\", \"title\": \"Data Engineer, Finance\"}, {\"urn\": \"urn:li:corpGroup:finance\", \"type\": \"DATAOWNER\", \"is_group\": true, \"name\": \"Finance\", \"email\": null, \"title\": null}]}, {\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.ml.trip_eta_features,PROD)\", \"owners\": [{\"urn\": \"urn:li:corpuser:nina.alvarez\", \"type\": \"TECHNICAL_OWNER\", \"is_group\": false, \"name\": \"Nina Alvarez\", \"email\": \"nina.alvarez@rideflow.example\", \"title\": \"ML Platform Engineer\"}, {\"urn\": \"urn:li:corpGroup:ml-platform\", \"type\": \"DATAOWNER\", \"is_group\": true, \"name\": \"Ml Platform\", \"email\": null, \"title\": null}]}, {\"urn\": \"urn:li:chart:(looker,oncall_demo_driver_leaderboard)\", \"owners\": []}, {\"urn\": \"urn:li:chart:(looker,oncall_demo_revenue_trend)\", \"owners\": []}, {\"urn\": \"urn:li:chart:(looker,oncall_demo_rides_by_hour)\", \"owners\": []}, {\"urn\": \"urn:li:chart:(looker,oncall_demo_zone_heatmap)\", \"owners\": []}, {\"urn\": \"urn:li:dashboard:(looker,oncall_demo_driver_ops)\", \"owners\": [{\"urn\": \"urn:li:corpuser:nina.alvarez\", \"type\": \"TECHNICAL_OWNER\", \"is_group\": false, \"name\": \"Nina Alvarez\", \"email\": \"nina.alvar"
+    }
+  },
+  {
+    "seq": 179,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:31.507Z",
+    "kind": "tool_call",
+    "call_id": "call_ti8NexBVuHqVqNyPZcTSIPqu",
+    "tool": "set_phase",
+    "origin": "native",
+    "args": {
+      "phase": "act",
+      "note": "The supported downstream set is ranked by measured usage; the highest-use impacts are Exec Daily Ops (3,100 weekly views), fct_trips (2,121 queries/30d), and Rides by Hour (1,840 weekly views). I will now avoid duplicate filing, tag evidence, and notify root-cause plus top-impact owners."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 180,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:31.529Z",
+    "kind": "phase",
+    "phase": "act",
+    "note": "The supported downstream set is ranked by measured usage; the highest-use impacts are Exec Daily Ops (3,100 weekly views), fct_trips (2,121 queries/30d), and Rides by Hour (1,840 weekly views). I will now avoid duplicate filing, tag evidence, and notify root-cause plus top-impact owners.",
+    "phase_index": 4
+  },
+  {
+    "seq": 181,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:31.531Z",
+    "kind": "tool_result",
+    "call_id": "call_ti8NexBVuHqVqNyPZcTSIPqu",
+    "tool": "set_phase",
+    "ok": true,
+    "duration_ms": 24,
+    "summary": "{\"phase\": \"act\", \"accepted\": true}",
+    "payload": {
+      "phase": "act",
+      "accepted": true
+    }
+  },
+  {
+    "seq": 182,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:33.138Z",
+    "kind": "tool_call",
+    "call_id": "call_STZpcJ1BdvtQD0UGaA2THylF",
+    "tool": "list_open_incidents",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 183,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:33.783Z",
+    "kind": "metric",
+    "name": "open_incidents_read",
+    "value": 0
+  },
+  {
+    "seq": 184,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:33.784Z",
+    "kind": "tool_result",
+    "call_id": "call_STZpcJ1BdvtQD0UGaA2THylF",
+    "tool": "list_open_incidents",
+    "ok": true,
+    "duration_ms": 646,
+    "summary": "{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)\", \"total\": 0, \"incidents\": []}",
+    "payload": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+      "total": 0,
+      "incidents": []
+    }
+  },
+  {
+    "seq": 185,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:41.429Z",
+    "kind": "tool_call",
+    "call_id": "call_nizZYLu9pZ4e677CKO95YAtx",
+    "tool": "raise_incident",
+    "origin": "native",
+    "args": {
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+      "incident_type": "VOLUME",
+      "title": "agg_zone_demand volume collapse caused by stale trips_raw feed",
+      "description_markdown": "**Causal chain:** `trips_raw` \u2192 `stg_trips` \u2192 `fct_trips` \u2192 `agg_zone_demand`.\n\n`trips_raw` is **31.01h stale against a 6h SLA** (25.01h beyond SLA) and is a confirmed source. The symptom assertion observed **90 rows vs expected 500..40,000**, down from 21,400 (-99.58%). Intermediate counts fell to 3,120 from 1,281,900 (-99.76%). Schema remains intact, including `pickup_ts`.\n\nHuman action: restore raw trips ingestion, then rerun `stg_trips` \u2192 `fct_trips` \u2192 downstream aggregates/features and validate freshness plus row-count assertions.",
+      "priority": "CRITICAL"
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 186,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:41.431Z",
+    "kind": "tool_call",
+    "call_id": "call_YwztCS3UgwpwlwKmtnRB7cB4",
+    "tool": "tag_assets",
+    "origin": "native",
+    "args": {
+      "urns": [
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)"
+      ],
+      "tag": "oncall_root_cause",
+      "column_paths": [
+        "pickup_ts"
+      ]
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 187,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:41.442Z",
+    "kind": "tool_call",
+    "call_id": "call_om27einTREGS2V2tDNTw7LTT",
+    "tool": "tag_assets",
+    "origin": "native",
+    "args": {
+      "urns": [
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_revenue,PROD)",
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_driver_earnings,PROD)",
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.ml.trip_eta_features,PROD)",
+        "urn:li:chart:(looker,oncall_demo_driver_leaderboard)",
+        "urn:li:chart:(looker,oncall_demo_revenue_trend)",
+        "urn:li:chart:(looker,oncall_demo_rides_by_hour)",
+        "urn:li:chart:(looker,oncall_demo_zone_heatmap)",
+        "urn:li:dashboard:(looker,oncall_demo_driver_ops)",
+        "urn:li:dashboard:(looker,oncall_demo_exec_daily_ops)",
+        "urn:li:dashboard:(looker,oncall_demo_finance_review)",
+        "urn:li:mlModel:(urn:li:dataPlatform:mlflow,oncall_demo_eta_predictor,PROD)"
+      ],
+      "tag": "oncall_impacted",
+      "column_paths": null
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 188,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:41.442Z",
+    "kind": "tool_call",
+    "call_id": "call_nDwgButhl3yiB98XMUijf3UF",
+    "tool": "tag_assets",
+    "origin": "native",
+    "args": {
+      "urns": [
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)"
+      ],
+      "tag": "oncall_triaged",
+      "column_paths": null
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 189,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:41.553Z",
+    "kind": "action",
+    "action": "incident",
+    "summary": "Active critical volume incident",
+    "urns": [
+      "urn:li:incident:oncall-09394f97533036eeb0d551ed97a32b58",
+      "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)"
+    ],
+    "datahub_url": "http://localhost:9002/dataset/urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)/Incidents",
+    "detail": "agg_zone_demand volume collapse caused by stale trips_raw feed",
+    "ok": true
+  },
+  {
+    "seq": 190,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:41.705Z",
+    "kind": "action",
+    "action": "tag",
+    "summary": "Applied oncall_triaged to 1 assets (1 changed)",
+    "urns": [
+      "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)"
+    ],
+    "datahub_url": null,
+    "detail": "column_paths=[]",
+    "ok": true
+  },
+  {
+    "seq": 191,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:41.713Z",
+    "kind": "action",
+    "action": "tag",
+    "summary": "Applied oncall_root_cause to 1 assets (1 changed)",
+    "urns": [
+      "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)"
+    ],
+    "datahub_url": null,
+    "detail": "column_paths=['pickup_ts']",
+    "ok": true
+  },
+  {
+    "seq": 192,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:42.851Z",
+    "kind": "action",
+    "action": "tag",
+    "summary": "Applied oncall_impacted to 15 assets (15 changed)",
+    "urns": [
+      "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+      "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+      "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_revenue,PROD)",
+      "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+      "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+      "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_driver_earnings,PROD)",
+      "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.ml.trip_eta_features,PROD)",
+      "urn:li:chart:(looker,oncall_demo_driver_leaderboard)",
+      "urn:li:chart:(looker,oncall_demo_revenue_trend)",
+      "urn:li:chart:(looker,oncall_demo_rides_by_hour)",
+      "urn:li:chart:(looker,oncall_demo_zone_heatmap)",
+      "urn:li:dashboard:(looker,oncall_demo_driver_ops)",
+      "urn:li:dashboard:(looker,oncall_demo_exec_daily_ops)",
+      "urn:li:dashboard:(looker,oncall_demo_finance_review)",
+      "urn:li:mlModel:(urn:li:dataPlatform:mlflow,oncall_demo_eta_predictor,PROD)"
+    ],
+    "datahub_url": null,
+    "detail": "column_paths=[]",
+    "ok": true
+  },
+  {
+    "seq": 193,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:42.854Z",
+    "kind": "tool_result",
+    "call_id": "call_nizZYLu9pZ4e677CKO95YAtx",
+    "tool": "raise_incident",
+    "ok": true,
+    "duration_ms": 1425,
+    "summary": "{\"action\": \"incident\", \"summary\": \"Active critical volume incident\", \"urns\": [\"urn:li:incident:oncall-09394f97533036eeb0d551ed97a32b58\", \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)\"], \"datahub_url\": \"http://localhost:9002/dataset/urn:li:dataset:(urn:li:dataPla",
+    "payload": {
+      "action": "incident",
+      "summary": "Active critical volume incident",
+      "urns": [
+        "urn:li:incident:oncall-09394f97533036eeb0d551ed97a32b58",
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)"
+      ],
+      "datahub_url": "http://localhost:9002/dataset/urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)/Incidents",
+      "detail": "agg_zone_demand volume collapse caused by stale trips_raw feed",
+      "ok": true
+    }
+  },
+  {
+    "seq": 194,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:42.854Z",
+    "kind": "tool_result",
+    "call_id": "call_YwztCS3UgwpwlwKmtnRB7cB4",
+    "tool": "tag_assets",
+    "ok": true,
+    "duration_ms": 1424,
+    "summary": "{\"action\": \"tag\", \"summary\": \"Applied oncall_root_cause to 1 assets (1 changed)\", \"urns\": [\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)\"], \"datahub_url\": null, \"detail\": \"column_paths=['pickup_ts']\", \"ok\": true}",
+    "payload": {
+      "action": "tag",
+      "summary": "Applied oncall_root_cause to 1 assets (1 changed)",
+      "urns": [
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)"
+      ],
+      "datahub_url": null,
+      "detail": "column_paths=['pickup_ts']",
+      "ok": true
+    }
+  },
+  {
+    "seq": 195,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:42.854Z",
+    "kind": "tool_result",
+    "call_id": "call_om27einTREGS2V2tDNTw7LTT",
+    "tool": "tag_assets",
+    "ok": true,
+    "duration_ms": 1412,
+    "summary": "{\"action\": \"tag\", \"summary\": \"Applied oncall_impacted to 15 assets (15 changed)\", \"urns\": [\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)\", \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)\", \"urn:li:dataset:(urn:li:dataPlatform:oncall,onc",
+    "payload": {
+      "action": "tag",
+      "summary": "Applied oncall_impacted to 15 assets (15 changed)",
+      "urns": [
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_revenue,PROD)",
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_driver_earnings,PROD)",
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.ml.trip_eta_features,PROD)",
+        "urn:li:chart:(looker,oncall_demo_driver_leaderboard)",
+        "urn:li:chart:(looker,oncall_demo_revenue_trend)",
+        "urn:li:chart:(looker,oncall_demo_rides_by_hour)",
+        "urn:li:chart:(looker,oncall_demo_zone_heatmap)",
+        "urn:li:dashboard:(looker,oncall_demo_driver_ops)",
+        "urn:li:dashboard:(looker,oncall_demo_exec_daily_ops)",
+        "urn:li:dashboard:(looker,oncall_demo_finance_review)",
+        "urn:li:mlModel:(urn:li:dataPlatform:mlflow,oncall_demo_eta_predictor,PROD)"
+      ],
+      "datahub_url": null,
+      "detail": "column_paths=[]",
+      "ok": true
+    }
+  },
+  {
+    "seq": 196,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:42.854Z",
+    "kind": "tool_result",
+    "call_id": "call_nDwgButhl3yiB98XMUijf3UF",
+    "tool": "tag_assets",
+    "ok": true,
+    "duration_ms": 1412,
+    "summary": "{\"action\": \"tag\", \"summary\": \"Applied oncall_triaged to 1 assets (1 changed)\", \"urns\": [\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)\"], \"datahub_url\": null, \"detail\": \"column_paths=[]\", \"ok\": true}",
+    "payload": {
+      "action": "tag",
+      "summary": "Applied oncall_triaged to 1 assets (1 changed)",
+      "urns": [
+        "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)"
+      ],
+      "datahub_url": null,
+      "detail": "column_paths=[]",
+      "ok": true
+    }
+  },
+  {
+    "seq": 197,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:48.633Z",
+    "kind": "tool_call",
+    "call_id": "call_w8PJaGQMGiAVhTfU8Za1zSI5",
+    "tool": "notify_owners",
+    "origin": "native",
+    "args": {
+      "owner_urns": [
+        "urn:li:corpuser:maya.chen",
+        "urn:li:corpGroup:data-platform",
+        "urn:li:corpuser:dana.wu",
+        "urn:li:corpGroup:exec",
+        "urn:li:corpuser:sam.patel",
+        "urn:li:corpGroup:analytics"
+      ],
+      "subject": "CRITICAL: trips_raw staleness collapsed agg_zone_demand volume",
+      "body_markdown": "**Causal chain:** `trips_raw` \u2192 `stg_trips` \u2192 `fct_trips` \u2192 `agg_zone_demand`.\n\n`trips_raw` is 31.01h stale against a 6h SLA. The symptom has 90 rows versus expected 500..40,000, down 99.58%. Highest-use impacts are Exec Daily Ops (3,100 weekly views), fct_trips (2,121 queries/30d), and Rides by Hour (1,840 weekly views; no catalog owner recorded).\n\nPlease restore raw trips ingestion, then rerun `stg_trips` \u2192 `fct_trips` \u2192 all downstream aggregates/features and validate freshness and row-count assertions. Incident: `urn:li:incident:oncall-09394f97533036eeb0d551ed97a32b58`."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 198,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:48.654Z",
+    "kind": "action",
+    "action": "notify",
+    "summary": "Notified 6 owners: CRITICAL: trips_raw staleness collapsed agg_zone_demand volume",
+    "urns": [
+      "urn:li:corpuser:maya.chen",
+      "urn:li:corpGroup:data-platform",
+      "urn:li:corpuser:dana.wu",
+      "urn:li:corpGroup:exec",
+      "urn:li:corpuser:sam.patel",
+      "urn:li:corpGroup:analytics"
+    ],
+    "datahub_url": null,
+    "detail": "mock receipt: data/notifications/oncall-09394f97533036eeb0d551ed97a32b58.json\n**Causal chain:** `trips_raw` \u2192 `stg_trips` \u2192 `fct_trips` \u2192 `agg_zone_demand`.\n\n`trips_raw` is 31.01h stale against a 6h SLA. The symptom has 90 rows versus expected 500..40,000, down 99.58%. Highest-use impacts are Exec Daily Ops (3,100 weekly views), fct_trips (2,121 queries/30d), and Rides by Hour (1,840 weekly views; no catalog owner recorded).\n\nPlease restore raw trips ingestion, then rerun `stg_trips` \u2192 `fct_trips` \u2192 all downstream aggregates/features and validate freshness and row-count a",
+    "ok": true
+  },
+  {
+    "seq": 199,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:48.656Z",
+    "kind": "tool_result",
+    "call_id": "call_w8PJaGQMGiAVhTfU8Za1zSI5",
+    "tool": "notify_owners",
+    "ok": true,
+    "duration_ms": 23,
+    "summary": "{\"action\": \"notify\", \"summary\": \"Notified 6 owners: CRITICAL: trips_raw staleness collapsed agg_zone_demand volume\", \"urns\": [\"urn:li:corpuser:maya.chen\", \"urn:li:corpGroup:data-platform\", \"urn:li:corpuser:dana.wu\", \"urn:li:corpGroup:exec\", \"urn:li:corpuser:sam.patel\", \"urn:li:corpGroup:analytics\"],",
+    "payload": {
+      "action": "notify",
+      "summary": "Notified 6 owners: CRITICAL: trips_raw staleness collapsed agg_zone_demand volume",
+      "urns": [
+        "urn:li:corpuser:maya.chen",
+        "urn:li:corpGroup:data-platform",
+        "urn:li:corpuser:dana.wu",
+        "urn:li:corpGroup:exec",
+        "urn:li:corpuser:sam.patel",
+        "urn:li:corpGroup:analytics"
+      ],
+      "datahub_url": null,
+      "detail": "mock receipt: data/notifications/oncall-09394f97533036eeb0d551ed97a32b58.json\n**Causal chain:** `trips_raw` \u2192 `stg_trips` \u2192 `fct_trips` \u2192 `agg_zone_demand`.\n\n`trips_raw` is 31.01h stale against a 6h SLA. The symptom has 90 rows versus expected 500..40,000, down 99.58%. Highest-use impacts are Exec Daily Ops (3,100 weekly views), fct_trips (2,121 queries/30d), and Rides by Hour (1,840 weekly views; no catalog owner recorded).\n\nPlease restore raw trips ingestion, then rerun `stg_trips` \u2192 `fct_trips` \u2192 all downstream aggregates/features and validate freshness and row-count a",
+      "ok": true,
+      "receipt": "/Users/yadneshsalvi/code/hackathons/datahub/datahub-data-engineer-agent/data/notifications/oncall-09394f97533036eeb0d551ed97a32b58.json"
+    }
+  },
+  {
+    "seq": 200,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:56.538Z",
+    "kind": "tool_call",
+    "call_id": "call_6uuklW9Y7347i0WT1Bf3piAE",
+    "tool": "set_phase",
+    "origin": "native",
+    "args": {
+      "phase": "learn",
+      "note": "Incident, tags, and notifications succeeded. I will now author and persist the evidence-backed post-mortem, preserving recalled incident run_93130e4fb6f84e58, then leave the incident in INVESTIGATION for human remediation."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 201,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:56.559Z",
+    "kind": "phase",
+    "phase": "learn",
+    "note": "Incident, tags, and notifications succeeded. I will now author and persist the evidence-backed post-mortem, preserving recalled incident run_93130e4fb6f84e58, then leave the incident in INVESTIGATION for human remediation.",
+    "phase_index": 5
+  },
+  {
+    "seq": 202,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:08:56.564Z",
+    "kind": "tool_result",
+    "call_id": "call_6uuklW9Y7347i0WT1Bf3piAE",
+    "tool": "set_phase",
+    "ok": true,
+    "duration_ms": 26,
+    "summary": "{\"phase\": \"learn\", \"accepted\": true}",
+    "payload": {
+      "phase": "learn",
+      "accepted": true
+    }
+  },
+  {
+    "seq": 203,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:09:12.132Z",
+    "kind": "tool_call",
+    "call_id": "call_9LZL4QBMS5qtI6iCgnntAvOb",
+    "tool": "author_postmortem",
+    "origin": "subagent",
+    "args": {
+      "input": "Author a strict post-mortem for run_id run_332299d97bdd4b34.\n\nIncident URN: urn:li:incident:oncall-09394f97533036eeb0d551ed97a32b58\nSymptom: agg_zone_demand row-count assertion failed: observed 90 rows versus expected 500..40,000; previous row count 21,400 (-99.58%). Symptom URN: urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD).\nRoot cause: urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD), name trips_raw. trips_raw is 31.01 hours stale against a 6-hour SLA (25.01 hours beyond SLA); latest/previous row counts are both 1,284,500 (0.0%); schema is healthy with pickup_ts present; no assertions configured. One-hop upstream lineage returned zero and confirm_no_upstreams returned confirmed, satisfying the stop rule. Recall fast path was used after prior incident run_93130e4fb6f84e58 named trips_raw, then live evidence verified it.\n\nCausal path from symptom:\n0 agg_zone_demand (broken): assertion 90 vs 500..40,000; row count 21,400 to 90 (-99.58%); freshness healthy 1.22h vs 6h SLA; live schema has five fields and drift verdict unknown because no downstream dependencies were available.\n1 fct_trips (broken): row assertion 3,120 vs 50,000..2,000,000; row count 1,281,900 to 3,120 (-99.76%); freshness healthy 1.23h vs 6h; schema healthy including pickup_ts.\n2 stg_trips (broken): row assertion 3,120 vs 50,000..2,500,000; row count 1,281,900 to 3,120 (-99.76%); freshness broken 30.03h vs 6h SLA; schema healthy including pickup_ts.\n3 trips_raw (root_cause): freshness broken 31.01h vs 6h SLA; stable 1,284,500 rows; schema healthy including pickup_ts; source status confirmed.\nExact lineage path: trips_raw -> stg_trips -> fct_trips -> agg_zone_demand.\n\nBlast radius ranked by usage (owners are catalog owner URNs):\n1 urn:li:dashboard:(looker,oncall_demo_exec_daily_ops), Exec Daily Ops, DASHBOARD, hops 5, usage_score 3100 weekly views, owners [urn:li:corpuser:dana.wu, urn:li:corpGroup:exec], severity critical.\n2 urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD), fct_trips, DATASET, hops 2, usage_score 2121 queries/30d, owners [urn:li:corpuser:sam.patel, urn:li:corpGroup:analytics], severity critical.\n3 urn:li:chart:(looker,oncall_demo_rides_by_hour), Rides by Hour, CHART, hops 4, usage_score 1840 weekly views, owners [], severity critical.\n4 urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD), agg_daily_rides, DATASET, hops 3, usage_score 1673 queries/30d, owners [urn:li:corpuser:sam.patel, urn:li:corpGroup:analytics], severity high.\n5 urn:li:chart:(looker,oncall_demo_revenue_trend), Revenue Trend, CHART, hops 4, usage_score 1420 weekly views, owners [], severity high.\n6 urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_revenue,PROD), fct_revenue, DATASET, hops 2, usage_score 1169 queries/30d, owners [urn:li:corpuser:raj.iyer, urn:li:corpGroup:finance], severity high.\n7 urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_driver_earnings,PROD), agg_driver_earnings, DATASET, hops 3, usage_score 1043 queries/30d, owners [urn:li:corpuser:raj.iyer, urn:li:corpGroup:finance], severity high.\n8 urn:li:chart:(looker,oncall_demo_zone_heatmap), Zone Demand Heatmap, CHART, hops 4, usage_score 960 weekly views, owners [], severity medium.\n9 urn:li:dashboard:(looker,oncall_demo_finance_review), Finance Revenue Review, DASHBOARD, hops 5, usage_score 870 weekly views, owners [urn:li:corpuser:raj.iyer, urn:li:corpGroup:finance], severity medium.\n10 urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD), agg_zone_demand, DATASET, hops 3, usage_score 868 queries/30d, owners [urn:li:corpuser:sam.patel, urn:li:corpGroup:analytics], severity medium.\n11 urn:li:dashboard:(looker,oncall_demo_driver_ops), Driver Ops, DASHBOARD, hops 5, usage_score 410 weekly views, owners [urn:li:corpuser:nina.alvarez, urn:li:corpGroup:ml-platform], severity medium.\n12 urn:li:chart:(looker,oncall_demo_driver_leaderboard), Driver Leaderboard, CHART, hops 4, usage_score 380 weekly views, owners [], severity low.\n13 urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.ml.trip_eta_features,PROD), trip_eta_features, DATASET, hops 3, usage_score 364 queries/30d, owners [urn:li:corpuser:nina.alvarez, urn:li:corpGroup:ml-platform], severity low.\n14 urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD), stg_trips, DATASET, hops 1, usage_score 91 queries/30d, owners [urn:li:corpuser:sam.patel, urn:li:corpGroup:analytics], severity low.\n15 urn:li:mlModel:(urn:li:dataPlatform:mlflow,oncall_demo_eta_predictor,PROD), oncall_demo_eta_predictor, MLMODEL, hops 5, usage_score 0 weekly views, owners [urn:li:corpuser:nina.alvarez, urn:li:corpGroup:ml-platform], severity low.\nDataHub downstream facets reported 16 total, including one unsupported MLFeature; the ranked/tagged supported blast radius is the 15 items above.\n\nRecommended action: restore raw trips ingestion, then rerun stg_trips -> fct_trips -> all downstream aggregates/features. Validate trips_raw freshness is within 6h and row-count assertions on stg_trips, fct_trips, and agg_zone_demand pass before recovery.\nPrevention: alert directly on trips_raw freshness before downstream runs, gate downstream publication on source freshness, and add runbook/ownership checks for the unowned charts.\nRecalled incident IDs: [run_93130e4fb6f84e58]. Confidence: high."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 204,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:09:33.986Z",
+    "kind": "agent_message",
+    "agent": "Post-Mortem Author",
+    "text": "{\"incident_id\":\"urn:li:incident:oncall-09394f97533036eeb0d551ed97a32b58\",\"title\":\"Stale trips_raw ingestion caused downstream trip-volume collapse\",\"symptom\":\"agg_zone_demand row-count assertion failed: 90 rows versus expected 500..40,000; previous row count 21,400 (-99.58%).\",\"symptom_urn\":\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)\",\"root_cause_urn\":\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)\",\"root_cause_name\":\"trips_raw\",\"root_cause_summary\":\"trips_raw ingestion stopped advancing: freshness was 31.01h against a 6h SLA, while row count remained 1,284,500 and schema stayed healthy. Zero upstream lineage was returned and confirm_no_upstreams was confirmed, so trips_raw is the first unhealthy asset and satisfies the stop rule.\",\"causal_path\":[{\"urn\":\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)\",\"name\":\"agg_zone_demand\",\"hops_from_symptom\":0,\"verdict\":\"broken\",\"evidence\":[\"Assertion: 90 rows versus expected 500..40,000.\",\"Row count fell from 21,400 to 90 (-99.58%).\",\"Freshness healthy: 1.22h versus 6h SLA.\",\"Live schema has five fields; drift unknown because no downstream dependencies were available.\"]},{\"urn\":\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)\",\"name\":\"fct_trips\",\"hops_from_symptom\":1,\"verdict\":\"broken\",\"evidence\":[\"Assertion: 3,120 rows versus expected 50,000..2,000,000.\",\"Row count fell from 1,281,900 to 3,120 (-99.76%).\",\"Freshness healthy: 1.23h versus 6h SLA.\",\"Schema healthy, including pickup_ts.\"]},{\"urn\":\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)\",\"name\":\"stg_trips\",\"hops_from_symptom\":2,\"verdict\":\"broken\",\"evidence\":[\"Assertion: 3,120 rows versus expected 50,000..2,500,000.\",\"Row count fell from 1,281,900 to 3,120 (-99.76%).\",\"Freshness broken: 30.03h versus 6h SLA.\",\"Schema healthy, including pickup_ts.\"]},{\"urn\":\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)\",\"name\":\"trips_raw\",\"hops_from_symptom\":3,\"verdict\":\"root_cause\",\"evidence\":[\"Freshness broken: 31.01h versus 6h SLA; 25.01h overdue.\",\"Latest and previous row counts both 1,284,500 (0.0% change).\",\"Schema healthy with pickup_ts present; no assertions configured.\",\"Source status confirmed.\",\"One-hop upstream lineage returned zero; confirm_no_upstreams returned confirmed.\"]}],\"evidence\":[\"Exact lineage: trips_raw -> stg_trips -> fct_trips -> agg_zone_demand.\",\"Recall fast path identified trips_raw from run_93130e4fb6f84e58; live evidence verified the diagnosis.\",\"DataHub reported 16 downstream facets: 15 supported assets ranked below and one unsupported MLFeature.\"],\"blast_radius\":[{\"urn\":\"urn:li:dashboard:(looker,oncall_demo_exec_daily_ops)\",\"name\":\"Exec Daily Ops\",\"entity_type\":\"DASHBOARD\",\"hops\":5,\"usage_score\":3100,\"owners\":[\"urn:li:corpuser:dana.wu\",\"urn:li:corpGroup:exec\"],\"severity\":\"critical\"},{\"urn\":\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)\",\"name\":\"fct_trips\",\"entity_type\":\"DATASET\",\"hops\":2,\"usage_score\":2121,\"owners\":[\"urn:li:corpuser:sam.patel\",\"urn:li:corpGroup:analytics\"],\"severity\":\"critical\"},{\"urn\":\"urn:li:chart:(looker,oncall_demo_rides_by_hour)\",\"name\":\"Rides by Hour\",\"entity_type\":\"CHART\",\"hops\":4,\"usage_score\":1840,\"owners\":[],\"severity\":\"critical\"},{\"urn\":\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)\",\"name\":\"agg_daily_rides\",\"entity_type\":\"DATASET\",\"hops\":3,\"usage_score\":1673,\"owners\":[\"urn:li:corpuser:sam.patel\",\"urn:li:corpGroup:analytics\"],\"severity\":\"high\"},{\"urn\":\"urn:li:chart:(looker,oncall_demo_revenue_trend)\",\"name\":\"Revenue Trend\",\"entity_type\":\"CHART\",\"hops\":4,\"usage_score\":1420,\"owners\":[],\"severity\":\"high\"},{\"urn\":\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_revenue,PROD)\",\"name\":\"fct_revenue\",\"entity_type\":\"DATASET\",\"hops\":2,\"usage_score\":1169,\"owners\":[\"urn:li:corpuser:raj.iyer\",\"urn:li:corpGroup:finance\"],\"severity\":\"high\"},{\"urn\":\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_driver_earnings,PROD)\",\"name\":\"agg_driver_earnings\",\"entity_type\":\"DATASET\",\"hops\":3,\"usage_score\":1043,\"owners\":[\"urn:li:corpuser:raj.iyer\",\"urn:li:corpGroup:finance\"],\"severity\":\"high\"},{\"urn\":\"urn:li:chart:(looker,oncall_demo_zone_heatmap)\",\"name\":\"Zone Demand Heatmap\",\"entity_type\":\"CHART\",\"hops\":4,\"usage_score\":960,\"owners\":[],\"severity\":\"medium\"},{\"urn\":\"urn:li:dashboard:(looker,oncall_demo_finance_review)\",\"name\":\"Finance Revenue Review\",\"entity_type\":\"DASHBOARD\",\"hops\":5,\"usage_score\":870,\"owners\":[\"urn:li:corpuser:raj.iyer\",\"urn:li:corpGroup:finance\"],\"severity\":\"medium\"},{\"urn\":\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)\",\"name\":\"agg_zone_demand\",\"entity_type\":\"DATASET\",\"hops\":3,\"usage_score\":868,\"owners\":[\"urn:li:corpuser:sam.patel\",\"urn:li:corpGroup:analytics\"],\"severity\":\"medium\"},{\"urn\":\"urn:li:dashboard:(looker,oncall_demo_driver_ops)\",\"name\":\"Driver Ops\",\"entity_type\":\"DASHBOARD\",\"hops\":5,\"usage_score\":410,\"owners\":[\"urn:li:corpuser:nina.alvarez\",\"urn:li:corpGroup:ml-platform\"],\"severity\":\"medium\"},{\"urn\":\"urn:li:chart:(looker,oncall_demo_driver_leaderboard)\",\"name\":\"Driver Leaderboard\",\"entity_type\":\"CHART\",\"hops\":4,\"usage_score\":380,\"owners\":[],\"severity\":\"low\"},{\"urn\":\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.ml.trip_eta_features,PROD)\",\"name\":\"trip_eta_features\",\"entity_type\":\"DATASET\",\"hops\":3,\"usage_score\":364,\"owners\":[\"urn:li:corpuser:nina.alvarez\",\"urn:li:corpGroup:ml-platform\"],\"severity\":\"low\"},{\"urn\":\"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)\",\"name\":\"stg_trips\",\"entity_type\":\"DATASET\",\"hops\":1,\"usage_score\":91,\"owners\":[\"urn:li:corpuser:sam.patel\",\"urn:li:corpGroup:analytics\"],\"severity\":\"low\"},{\"urn\":\"urn:li:mlModel:(urn:li:dataPlatform:mlflow,oncall_demo_eta_predictor,PROD)\",\"name\":\"oncall_demo_eta_predictor\",\"entity_type\":\"MLMODEL\",\"hops\":5,\"usage_score\":0,\"owners\":[\"urn:li:corpuser:nina.alvarez\",\"urn:li:corpGroup:ml-platform\"],\"severity\":\"low\"}],\"recommended_action\":\"The on-call data engineer must restore raw trips ingestion, then rerun stg_trips -> fct_trips -> all downstream aggregates and features. Declare recovery only after trips_raw freshness is within 6h and assertions pass on stg_trips, fct_trips, and agg_zone_demand.\",\"prevention\":\"Add a 6h freshness alert on trips_raw and a circuit breaker that blocks downstream publication when trips_raw breaches it. Add named catalog owners and runbook links for Rides by Hour, Revenue Trend, Zone Demand Heatmap, and Driver Leaderboard.\",\"recalled_incident_ids\":[\"run_93130e4fb6f84e58\"],\"confidence\":\"high\"}",
+    "delta": false
+  },
+  {
+    "seq": 205,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:09:33.988Z",
+    "kind": "tool_result",
+    "call_id": "call_9LZL4QBMS5qtI6iCgnntAvOb",
+    "tool": "author_postmortem",
+    "ok": true,
+    "duration_ms": 21856,
+    "summary": "{\"incident_id\": \"urn:li:incident:oncall-09394f97533036eeb0d551ed97a32b58\", \"title\": \"Stale trips_raw ingestion caused downstream trip-volume collapse\", \"symptom\": \"agg_zone_demand row-count assertion failed: 90 rows versus expected 500..40,000; previous row count 21,400 (-99.58%).\", \"symptom_urn\": \"",
+    "payload": {
+      "truncated": true,
+      "original_chars": 7001,
+      "preview": "{\"incident_id\": \"urn:li:incident:oncall-09394f97533036eeb0d551ed97a32b58\", \"title\": \"Stale trips_raw ingestion caused downstream trip-volume collapse\", \"symptom\": \"agg_zone_demand row-count assertion failed: 90 rows versus expected 500..40,000; previous row count 21,400 (-99.58%).\", \"symptom_urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)\", \"root_cause_urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)\", \"root_cause_name\": \"trips_raw\", \"root_cause_summary\": \"trips_raw ingestion stopped advancing: freshness was 31.01h against a 6h SLA, while row count remained 1,284,500 and schema stayed healthy. Zero upstream lineage was returned and confirm_no_upstreams was confirmed, so trips_raw is the first unhealthy asset and satisfies the stop rule.\", \"causal_path\": [{\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)\", \"name\": \"agg_zone_demand\", \"hops_from_symptom\": 0, \"verdict\": \"broken\", \"evidence\": [\"Assertion: 90 rows versus expected 500..40,000.\", \"Row count fell from 21,400 to 90 (-99.58%).\", \"Freshness healthy: 1.22h versus 6h SLA.\", \"Live schema has five fields; drift unknown because no downstream dependencies were available.\"]}, {\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)\", \"name\": \"fct_trips\", \"hops_from_symptom\": 1, \"verdict\": \"broken\", \"evidence\": [\"Assertion: 3,120 rows versus expected 50,000..2,000,000.\", \"Row count fell from 1,281,900 to 3,120 (-99.76%).\", \"Freshness healthy: 1.23h versus 6h SLA.\", \"Schema healthy, including pickup_ts.\"]}, {\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)\", \"name\": \"stg_trips\", \"hops_from_symptom\": 2, \"verdict\": \"broken\", \"evidence\": [\"Assertion: 3,120 rows versus expected 50,000..2,500,000.\", \"Row count fell from 1,281,900 to 3,120 (-99.76%).\", \"Freshness broken: 30.03h versus 6h SLA.\", \"Schema healthy, including pickup_ts.\"]}, {\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)\", \"name\": \"trips_raw\", \"hops_from_symptom\": 3, \"verdict\": \"root_cause\", \"evidence\": [\"Freshness broken: 31.01h versus 6h SLA; 25.01h overdue.\", \"Latest and previous row counts both 1,284,500 (0.0% change).\", \"Schema healthy with pickup_ts present; no assertions configured.\", \"Source status confirmed.\", \"One-hop upstream lineage returned zero; confirm_no_upstreams returned confirmed.\"]}], \"evidence\": [\"Exact lineage: trips_raw -> stg_trips -> fct_trips -> agg_zone_demand.\", \"Recall fast path identified trips_raw from run_93130e4fb6f84e58; live evidence verified the diagnosis.\", \"DataHub reported 16 downstream facets: 15 supported assets ranked below and one unsupported MLFeature.\"], \"blast_radius\": [{\"urn\": \"urn:li:dashboard:(looker,oncall_demo_exec_daily_ops)\", \"name\": \"Exec Daily Ops\", \"entity_type\": \"DASHBOARD\", \"hops\": 5, \"usage_score\": 3100, \"owners\": [\"urn:li:corpuser:dana.wu\", \"urn:li:corpGroup:exec\"], \"severity\": \"critical\"}, {\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)\", \"name\": \"fct_trips\", \"entity_type\": \"DATASET\", \"hops\": 2, \"usage_score\": 2121, \"owners\": [\"urn:li:corpuser:sam.patel\", \"urn:li:corpGroup:analytics\"], \"severity\": \"critical\"}, {\"urn\": \"urn:li:chart:(looker,oncall_demo_rides_by_hour)\", \"name\": \"Rides by Hour\", \"entity_type\": \"CHART\", \"hops\": 4, \"usage_score\": 1840, \"owners\": [], \"severity\": \"critical\"}, {\"urn\": \"urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)\", \"name\": \"agg_daily_rides\", \"entity_type\": \"DATASET\", \"hops\": 3, \"usage_score\": 1673, \"owners\": [\"urn:li:corpuser:sam.patel\", \"urn:li:corpGroup:analytics\"], \"severity\": \"high\"}, {\"urn\": \"urn:li:chart:(looker,oncall_demo_revenue_trend)\", \"name\""
+    }
+  },
+  {
+    "seq": 206,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:09:50.986Z",
+    "kind": "tool_call",
+    "call_id": "call_HQp2dOtkDA4AztQOGkfyLaZB",
+    "tool": "write_postmortem",
+    "origin": "native",
+    "args": {
+      "postmortem": {
+        "incident_id": "run_332299d97bdd4b34",
+        "title": "Stale trips_raw ingestion caused downstream trip-volume collapse",
+        "symptom": "agg_zone_demand row-count assertion failed: 90 rows versus expected 500..40,000; previous row count 21,400 (-99.58%).",
+        "symptom_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+        "root_cause_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+        "root_cause_name": "trips_raw",
+        "root_cause_summary": "trips_raw ingestion stopped advancing: freshness was 31.01h against a 6h SLA, while row count remained 1,284,500 and schema stayed healthy. Zero upstream lineage was returned and confirm_no_upstreams was confirmed, so trips_raw is the first unhealthy asset and satisfies the stop rule.",
+        "causal_path": [
+          {
+            "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+            "name": "agg_zone_demand",
+            "hops_from_symptom": 0,
+            "verdict": "broken",
+            "evidence": [
+              "Assertion: 90 rows versus expected 500..40,000.",
+              "Row count fell from 21,400 to 90 (-99.58%).",
+              "Freshness healthy: 1.22h versus 6h SLA.",
+              "Live schema has five fields; drift unknown because no downstream dependencies were available."
+            ]
+          },
+          {
+            "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+            "name": "fct_trips",
+            "hops_from_symptom": 1,
+            "verdict": "broken",
+            "evidence": [
+              "Assertion: 3,120 rows versus expected 50,000..2,000,000.",
+              "Row count fell from 1,281,900 to 3,120 (-99.76%).",
+              "Freshness healthy: 1.23h versus 6h SLA.",
+              "Schema healthy, including pickup_ts."
+            ]
+          },
+          {
+            "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+            "name": "stg_trips",
+            "hops_from_symptom": 2,
+            "verdict": "broken",
+            "evidence": [
+              "Assertion: 3,120 rows versus expected 50,000..2,500,000.",
+              "Row count fell from 1,281,900 to 3,120 (-99.76%).",
+              "Freshness broken: 30.03h versus 6h SLA.",
+              "Schema healthy, including pickup_ts."
+            ]
+          },
+          {
+            "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+            "name": "trips_raw",
+            "hops_from_symptom": 3,
+            "verdict": "root_cause",
+            "evidence": [
+              "Freshness broken: 31.01h versus 6h SLA; 25.01h overdue.",
+              "Latest and previous row counts both 1,284,500 (0.0% change).",
+              "Schema healthy with pickup_ts present; no assertions configured.",
+              "Source status confirmed.",
+              "One-hop upstream lineage returned zero; confirm_no_upstreams returned confirmed."
+            ]
+          }
+        ],
+        "evidence": [
+          "Exact lineage: trips_raw -> stg_trips -> fct_trips -> agg_zone_demand.",
+          "Recall fast path identified trips_raw from run_93130e4fb6f84e58; live evidence verified the diagnosis.",
+          "DataHub reported 16 downstream facets: 15 supported assets ranked below and one unsupported MLFeature."
+        ],
+        "blast_radius": [
+          {
+            "urn": "urn:li:dashboard:(looker,oncall_demo_exec_daily_ops)",
+            "name": "Exec Daily Ops",
+            "entity_type": "DASHBOARD",
+            "hops": 5,
+            "usage_score": 3100,
+            "owners": [
+              "urn:li:corpuser:dana.wu",
+              "urn:li:corpGroup:exec"
+            ],
+            "severity": "critical"
+          },
+          {
+            "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+            "name": "fct_trips",
+            "entity_type": "DATASET",
+            "hops": 2,
+            "usage_score": 2121,
+            "owners": [
+              "urn:li:corpuser:sam.patel",
+              "urn:li:corpGroup:analytics"
+            ],
+            "severity": "critical"
+          },
+          {
+            "urn": "urn:li:chart:(looker,oncall_demo_rides_by_hour)",
+            "name": "Rides by Hour",
+            "entity_type": "CHART",
+            "hops": 4,
+            "usage_score": 1840,
+            "owners": [],
+            "severity": "critical"
+          },
+          {
+            "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+            "name": "agg_daily_rides",
+            "entity_type": "DATASET",
+            "hops": 3,
+            "usage_score": 1673,
+            "owners": [
+              "urn:li:corpuser:sam.patel",
+              "urn:li:corpGroup:analytics"
+            ],
+            "severity": "high"
+          },
+          {
+            "urn": "urn:li:chart:(looker,oncall_demo_revenue_trend)",
+            "name": "Revenue Trend",
+            "entity_type": "CHART",
+            "hops": 4,
+            "usage_score": 1420,
+            "owners": [],
+            "severity": "high"
+          },
+          {
+            "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_revenue,PROD)",
+            "name": "fct_revenue",
+            "entity_type": "DATASET",
+            "hops": 2,
+            "usage_score": 1169,
+            "owners": [
+              "urn:li:corpuser:raj.iyer",
+              "urn:li:corpGroup:finance"
+            ],
+            "severity": "high"
+          },
+          {
+            "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_driver_earnings,PROD)",
+            "name": "agg_driver_earnings",
+            "entity_type": "DATASET",
+            "hops": 3,
+            "usage_score": 1043,
+            "owners": [
+              "urn:li:corpuser:raj.iyer",
+              "urn:li:corpGroup:finance"
+            ],
+            "severity": "high"
+          },
+          {
+            "urn": "urn:li:chart:(looker,oncall_demo_zone_heatmap)",
+            "name": "Zone Demand Heatmap",
+            "entity_type": "CHART",
+            "hops": 4,
+            "usage_score": 960,
+            "owners": [],
+            "severity": "medium"
+          },
+          {
+            "urn": "urn:li:dashboard:(looker,oncall_demo_finance_review)",
+            "name": "Finance Revenue Review",
+            "entity_type": "DASHBOARD",
+            "hops": 5,
+            "usage_score": 870,
+            "owners": [
+              "urn:li:corpuser:raj.iyer",
+              "urn:li:corpGroup:finance"
+            ],
+            "severity": "medium"
+          },
+          {
+            "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+            "name": "agg_zone_demand",
+            "entity_type": "DATASET",
+            "hops": 3,
+            "usage_score": 868,
+            "owners": [
+              "urn:li:corpuser:sam.patel",
+              "urn:li:corpGroup:analytics"
+            ],
+            "severity": "medium"
+          },
+          {
+            "urn": "urn:li:dashboard:(looker,oncall_demo_driver_ops)",
+            "name": "Driver Ops",
+            "entity_type": "DASHBOARD",
+            "hops": 5,
+            "usage_score": 410,
+            "owners": [
+              "urn:li:corpuser:nina.alvarez",
+              "urn:li:corpGroup:ml-platform"
+            ],
+            "severity": "medium"
+          },
+          {
+            "urn": "urn:li:chart:(looker,oncall_demo_driver_leaderboard)",
+            "name": "Driver Leaderboard",
+            "entity_type": "CHART",
+            "hops": 4,
+            "usage_score": 380,
+            "owners": [],
+            "severity": "low"
+          },
+          {
+            "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.ml.trip_eta_features,PROD)",
+            "name": "trip_eta_features",
+            "entity_type": "DATASET",
+            "hops": 3,
+            "usage_score": 364,
+            "owners": [
+              "urn:li:corpuser:nina.alvarez",
+              "urn:li:corpGroup:ml-platform"
+            ],
+            "severity": "low"
+          },
+          {
+            "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+            "name": "stg_trips",
+            "entity_type": "DATASET",
+            "hops": 1,
+            "usage_score": 91,
+            "owners": [
+              "urn:li:corpuser:sam.patel",
+              "urn:li:corpGroup:analytics"
+            ],
+            "severity": "low"
+          },
+          {
+            "urn": "urn:li:mlModel:(urn:li:dataPlatform:mlflow,oncall_demo_eta_predictor,PROD)",
+            "name": "oncall_demo_eta_predictor",
+            "entity_type": "MLMODEL",
+            "hops": 5,
+            "usage_score": 0,
+            "owners": [
+              "urn:li:corpuser:nina.alvarez",
+              "urn:li:corpGroup:ml-platform"
+            ],
+            "severity": "low"
+          }
+        ],
+        "recommended_action": "The on-call data engineer must restore raw trips ingestion, then rerun stg_trips -> fct_trips -> all downstream aggregates and features. Declare recovery only after trips_raw freshness is within 6h and assertions pass on stg_trips, fct_trips, and agg_zone_demand.",
+        "prevention": "Add a 6h freshness alert on trips_raw and a circuit breaker that blocks downstream publication when trips_raw breaches it. Add named catalog owners and runbook links for Rides by Hour, Revenue Trend, Zone Demand Heatmap, and Driver Leaderboard.",
+        "recalled_incident_ids": [
+          "run_93130e4fb6f84e58"
+        ],
+        "confidence": "high"
+      }
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 207,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:09:51.386Z",
+    "kind": "causal_path",
+    "nodes": [
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+        "name": "agg_zone_demand",
+        "hops_from_symptom": 0,
+        "verdict": "broken",
+        "evidence": [
+          "Assertion: 90 rows versus expected 500..40,000.",
+          "Row count fell from 21,400 to 90 (-99.58%).",
+          "Freshness healthy: 1.22h versus 6h SLA.",
+          "Live schema has five fields; drift unknown because no downstream dependencies were available."
+        ]
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+        "name": "fct_trips",
+        "hops_from_symptom": 1,
+        "verdict": "broken",
+        "evidence": [
+          "Assertion: 3,120 rows versus expected 50,000..2,000,000.",
+          "Row count fell from 1,281,900 to 3,120 (-99.76%).",
+          "Freshness healthy: 1.23h versus 6h SLA.",
+          "Schema healthy, including pickup_ts."
+        ]
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+        "name": "stg_trips",
+        "hops_from_symptom": 2,
+        "verdict": "broken",
+        "evidence": [
+          "Assertion: 3,120 rows versus expected 50,000..2,500,000.",
+          "Row count fell from 1,281,900 to 3,120 (-99.76%).",
+          "Freshness broken: 30.03h versus 6h SLA.",
+          "Schema healthy, including pickup_ts."
+        ]
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+        "name": "trips_raw",
+        "hops_from_symptom": 3,
+        "verdict": "root_cause",
+        "evidence": [
+          "Freshness broken: 31.01h versus 6h SLA; 25.01h overdue.",
+          "Latest and previous row counts both 1,284,500 (0.0% change).",
+          "Schema healthy with pickup_ts present; no assertions configured.",
+          "Source status confirmed.",
+          "One-hop upstream lineage returned zero; confirm_no_upstreams returned confirmed."
+        ]
+      }
+    ]
+  },
+  {
+    "seq": 208,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:09:51.386Z",
+    "kind": "blast_radius",
+    "items": [
+      {
+        "urn": "urn:li:dashboard:(looker,oncall_demo_exec_daily_ops)",
+        "name": "Exec Daily Ops",
+        "entity_type": "DASHBOARD",
+        "hops": 5,
+        "usage_score": 3100,
+        "owners": [
+          "urn:li:corpuser:dana.wu",
+          "urn:li:corpGroup:exec"
+        ],
+        "severity": "critical"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+        "name": "fct_trips",
+        "entity_type": "DATASET",
+        "hops": 2,
+        "usage_score": 2121,
+        "owners": [
+          "urn:li:corpuser:sam.patel",
+          "urn:li:corpGroup:analytics"
+        ],
+        "severity": "critical"
+      },
+      {
+        "urn": "urn:li:chart:(looker,oncall_demo_rides_by_hour)",
+        "name": "Rides by Hour",
+        "entity_type": "CHART",
+        "hops": 4,
+        "usage_score": 1840,
+        "owners": [],
+        "severity": "critical"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+        "name": "agg_daily_rides",
+        "entity_type": "DATASET",
+        "hops": 3,
+        "usage_score": 1673,
+        "owners": [
+          "urn:li:corpuser:sam.patel",
+          "urn:li:corpGroup:analytics"
+        ],
+        "severity": "high"
+      },
+      {
+        "urn": "urn:li:chart:(looker,oncall_demo_revenue_trend)",
+        "name": "Revenue Trend",
+        "entity_type": "CHART",
+        "hops": 4,
+        "usage_score": 1420,
+        "owners": [],
+        "severity": "high"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_revenue,PROD)",
+        "name": "fct_revenue",
+        "entity_type": "DATASET",
+        "hops": 2,
+        "usage_score": 1169,
+        "owners": [
+          "urn:li:corpuser:raj.iyer",
+          "urn:li:corpGroup:finance"
+        ],
+        "severity": "high"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_driver_earnings,PROD)",
+        "name": "agg_driver_earnings",
+        "entity_type": "DATASET",
+        "hops": 3,
+        "usage_score": 1043,
+        "owners": [
+          "urn:li:corpuser:raj.iyer",
+          "urn:li:corpGroup:finance"
+        ],
+        "severity": "high"
+      },
+      {
+        "urn": "urn:li:chart:(looker,oncall_demo_zone_heatmap)",
+        "name": "Zone Demand Heatmap",
+        "entity_type": "CHART",
+        "hops": 4,
+        "usage_score": 960,
+        "owners": [],
+        "severity": "medium"
+      },
+      {
+        "urn": "urn:li:dashboard:(looker,oncall_demo_finance_review)",
+        "name": "Finance Revenue Review",
+        "entity_type": "DASHBOARD",
+        "hops": 5,
+        "usage_score": 870,
+        "owners": [
+          "urn:li:corpuser:raj.iyer",
+          "urn:li:corpGroup:finance"
+        ],
+        "severity": "medium"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+        "name": "agg_zone_demand",
+        "entity_type": "DATASET",
+        "hops": 3,
+        "usage_score": 868,
+        "owners": [
+          "urn:li:corpuser:sam.patel",
+          "urn:li:corpGroup:analytics"
+        ],
+        "severity": "medium"
+      },
+      {
+        "urn": "urn:li:dashboard:(looker,oncall_demo_driver_ops)",
+        "name": "Driver Ops",
+        "entity_type": "DASHBOARD",
+        "hops": 5,
+        "usage_score": 410,
+        "owners": [
+          "urn:li:corpuser:nina.alvarez",
+          "urn:li:corpGroup:ml-platform"
+        ],
+        "severity": "medium"
+      },
+      {
+        "urn": "urn:li:chart:(looker,oncall_demo_driver_leaderboard)",
+        "name": "Driver Leaderboard",
+        "entity_type": "CHART",
+        "hops": 4,
+        "usage_score": 380,
+        "owners": [],
+        "severity": "low"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.ml.trip_eta_features,PROD)",
+        "name": "trip_eta_features",
+        "entity_type": "DATASET",
+        "hops": 3,
+        "usage_score": 364,
+        "owners": [
+          "urn:li:corpuser:nina.alvarez",
+          "urn:li:corpGroup:ml-platform"
+        ],
+        "severity": "low"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+        "name": "stg_trips",
+        "entity_type": "DATASET",
+        "hops": 1,
+        "usage_score": 91,
+        "owners": [
+          "urn:li:corpuser:sam.patel",
+          "urn:li:corpGroup:analytics"
+        ],
+        "severity": "low"
+      },
+      {
+        "urn": "urn:li:mlModel:(urn:li:dataPlatform:mlflow,oncall_demo_eta_predictor,PROD)",
+        "name": "oncall_demo_eta_predictor",
+        "entity_type": "MLMODEL",
+        "hops": 5,
+        "usage_score": 0,
+        "owners": [
+          "urn:li:corpuser:nina.alvarez",
+          "urn:li:corpGroup:ml-platform"
+        ],
+        "severity": "low"
+      }
+    ],
+    "totals": {
+      "datasets": 7,
+      "charts": 4,
+      "dashboards": 3,
+      "models": 1
+    }
+  },
+  {
+    "seq": 209,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:09:51.386Z",
+    "kind": "postmortem",
+    "postmortem_id": "run_332299d97bdd4b34",
+    "title": "Stale trips_raw ingestion caused downstream trip-volume collapse",
+    "datahub_urls": {
+      "structured_property": "http://localhost:9002/dataset/urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+      "document": "http://localhost:9002/document/urn:li:document:oncall-postmortem-run_332299d97bdd4b34",
+      "link": "http://localhost:3001/memory/run_332299d97bdd4b34"
+    }
+  },
+  {
+    "seq": 210,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:09:51.391Z",
+    "kind": "tool_result",
+    "call_id": "call_HQp2dOtkDA4AztQOGkfyLaZB",
+    "tool": "write_postmortem",
+    "ok": true,
+    "duration_ms": 405,
+    "summary": "{\"postmortem_id\": \"run_332299d97bdd4b34\", \"document_urn\": \"urn:li:document:oncall-postmortem-run_332299d97bdd4b34\", \"datahub_urls\": {\"structured_property\": \"http://localhost:9002/dataset/urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)\", \"document\": \"http://localhost:9002/d",
+    "payload": {
+      "postmortem_id": "run_332299d97bdd4b34",
+      "document_urn": "urn:li:document:oncall-postmortem-run_332299d97bdd4b34",
+      "datahub_urls": {
+        "structured_property": "http://localhost:9002/dataset/urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+        "document": "http://localhost:9002/document/urn:li:document:oncall-postmortem-run_332299d97bdd4b34",
+        "link": "http://localhost:3001/memory/run_332299d97bdd4b34"
+      },
+      "errors": {},
+      "authoritative_counts": {
+        "blast_radius_total": 15,
+        "datasets": 7,
+        "charts": 4,
+        "dashboards": 3,
+        "ml_models": 1,
+        "causal_path_hops": 3,
+        "instruction": "Use blast_radius_total VERBATIM in your final summary. Do not re-count, do not substitute a lineage facet total, and do not round."
+      }
+    }
+  },
+  {
+    "seq": 211,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:09:53.907Z",
+    "kind": "tool_call",
+    "call_id": "call_tBgEzuA87CyRrCWDSJ9UZUeE",
+    "tool": "resolve_incident",
+    "origin": "native",
+    "args": {
+      "incident_urn": "urn:li:incident:oncall-09394f97533036eeb0d551ed97a32b58",
+      "stage": "INVESTIGATION",
+      "message": "Root cause confirmed at stale source trips_raw; evidence, tags, owner notifications, and post-mortem are complete. Human remediation is still required: restore ingestion, rerun downstream pipelines, and validate freshness and assertions before marking fixed."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 212,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:09:53.972Z",
+    "kind": "action",
+    "action": "resolve",
+    "summary": "Incident moved to INVESTIGATION",
+    "urns": [
+      "urn:li:incident:oncall-09394f97533036eeb0d551ed97a32b58"
+    ],
+    "datahub_url": "http://localhost:9002/dataset/urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)/Incidents",
+    "detail": "Root cause confirmed at stale source trips_raw; evidence, tags, owner notifications, and post-mortem are complete. Human remediation is still required: restore ingestion, rerun downstream pipelines, and validate freshness and assertions before marking fixed.",
+    "ok": true
+  },
+  {
+    "seq": 213,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:09:53.973Z",
+    "kind": "tool_result",
+    "call_id": "call_tBgEzuA87CyRrCWDSJ9UZUeE",
+    "tool": "resolve_incident",
+    "ok": true,
+    "duration_ms": 67,
+    "summary": "{\"action\": \"resolve\", \"summary\": \"Incident moved to INVESTIGATION\", \"urns\": [\"urn:li:incident:oncall-09394f97533036eeb0d551ed97a32b58\"], \"datahub_url\": \"http://localhost:9002/dataset/urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)/Incidents\", \"detail\": \"Root cause ",
+    "payload": {
+      "action": "resolve",
+      "summary": "Incident moved to INVESTIGATION",
+      "urns": [
+        "urn:li:incident:oncall-09394f97533036eeb0d551ed97a32b58"
+      ],
+      "datahub_url": "http://localhost:9002/dataset/urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)/Incidents",
+      "detail": "Root cause confirmed at stale source trips_raw; evidence, tags, owner notifications, and post-mortem are complete. Human remediation is still required: restore ingestion, rerun downstream pipelines, and validate freshness and assertions before marking fixed.",
+      "ok": true
+    }
+  },
+  {
+    "seq": 214,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:09:55.749Z",
+    "kind": "tool_call",
+    "call_id": "call_TllwQeOaGKWWX4JKEWFB3qaN",
+    "tool": "set_phase",
+    "origin": "native",
+    "args": {
+      "phase": "done",
+      "note": "Triage is complete: root cause and causal path are confirmed, 15 supported impacts were ranked and tagged, owners were notified, and the incident remains in INVESTIGATION pending human pipeline restoration and reruns."
+    },
+    "agent": "On-Call Data Engineer"
+  },
+  {
+    "seq": 215,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:09:55.769Z",
+    "kind": "phase",
+    "phase": "done",
+    "note": "Triage is complete: root cause and causal path are confirmed, 15 supported impacts were ranked and tagged, owners were notified, and the incident remains in INVESTIGATION pending human pipeline restoration and reruns.",
+    "phase_index": 6
+  },
+  {
+    "seq": 216,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:09:55.771Z",
+    "kind": "tool_result",
+    "call_id": "call_TllwQeOaGKWWX4JKEWFB3qaN",
+    "tool": "set_phase",
+    "ok": true,
+    "duration_ms": 22,
+    "summary": "{\"phase\": \"done\", \"accepted\": true}",
+    "payload": {
+      "phase": "done",
+      "accepted": true
+    }
+  },
+  {
+    "seq": 217,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:09:59.562Z",
+    "kind": "agent_message",
+    "agent": "On-Call Data Engineer",
+    "text": "`agg_zone_demand` collapsed to 90 rows versus 500\u201340,000 expected. Root cause is `trips_raw`, stale 31.01 hours against a 6-hour SLA. The chain affects **15 assets**, led by Exec Daily Ops, `fct_trips`, and Rides by Hour. Incident `oncall-09394f97533036eeb0d551ed97a32b58` remains in INVESTIGATION; owners were notified and assets tagged. A human must restore raw ingestion, rerun downstream pipelines, and verify freshness and row-count assertions.",
+    "delta": false
+  },
+  {
+    "seq": 218,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:09:59.581Z",
+    "kind": "metric",
+    "name": "tool_calls",
+    "value": 72
+  },
+  {
+    "seq": 219,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:09:59.581Z",
+    "kind": "metric",
+    "name": "hops_walked",
+    "value": 3
+  },
+  {
+    "seq": 220,
+    "run_id": "run_332299d97bdd4b34",
+    "ts": "2026-08-01T02:09:59.581Z",
+    "kind": "run_completed",
+    "status": "succeeded",
+    "summary": "`agg_zone_demand` collapsed to 90 rows versus 500\u201340,000 expected. Root cause is `trips_raw`, stale 31.01 hours against a 6-hour SLA. The chain affects **15 assets**, led by Exec Daily Ops, `fct_trips`, and Rides by Hour. Incident `oncall-09394f97533036eeb0d551ed97a32b58` remains in INVESTIGATION; owners were notified and assets tagged. A human must restore raw ingestion, rerun downstream pipelines, and verify freshness and row-count assertions.",
+    "metrics": {
+      "time_to_root_cause_s": 33.182,
+      "tool_calls": 72,
+      "hops_walked": 3,
+      "recall_used": 1
+    },
+    "duration_s": 205.121
+  }
+]

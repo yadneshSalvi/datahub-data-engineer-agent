@@ -11,6 +11,28 @@ tracking down owners. The hard part is not producing a plausible explanation; it
 enough catalog evidence to identify the first intrinsically broken node, act without crossing the
 wrong boundary, and preserve that evidence so the same investigation is never paid for twice.
 
+## Demo video
+
+**2 minutes 13 seconds, every frame the real app against a live DataHub quickstart.**
+
+<!-- Replace this line with the YouTube link once uploaded. -->
+> **Watch:** _upload pending — see [`dist-video/UPLOAD.md`](dist-video/UPLOAD.md) for the cut,
+> subtitles, title, description and chapter timestamps._
+
+| | |
+| --- | --- |
+| 0:00 | The problem — the 2 a.m. page, and hours of walking lineage by hand |
+| 0:17 | A staged failure: an ingestion job stalls and quality signals fire |
+| 0:27 | One click starts the triage |
+| 0:36 | The investigation — memory first, then lineage upstream hop by hop |
+| 1:17 | Blast radius ranked by usage, then the write-back landing inside DataHub |
+| 1:40 | The same root cause breaks a different table — the agent recalls its own post-mortem |
+| 1:58 | Cold versus memory-assisted, side by side |
+
+The narration deliberately states no percentages: the agent is non-deterministic and the figures
+move between runs, so the on-screen values and captions carry them instead. See
+[the memory loop, measured](#the-memory-loop-measured) for the basis of the comparison.
+
 ## Architecture
 
 ```mermaid
@@ -99,10 +121,12 @@ post-mortem — so the only difference is what the agent remembered.
 
 | Run                                    |                                  Recall | Time to root cause | Tool calls |
 | -------------------------------------- | --------------------------------------: | -----------------: | ---------: |
-| Cold — symptom on `agg_daily_rides`     |                         No prior memory |            143.5 s |         92 |
-| Repeat — symptom on `agg_zone_demand`   | Prior post-mortem recalled and verified |             22.5 s |         71 |
+| Cold — symptom on `agg_daily_rides`     |                         No prior memory |             87.5 s |         93 |
+| Repeat — symptom on `agg_zone_demand`   | Prior post-mortem recalled and verified |             33.2 s |         72 |
 
-`GET /api/compare` reports **84% less time to root cause and 23% fewer tool calls** for this pair.
+`GET /api/compare` reports **62% less time to root cause and 23% fewer tool calls** for this pair.
+These are the two runs shown in the demo video, so the figures on screen and the figures here
+are the same pair.
 
 The saving is structural, not a shortcut. Cold, the agent must walk every upstream branch capable
 of producing the signal and prove each one healthy — it examined and cleared the `stg_zones` /

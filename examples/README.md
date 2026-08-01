@@ -8,24 +8,24 @@ basis of the measurement in the root README.
 
 | Run                                | Trigger (symptom)                          | Root cause found | Recall                             | Time to root cause | Tool calls |
 | ---------------------------------- | ------------------------------------------ | ---------------- | ---------------------------------- | -----------------: | ---------: |
-| `run_f1243c12dea94730` (**cold**)   | `marts.agg_daily_rides` row-count assertion | `raw.trips_raw`  | none                               |            143.5 s |         92 |
-| `run_7734eb410fc84266` (**recall**) | `marts.agg_zone_demand` row-count assertion | `raw.trips_raw`  | prior post-mortem, 3 hops upstream |             22.5 s |         71 |
+| `run_93130e4fb6f84e58` (**cold**)   | `marts.agg_daily_rides` row-count assertion | `raw.trips_raw`  | none                               |             87.5 s |         93 |
+| `run_332299d97bdd4b34` (**recall**) | `marts.agg_zone_demand` row-count assertion | `raw.trips_raw`  | prior post-mortem, 3 hops upstream |             33.2 s |         72 |
 
 Same root cause, **different symptoms**, with `demo/reset.py --keep-memory` between them — so the
-only difference is what the agent remembered.
+only difference is what the agent remembered. **These are the two runs shown in the demo video.**
 
 ## Files
 
 ```
 postmortems/
-  cold-run_f1243c12dea94730.{md,json}       post-mortem the cold run wrote back to DataHub
-  recall-run_7734eb410fc84266.{md,json}     post-mortem the memory-assisted run wrote back
+  cold-run_93130e4fb6f84e58.{md,json}       post-mortem the cold run wrote back to DataHub
+  recall-run_332299d97bdd4b34.{md,json}     post-mortem the memory-assisted run wrote back
 runs/
-  cold-run_f1243c12dea94730-events.json     full 279-frame event log
-  recall-run_7734eb410fc84266-events.json   full 221-frame event log
+  cold-run_93130e4fb6f84e58-events.json     full 282-frame event log
+  recall-run_332299d97bdd4b34-events.json   full 220-frame event log
 notifications/
-  cold-run_f1243c12dea94730.json            exact owner-notification payload
-  recall-run_7734eb410fc84266.json          exact payload from the recall run
+  cold-run_93130e4fb6f84e58.json            exact owner-notification payload
+  recall-run_332299d97bdd4b34.json          exact payload from the recall run
 incidents/
   cold-incident.json, recall-incident.json  the raise_incident inputs and resulting URNs
 snapshots/

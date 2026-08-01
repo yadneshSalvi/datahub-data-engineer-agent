@@ -1,0 +1,14 @@
+{
+  "body_markdown": "**Causal chain:** `trips_raw` \u2192 `stg_trips` \u2192 `fct_trips` \u2192 `agg_zone_demand`.\n\n`trips_raw` is 31.01h stale against a 6h SLA. The symptom has 90 rows versus expected 500..40,000, down 99.58%. Highest-use impacts are Exec Daily Ops (3,100 weekly views), fct_trips (2,121 queries/30d), and Rides by Hour (1,840 weekly views; no catalog owner recorded).\n\nPlease restore raw trips ingestion, then rerun `stg_trips` \u2192 `fct_trips` \u2192 all downstream aggregates/features and validate freshness and row-count assertions. Incident: `urn:li:incident:oncall-09394f97533036eeb0d551ed97a32b58`.",
+  "incident_urn": "urn:li:incident:oncall-09394f97533036eeb0d551ed97a32b58",
+  "owner_urns": [
+    "urn:li:corpuser:maya.chen",
+    "urn:li:corpGroup:data-platform",
+    "urn:li:corpuser:dana.wu",
+    "urn:li:corpGroup:exec",
+    "urn:li:corpuser:sam.patel",
+    "urn:li:corpGroup:analytics"
+  ],
+  "run_id": "run_332299d97bdd4b34",
+  "subject": "CRITICAL: trips_raw staleness collapsed agg_zone_demand volume"
+}

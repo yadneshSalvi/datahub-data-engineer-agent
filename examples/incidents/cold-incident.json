@@ -1,8 +1,8 @@
 {
-  "provenance": "raise_incident action from cold-run_f1243c12dea94730-events.json",
-  "incident_urn": "urn:li:incident:d1346574-d7ea-4a98-9453-c5cd062e7adb",
+  "provenance": "raise_incident action from cold-run_93130e4fb6f84e58-events.json",
+  "incident_urn": "urn:li:incident:oncall-b4b3a0fa025b93c7cb83b8799547adc7",
   "resource_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
-  "summary": "Active critical volume incident",
+  "summary": "Active critical freshness incident",
   "datahub_url": "http://localhost:9002/dataset/urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)/Incidents",
   "input": {}
 }

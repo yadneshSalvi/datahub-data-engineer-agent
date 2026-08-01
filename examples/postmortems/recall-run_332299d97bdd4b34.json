@@ -1,0 +1,260 @@
+{
+  "id": "run_332299d97bdd4b34",
+  "run_id": "run_332299d97bdd4b34",
+  "created_at": "2026-08-01T02:09:51.385Z",
+  "title": "Stale trips_raw ingestion caused downstream trip-volume collapse",
+  "symptom": "agg_zone_demand row-count assertion failed: 90 rows versus expected 500..40,000; previous row count 21,400 (-99.58%).",
+  "symptom_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+  "root_cause_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+  "root_cause_name": "trips_raw",
+  "doc_markdown": "# Stale trips_raw ingestion caused downstream trip-volume collapse\n\n**Symptom:** agg_zone_demand row-count assertion failed: 90 rows versus expected 500..40,000; previous row count 21,400 (-99.58%).\n\n**Root cause:** trips_raw ingestion stopped advancing: freshness was 31.01h against a 6h SLA, while row count remained 1,284,500 and schema stayed healthy. Zero upstream lineage was returned and confirm_no_upstreams was confirmed, so trips_raw is the first unhealthy asset and satisfies the stop rule.\n\n## Causal path\nagg_zone_demand \u2192 fct_trips \u2192 stg_trips \u2192 trips_raw\n\n## Evidence\n- Exact lineage: trips_raw -> stg_trips -> fct_trips -> agg_zone_demand.\n- Recall fast path identified trips_raw from run_93130e4fb6f84e58; live evidence verified the diagnosis.\n- DataHub reported 16 downstream facets: 15 supported assets ranked below and one unsupported MLFeature.\n\n## Blast radius\n- CRITICAL: Exec Daily Ops (3100 usage score)\n- CRITICAL: fct_trips (2121 usage score)\n- CRITICAL: Rides by Hour (1840 usage score)\n- HIGH: agg_daily_rides (1673 usage score)\n- HIGH: Revenue Trend (1420 usage score)\n- HIGH: fct_revenue (1169 usage score)\n- HIGH: agg_driver_earnings (1043 usage score)\n- MEDIUM: Zone Demand Heatmap (960 usage score)\n- MEDIUM: Finance Revenue Review (870 usage score)\n- MEDIUM: agg_zone_demand (868 usage score)\n- MEDIUM: Driver Ops (410 usage score)\n- LOW: Driver Leaderboard (380 usage score)\n- LOW: trip_eta_features (364 usage score)\n- LOW: stg_trips (91 usage score)\n- LOW: oncall_demo_eta_predictor (0 usage score)\n\n## Human action\nThe on-call data engineer must restore raw trips ingestion, then rerun stg_trips -> fct_trips -> all downstream aggregates and features. Declare recovery only after trips_raw freshness is within 6h and assertions pass on stg_trips, fct_trips, and agg_zone_demand.\n\n## Prevention\nAdd a 6h freshness alert on trips_raw and a circuit breaker that blocks downstream publication when trips_raw breaches it. Add named catalog owners and runbook links for Rides by Hour, Revenue Trend, Zone Demand Heatmap, and Driver Leaderboard.\n",
+  "doc_json": {
+    "incident_id": "run_332299d97bdd4b34",
+    "title": "Stale trips_raw ingestion caused downstream trip-volume collapse",
+    "symptom": "agg_zone_demand row-count assertion failed: 90 rows versus expected 500..40,000; previous row count 21,400 (-99.58%).",
+    "symptom_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+    "root_cause_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+    "root_cause_name": "trips_raw",
+    "root_cause_summary": "trips_raw ingestion stopped advancing: freshness was 31.01h against a 6h SLA, while row count remained 1,284,500 and schema stayed healthy. Zero upstream lineage was returned and confirm_no_upstreams was confirmed, so trips_raw is the first unhealthy asset and satisfies the stop rule.",
+    "causal_path": [
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+        "name": "agg_zone_demand",
+        "hops_from_symptom": 0,
+        "verdict": "broken",
+        "evidence": [
+          "Assertion: 90 rows versus expected 500..40,000.",
+          "Row count fell from 21,400 to 90 (-99.58%).",
+          "Freshness healthy: 1.22h versus 6h SLA.",
+          "Live schema has five fields; drift unknown because no downstream dependencies were available."
+        ]
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+        "name": "fct_trips",
+        "hops_from_symptom": 1,
+        "verdict": "broken",
+        "evidence": [
+          "Assertion: 3,120 rows versus expected 50,000..2,000,000.",
+          "Row count fell from 1,281,900 to 3,120 (-99.76%).",
+          "Freshness healthy: 1.23h versus 6h SLA.",
+          "Schema healthy, including pickup_ts."
+        ]
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+        "name": "stg_trips",
+        "hops_from_symptom": 2,
+        "verdict": "broken",
+        "evidence": [
+          "Assertion: 3,120 rows versus expected 50,000..2,500,000.",
+          "Row count fell from 1,281,900 to 3,120 (-99.76%).",
+          "Freshness broken: 30.03h versus 6h SLA.",
+          "Schema healthy, including pickup_ts."
+        ]
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+        "name": "trips_raw",
+        "hops_from_symptom": 3,
+        "verdict": "root_cause",
+        "evidence": [
+          "Freshness broken: 31.01h versus 6h SLA; 25.01h overdue.",
+          "Latest and previous row counts both 1,284,500 (0.0% change).",
+          "Schema healthy with pickup_ts present; no assertions configured.",
+          "Source status confirmed.",
+          "One-hop upstream lineage returned zero; confirm_no_upstreams returned confirmed."
+        ]
+      }
+    ],
+    "evidence": [
+      "Exact lineage: trips_raw -> stg_trips -> fct_trips -> agg_zone_demand.",
+      "Recall fast path identified trips_raw from run_93130e4fb6f84e58; live evidence verified the diagnosis.",
+      "DataHub reported 16 downstream facets: 15 supported assets ranked below and one unsupported MLFeature."
+    ],
+    "blast_radius": [
+      {
+        "urn": "urn:li:dashboard:(looker,oncall_demo_exec_daily_ops)",
+        "name": "Exec Daily Ops",
+        "entity_type": "DASHBOARD",
+        "hops": 5,
+        "usage_score": 3100,
+        "owners": [
+          "urn:li:corpuser:dana.wu",
+          "urn:li:corpGroup:exec"
+        ],
+        "severity": "critical"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
+        "name": "fct_trips",
+        "entity_type": "DATASET",
+        "hops": 2,
+        "usage_score": 2121,
+        "owners": [
+          "urn:li:corpuser:sam.patel",
+          "urn:li:corpGroup:analytics"
+        ],
+        "severity": "critical"
+      },
+      {
+        "urn": "urn:li:chart:(looker,oncall_demo_rides_by_hour)",
+        "name": "Rides by Hour",
+        "entity_type": "CHART",
+        "hops": 4,
+        "usage_score": 1840,
+        "owners": [],
+        "severity": "critical"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+        "name": "agg_daily_rides",
+        "entity_type": "DATASET",
+        "hops": 3,
+        "usage_score": 1673,
+        "owners": [
+          "urn:li:corpuser:sam.patel",
+          "urn:li:corpGroup:analytics"
+        ],
+        "severity": "high"
+      },
+      {
+        "urn": "urn:li:chart:(looker,oncall_demo_revenue_trend)",
+        "name": "Revenue Trend",
+        "entity_type": "CHART",
+        "hops": 4,
+        "usage_score": 1420,
+        "owners": [],
+        "severity": "high"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_revenue,PROD)",
+        "name": "fct_revenue",
+        "entity_type": "DATASET",
+        "hops": 2,
+        "usage_score": 1169,
+        "owners": [
+          "urn:li:corpuser:raj.iyer",
+          "urn:li:corpGroup:finance"
+        ],
+        "severity": "high"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_driver_earnings,PROD)",
+        "name": "agg_driver_earnings",
+        "entity_type": "DATASET",
+        "hops": 3,
+        "usage_score": 1043,
+        "owners": [
+          "urn:li:corpuser:raj.iyer",
+          "urn:li:corpGroup:finance"
+        ],
+        "severity": "high"
+      },
+      {
+        "urn": "urn:li:chart:(looker,oncall_demo_zone_heatmap)",
+        "name": "Zone Demand Heatmap",
+        "entity_type": "CHART",
+        "hops": 4,
+        "usage_score": 960,
+        "owners": [],
+        "severity": "medium"
+      },
+      {
+        "urn": "urn:li:dashboard:(looker,oncall_demo_finance_review)",
+        "name": "Finance Revenue Review",
+        "entity_type": "DASHBOARD",
+        "hops": 5,
+        "usage_score": 870,
+        "owners": [
+          "urn:li:corpuser:raj.iyer",
+          "urn:li:corpGroup:finance"
+        ],
+        "severity": "medium"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
+        "name": "agg_zone_demand",
+        "entity_type": "DATASET",
+        "hops": 3,
+        "usage_score": 868,
+        "owners": [
+          "urn:li:corpuser:sam.patel",
+          "urn:li:corpGroup:analytics"
+        ],
+        "severity": "medium"
+      },
+      {
+        "urn": "urn:li:dashboard:(looker,oncall_demo_driver_ops)",
+        "name": "Driver Ops",
+        "entity_type": "DASHBOARD",
+        "hops": 5,
+        "usage_score": 410,
+        "owners": [
+          "urn:li:corpuser:nina.alvarez",
+          "urn:li:corpGroup:ml-platform"
+        ],
+        "severity": "medium"
+      },
+      {
+        "urn": "urn:li:chart:(looker,oncall_demo_driver_leaderboard)",
+        "name": "Driver Leaderboard",
+        "entity_type": "CHART",
+        "hops": 4,
+        "usage_score": 380,
+        "owners": [],
+        "severity": "low"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.ml.trip_eta_features,PROD)",
+        "name": "trip_eta_features",
+        "entity_type": "DATASET",
+        "hops": 3,
+        "usage_score": 364,
+        "owners": [
+          "urn:li:corpuser:nina.alvarez",
+          "urn:li:corpGroup:ml-platform"
+        ],
+        "severity": "low"
+      },
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
+        "name": "stg_trips",
+        "entity_type": "DATASET",
+        "hops": 1,
+        "usage_score": 91,
+        "owners": [
+          "urn:li:corpuser:sam.patel",
+          "urn:li:corpGroup:analytics"
+        ],
+        "severity": "low"
+      },
+      {
+        "urn": "urn:li:mlModel:(urn:li:dataPlatform:mlflow,oncall_demo_eta_predictor,PROD)",
+        "name": "oncall_demo_eta_predictor",
+        "entity_type": "MLMODEL",
+        "hops": 5,
+        "usage_score": 0,
+        "owners": [
+          "urn:li:corpuser:nina.alvarez",
+          "urn:li:corpGroup:ml-platform"
+        ],
+        "severity": "low"
+      }
+    ],
+    "recommended_action": "The on-call data engineer must restore raw trips ingestion, then rerun stg_trips -> fct_trips -> all downstream aggregates and features. Declare recovery only after trips_raw freshness is within 6h and assertions pass on stg_trips, fct_trips, and agg_zone_demand.",
+    "prevention": "Add a 6h freshness alert on trips_raw and a circuit breaker that blocks downstream publication when trips_raw breaches it. Add named catalog owners and runbook links for Rides by Hour, Revenue Trend, Zone Demand Heatmap, and Driver Leaderboard.",
+    "recalled_incident_ids": [
+      "run_93130e4fb6f84e58"
+    ],
+    "confidence": "high"
+  },
+  "datahub_document_urn": "urn:li:document:oncall-postmortem-run_332299d97bdd4b34",
+  "datahub_links": [
+    "http://localhost:9002/dataset/urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
+    "http://localhost:9002/document/urn:li:document:oncall-postmortem-run_332299d97bdd4b34",
+    "http://localhost:3001/memory/run_332299d97bdd4b34"
+  ],
+  "reused_count": 0,
+  "used_by_runs": []
+}

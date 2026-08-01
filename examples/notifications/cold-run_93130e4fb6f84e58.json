@@ -1,0 +1,14 @@
+{
+  "body_markdown": "`raw.trips_raw` \u2192 `staging.stg_trips` \u2192 `marts.fct_trips` \u2192 `marts.agg_daily_rides`\n\nThe source feed is 26.02 hours stale against a 6-hour SLA. This propagated to 3,120 rows in both `stg_trips` and `fct_trips` (previously 1,281,900), and 4 rows in `agg_daily_rides` (previously 182; assertion floor 25).\n\nHighest-use impacts include Exec Daily Ops (3,100 weekly views), `fct_trips` (2,121 queries/30d), and Rides by Hour (1,840 weekly views; no direct catalog owner). Incident: `urn:li:incident:oncall-b4b3a0fa025b93c7cb83b8799547adc7`.\n\nHuman action required: restore the trips ingestion, rerun `stg_trips` \u2192 `fct_trips` \u2192 downstream aggregates/features, then verify freshness and row-count assertions. No pipeline fix has been applied by the on-call agent.",
+  "incident_urn": "urn:li:incident:oncall-b4b3a0fa025b93c7cb83b8799547adc7",
+  "owner_urns": [
+    "urn:li:corpuser:maya.chen",
+    "urn:li:corpGroup:data-platform",
+    "urn:li:corpuser:dana.wu",
+    "urn:li:corpGroup:exec",
+    "urn:li:corpuser:sam.patel",
+    "urn:li:corpGroup:analytics"
+  ],
+  "run_id": "run_93130e4fb6f84e58",
+  "subject": "CRITICAL: trips_raw stall is collapsing RideFlow daily-rides data"
+}
