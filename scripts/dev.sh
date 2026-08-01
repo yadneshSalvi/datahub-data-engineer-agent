@@ -111,13 +111,14 @@ fi
 wait_for_url "backend" "$BACKEND_URL/api/health" "$BACKEND_PID"
 
 # /api/demo/state is search-index backed and caches ~10s, so it can transiently report
-# seeded:false right after a reset. Re-check before concluding the catalog needs seeding —
-# a spurious false here triggers a surprise several-minute reseed.
+# seeded:false right after a reset. A spurious false here triggers a surprise multi-minute
+# reseed, so re-check before concluding. The window was measured at ~24s under load, so 8
+# attempts x 6s (~42s) leaves real headroom; an genuinely unseeded catalog costs 42s once.
 DEMO_STATE=""
-for _attempt in 1 2 3; do
+for _attempt in 1 2 3 4 5 6 7 8; do
   DEMO_STATE="$(curl -fsS "$BACKEND_URL/api/demo/state" || true)"
   [[ "$DEMO_STATE" == *'"seeded":true'* ]] && break
-  [[ $_attempt -lt 3 ]] && sleep 6
+  [[ $_attempt -lt 8 ]] && sleep 6
 done
 if [[ "$DEMO_STATE" != *'"seeded":true'* ]]; then
   printf '==> Demo catalog is unseeded; seeding and verifying it now\n'

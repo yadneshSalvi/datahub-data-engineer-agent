@@ -13,6 +13,7 @@ import { Separator } from "./ui/separator";
 import { Skeleton } from "./ui/skeleton";
 import { Spinner } from "./ui/spinner";
 import { Switch } from "./ui/switch";
+import { useLastKnownGood } from "../hooks/use-last-known-good";
 
 const scenarios: Array<{ id: Scenario; title: string; description: string; icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }> }> = [
   { id: "stale_upstream", title: "Stale upstream", description: "Stops the raw trips feed and creates a cascading freshness incident.", icon: Flame },
@@ -34,6 +35,8 @@ export function DemoControls() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const state = useQuery({ queryKey: ["demo-state"], queryFn: api.demoState, staleTime: 3000, refetchInterval: open ? 5000 : false });
+  // Same transient-unseeded window as the Command Deck: never show 0 entities mid-demo.
+  const entityCount = useLastKnownGood<number>(state.data?.entity_count ?? 0, (n) => n > 0);
 
   useEffect(() => () => streamRef.current?.close(), []);
   useEffect(() => {
@@ -90,7 +93,7 @@ export function DemoControls() {
         </header>
         <ScrollArea className="min-h-0 flex-1">
           <div className="space-y-6 px-6 py-6">
-            <section><div className="mb-3 flex items-center justify-between"><div><p className="section-label">01 · Foundation</p><h3 className="mt-1 font-semibold">Seed catalog</h3></div><Database className="size-4 text-fg-subtle" aria-hidden="true" /></div><div className="flex items-center justify-between rounded-xl border border-border bg-bg/35 p-4"><div><p className="text-xs font-medium text-fg">Verified demo namespace</p><p className="mt-1 text-[11px] text-fg-subtle">{state.data?.entity_count ?? 0} entities currently visible</p></div><Button size="sm" variant="secondary" disabled={running} onClick={() => void run("Catalog seed", api.seed)}>Seed</Button></div></section>
+            <section><div className="mb-3 flex items-center justify-between"><div><p className="section-label">01 · Foundation</p><h3 className="mt-1 font-semibold">Seed catalog</h3></div><Database className="size-4 text-fg-subtle" aria-hidden="true" /></div><div className="flex items-center justify-between rounded-xl border border-border bg-bg/35 p-4"><div><p className="text-xs font-medium text-fg">Verified demo namespace</p><p className="mt-1 text-[11px] text-fg-subtle">{entityCount} entities currently visible</p></div><Button size="sm" variant="secondary" disabled={running} onClick={() => void run("Catalog seed", api.seed)}>Seed</Button></div></section>
             <Separator />
             <section><p className="section-label">02 · Arm scenario</p><h3 className="mt-1 font-semibold">Choose the incident beat</h3><div className="mt-3 space-y-2">{scenarios.map((scenario) => { const Icon = scenario.icon; const armed = state.data?.armed_scenario === scenario.id; return <button type="button" key={scenario.id} disabled={running} onClick={() => void run(`Arm ${scenario.title}`, () => api.breakScenario(scenario.id))} className={cn("group flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-all duration-200", armed ? "border-brand/50 bg-brand/10" : "border-border bg-bg/25 hover:border-border-strong hover:bg-surface-2", running && "cursor-not-allowed opacity-55")}><span className={cn("grid size-9 shrink-0 place-items-center rounded-lg border", armed ? "border-brand/35 bg-brand/15 text-brand" : "border-border bg-surface text-fg-muted")}><Icon className="size-4" aria-hidden={true} /></span><span className="min-w-0 flex-1"><span className="flex items-center gap-2 text-xs font-semibold text-fg">{scenario.title}{armed && <Badge variant="brand" className="py-0.5">Armed</Badge>}</span><span className="mt-1 block text-[11px] leading-relaxed text-fg-muted">{scenario.description}</span></span></button>; })}</div></section>
             <Separator />

@@ -801,6 +801,21 @@ async def write_postmortem(ctx: ToolContext[TriageContext], postmortem: PostMort
                 where="write_postmortem",
             )
         )
+    # Hand the model the AUTHORITATIVE counts it must quote. Left to re-count from its own
+    # context it drifts — it reported "sixteen downstream assets" beside a blast radius of 15,
+    # because DataHub's lineage facets include an MLFeature we deliberately do not rank.
+    result["authoritative_counts"] = {
+        "blast_radius_total": len(context.blast_radius),
+        "datasets": totals.datasets,
+        "charts": totals.charts,
+        "dashboards": totals.dashboards,
+        "ml_models": totals.models,
+        "causal_path_hops": max(len(context.causal_path) - 1, 0),
+        "instruction": (
+            "Use blast_radius_total VERBATIM in your final summary. Do not re-count, do not "
+            "substitute a lineage facet total, and do not round."
+        ),
+    }
     return _compact_json(result)
 
 

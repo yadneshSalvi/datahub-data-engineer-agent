@@ -7,6 +7,7 @@ import { api, ApiError } from "../lib/api";
 import type { GraphNode, Signal } from "../lib/types";
 import { cn, formatCompact, formatDuration, middleTruncate, relativeTime } from "../lib/utils";
 import { useToast } from "../contexts/toast-context";
+import { useLastKnownGood } from "../hooks/use-last-known-good";
 import { HealthDonut } from "../components/health-donut";
 import { Sparkline } from "../components/sparkline";
 import { Badge } from "../components/ui/badge";
@@ -57,6 +58,8 @@ export default function CommandDeck() {
   const signals = useQuery({ queryKey: ["signals"], queryFn: api.signals, staleTime: 5000, refetchInterval: 10_000 });
   const runs = useQuery({ queryKey: ["runs", 50], queryFn: () => api.runs(50), staleTime: 5000, refetchInterval: 10_000 });
   const graph = useQuery({ queryKey: ["lineage", "whole"], queryFn: () => api.lineage(true), staleTime: 30_000 });
+  // A transient empty graph must not blank the catalog card mid-demo.
+  const stableNodes = useLastKnownGood<GraphNode[]>(graph.data?.nodes ?? [], (n) => n.length > 0);
   const triage = useMutation({ mutationFn: (signal: Signal) => api.createRun({ dataset_urn: signal.dataset_urn, signal_kind: signal.kind, signal_detail: signal.detail, assertion_urn: signal.assertion_urns[0] }), onMutate: (signal) => setTriaging(signal.id), onSuccess: ({ run_id }) => { void queryClient.invalidateQueries({ queryKey: ["runs"] }); navigate(`/runs/${run_id}`); }, onError: (error) => { const message = error instanceof ApiError ? `${error.message}${error.hint ? ` · ${error.hint}` : ""}` : "The triage run could not be started."; toast({ tone: "error", title: "Triage failed to start", message }); }, onSettled: () => setTriaging(null) });
   const trend = metrics.data?.trend ?? [];
   const firstTime = trend[0]?.time_to_root_cause_s;
@@ -85,7 +88,7 @@ export default function CommandDeck() {
             )}
           </div>
         </Card>
-        <CatalogSnapshot nodes={graph.data?.nodes ?? []} loading={graph.isLoading} error={graph.isError} />
+        <CatalogSnapshot nodes={stableNodes} loading={graph.isLoading} error={graph.isError} />
       </div>
       <section className="mt-4"><div className="mb-2.5 flex items-center justify-between"><div><p className="section-label">Recent runs</p><p className="mt-1 text-xs text-fg-muted">Permanent, replayable investigation records</p></div><span className="flex items-center gap-1.5 text-[10px] text-fg-subtle"><CircleDot className="size-3 text-info" aria-hidden="true" />Cyan marks memory-assisted runs</span></div>{runs.isLoading ? <div className="grid grid-cols-3 gap-3">{Array.from({ length: 3 }, (_, index) => <Skeleton key={index} className="h-[132px] rounded-card" />)}</div> : runs.isError ? <EmptyState icon={AlertTriangle} title="Run history unavailable" description="Stored investigations could not be loaded." action={<Button size="sm" variant="secondary" onClick={() => void runs.refetch()}>Retry</Button>} /> : runs.data?.length === 0 ? <EmptyState icon={Inbox} title="No investigations yet" description="Triage an active signal and the run will appear here as a replayable record." /> : <div className="flex snap-x gap-3 overflow-x-auto pb-2">{runs.data?.map((run) => <Link key={run.id} to={`/runs/${run.id}`} className="card-highlight min-w-[310px] snap-start rounded-card border border-border bg-surface p-4 transition-all hover:-translate-y-0.5 hover:border-border-strong"><div className="flex items-center justify-between gap-3"><StatusDot tone={run.status === "succeeded" ? "ok" : run.status === "running" ? "running" : "critical"} label={run.status} />{run.recall_used > 0 && <Badge variant="info">Recall</Badge>}</div><div className="mt-3 flex min-w-0 items-center gap-2 text-xs"><Tooltip content={run.trigger_name}><code className="max-w-[112px] truncate font-mono font-semibold text-fg">{middleTruncate(run.trigger_name, 21)}</code></Tooltip><ArrowRight className="size-3 shrink-0 text-fg-subtle" aria-hidden="true" /><Tooltip content={run.root_cause_name ?? "Investigating"}><code className="min-w-0 truncate font-mono text-fg-muted">{run.root_cause_name ?? "investigating…"}</code></Tooltip></div><div className="mt-4 flex items-center gap-4 border-t border-border pt-3 text-[10px] text-fg-subtle"><span className="font-mono tabular-nums">{formatDuration(run.duration_s)}</span><span>{run.tool_calls} tool calls</span><span className="ml-auto">{relativeTime(run.created_at)}</span></div></Link>)}</div>}</section>
     </div>
