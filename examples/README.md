@@ -8,8 +8,8 @@ basis of the measurement in the root README.
 
 | Run                                | Trigger (symptom)                          | Root cause found | Recall                             | Time to root cause | Tool calls |
 | ---------------------------------- | ------------------------------------------ | ---------------- | ---------------------------------- | -----------------: | ---------: |
-| `run_34f92ac9c7234f76` (**cold**)   | `marts.agg_daily_rides` row-count assertion | `raw.trips_raw`  | none                               |            111.0 s |         93 |
-| `run_b296da60a60f4e56` (**recall**) | `marts.agg_zone_demand` row-count assertion | `raw.trips_raw`  | prior post-mortem, 3 hops upstream |             23.2 s |         71 |
+| `run_f1243c12dea94730` (**cold**)   | `marts.agg_daily_rides` row-count assertion | `raw.trips_raw`  | none                               |            143.5 s |         92 |
+| `run_7734eb410fc84266` (**recall**) | `marts.agg_zone_demand` row-count assertion | `raw.trips_raw`  | prior post-mortem, 3 hops upstream |             22.5 s |         71 |
 
 Same root cause, **different symptoms**, with `demo/reset.py --keep-memory` between them — so the
 only difference is what the agent remembered.
@@ -18,14 +18,14 @@ only difference is what the agent remembered.
 
 ```
 postmortems/
-  cold-run_34f92ac9c7234f76.{md,json}       post-mortem the cold run wrote back to DataHub
-  recall-run_b296da60a60f4e56.{md,json}     post-mortem the memory-assisted run wrote back
+  cold-run_f1243c12dea94730.{md,json}       post-mortem the cold run wrote back to DataHub
+  recall-run_7734eb410fc84266.{md,json}     post-mortem the memory-assisted run wrote back
 runs/
-  cold-run_34f92ac9c7234f76-events.json     full 284-frame event log
-  recall-run_b296da60a60f4e56-events.json   full 219-frame event log
+  cold-run_f1243c12dea94730-events.json     full 279-frame event log
+  recall-run_7734eb410fc84266-events.json   full 221-frame event log
 notifications/
-  cold-run_34f92ac9c7234f76.json            exact owner-notification payload
-  recall-run_b296da60a60f4e56.json          exact payload from the recall run
+  cold-run_f1243c12dea94730.json            exact owner-notification payload
+  recall-run_7734eb410fc84266.json          exact payload from the recall run
 incidents/
   cold-incident.json, recall-incident.json  the raise_incident inputs and resulting URNs
 snapshots/

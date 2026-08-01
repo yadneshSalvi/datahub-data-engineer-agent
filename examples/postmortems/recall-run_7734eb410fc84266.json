@@ -1,21 +1,21 @@
 {
-  "id": "run_b296da60a60f4e56",
-  "run_id": "run_b296da60a60f4e56",
-  "created_at": "2026-08-01T00:10:22.541Z",
-  "title": "agg_zone_demand volume collapse caused by stale raw.trips_raw",
-  "symptom": "Row-count assertion observed 90 versus expected 500..40,000; rows fell 21,400\u219290 (-99.58%) despite healthy freshness of 1.21h/6h.",
+  "id": "run_7734eb410fc84266",
+  "run_id": "run_7734eb410fc84266",
+  "created_at": "2026-08-01T00:54:48.670Z",
+  "title": "Stale raw.trips_raw feed caused downstream trip-volume collapse",
+  "symptom": "agg_zone_demand row-count assertion failed with 90 rows versus expected 500..40,000.",
   "symptom_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
   "root_cause_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
   "root_cause_name": "raw.trips_raw",
-  "doc_markdown": "# agg_zone_demand volume collapse caused by stale raw.trips_raw\n\n**Symptom:** Row-count assertion observed 90 versus expected 500..40,000; rows fell 21,400\u219290 (-99.58%) despite healthy freshness of 1.21h/6h.\n\n**Root cause:** Intrinsic source freshness breach: raw.trips_raw was 31.01h stale against a 6h SLA, with no upstreams. Its unchanged 1,284,500 rows and healthy required schema show ingestion stopped rather than downstream schema failure.\n\n## Causal path\nagg_zone_demand \u2192 fct_trips \u2192 stg_trips \u2192 raw.trips_raw\n\n## Evidence\n- Exact lineage: raw.trips_raw \u2192 stg_trips \u2192 fct_trips \u2192 agg_zone_demand.\n- Recall fast path matched run_34f92ac9c7234f76 on raw.trips_raw; live evidence verified it, so sibling exploration was skipped.\n- Critical VOLUME incident urn:li:incident:f72266aa-286e-4f41-b5a8-e1c2c9d56a1b was raised on the symptom.\n- Root was tagged oncall_root_cause at pickup_ts; 15 supported downstream assets were tagged oncall_impacted; symptom was tagged oncall_triaged; six root/top-impact owner URNs were notified.\n- Sixteen downstream entities were found: 7 datasets, 4 charts, 3 dashboards, 1 ML model, and 1 unsupported ML feature. The typed blast radius includes the 15 supported assets.\n\n## Blast radius\n- CRITICAL: Exec Daily Ops (3100 usage score)\n- CRITICAL: fct_trips (2121 usage score)\n- HIGH: Rides by Hour (1840 usage score)\n- HIGH: agg_daily_rides (1673 usage score)\n- HIGH: Revenue Trend (1420 usage score)\n- HIGH: fct_revenue (1169 usage score)\n- HIGH: agg_driver_earnings (1043 usage score)\n- MEDIUM: Zone Demand Heatmap (960 usage score)\n- MEDIUM: Finance Revenue Review (870 usage score)\n- MEDIUM: agg_zone_demand (868 usage score)\n- LOW: Driver Ops (410 usage score)\n- LOW: Driver Leaderboard (380 usage score)\n- LOW: trip_eta_features (364 usage score)\n- LOW: stg_trips (91 usage score)\n- LOW: ETA predictor (0 usage score)\n\n## Human action\nData Platform must restore raw trips ingestion, verify pickup_ts delivery and checkpoint/watermark state, rerun raw\u2192staging\u2192marts, rerun assertions, and validate row counts before declaring the incident fixed.\n\n## Prevention\nOn raw.trips_raw, add a 6h source-freshness alert and checkpoint/watermark monitor, and install a circuit breaker that blocks staging and marts runs when the SLA is missed. Assign catalog owners to Rides by Hour and the other unowned BI charts.\n",
+  "doc_markdown": "# Stale raw.trips_raw feed caused downstream trip-volume collapse\n\n**Symptom:** agg_zone_demand row-count assertion failed with 90 rows versus expected 500..40,000.\n\n**Root cause:** raw.trips_raw ingestion was 31.01 hours stale against its 6-hour SLA. It is a confirmed source with no upstreams, making the breach intrinsic and satisfying the stop rule.\n\n## Causal path\nagg_zone_demand \u2192 fct_trips \u2192 stg_trips \u2192 raw.trips_raw\n\n## Evidence\n- Exact causal lineage is raw.trips_raw \u2192 stg_trips \u2192 fct_trips \u2192 agg_zone_demand.\n- Prior incident run_f1243c12dea94730 named raw.trips_raw; live verification confirmed it and licensed the recall fast path.\n- Blast-radius facets returned 16 entities: 7 datasets, 4 charts, 3 dashboards, 1 ML model, and 1 unsupported ML feature.\n- Critical VOLUME incident raised; root and 15 supported impacts tagged; owners notified; no data modified.\n\n## Blast radius\n- CRITICAL: Exec Daily Ops (3100 usage score)\n- CRITICAL: fct_trips (2121 usage score)\n- HIGH: Rides by Hour (1840 usage score)\n- HIGH: agg_daily_rides (1673 usage score)\n- HIGH: Revenue Trend (1420 usage score)\n- HIGH: fct_revenue (1169 usage score)\n- HIGH: agg_driver_earnings (1043 usage score)\n- MEDIUM: Zone Demand Heatmap (960 usage score)\n- MEDIUM: Finance Revenue Review (870 usage score)\n- MEDIUM: agg_zone_demand (868 usage score)\n- LOW: Driver Ops (410 usage score)\n- LOW: Driver Leaderboard (380 usage score)\n- LOW: trip_eta_features (364 usage score)\n- LOW: stg_trips (91 usage score)\n- LOW: ETA predictor (0 usage score)\n\n## Human action\nRestore raw.trips_raw pickup_ts ingestion; rerun stg_trips, fct_trips, and all downstream marts/features; then verify source freshness and every row-count assertion before resolving the incident.\n\n## Prevention\nPage on raw.trips_raw source freshness and pickup_ts heartbeat/lag, and block downstream publishes whenever raw.trips_raw exceeds its 6-hour SLA.\n",
   "doc_json": {
-    "incident_id": "run_b296da60a60f4e56",
-    "title": "agg_zone_demand volume collapse caused by stale raw.trips_raw",
-    "symptom": "Row-count assertion observed 90 versus expected 500..40,000; rows fell 21,400\u219290 (-99.58%) despite healthy freshness of 1.21h/6h.",
+    "incident_id": "run_7734eb410fc84266",
+    "title": "Stale raw.trips_raw feed caused downstream trip-volume collapse",
+    "symptom": "agg_zone_demand row-count assertion failed with 90 rows versus expected 500..40,000.",
     "symptom_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
     "root_cause_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
     "root_cause_name": "raw.trips_raw",
-    "root_cause_summary": "Intrinsic source freshness breach: raw.trips_raw was 31.01h stale against a 6h SLA, with no upstreams. Its unchanged 1,284,500 rows and healthy required schema show ingestion stopped rather than downstream schema failure.",
+    "root_cause_summary": "raw.trips_raw ingestion was 31.01 hours stale against its 6-hour SLA. It is a confirmed source with no upstreams, making the breach intrinsic and satisfying the stop rule.",
     "causal_path": [
       {
         "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_zone_demand,PROD)",
@@ -23,32 +23,31 @@
         "hops_from_symptom": 0,
         "verdict": "broken",
         "evidence": [
-          "Assertion: 90 rows versus expected 500..40,000.",
-          "Rows: 21,400\u219290 (-99.58%).",
-          "Freshness healthy: 1.21h/6h.",
-          "Schema contains day, pickup_zone_id, pickup_zone_name, rides, surge_avg; direct column-dependency comparison unavailable."
+          "Row-count assertion failed: 90 observed versus 500..40,000 expected.",
+          "Latest and previous row counts were 90 (0.0% change).",
+          "Freshness was healthy at 1.22 hours against a 6-hour SLA."
         ]
       },
       {
         "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.fct_trips,PROD)",
         "name": "fct_trips",
         "hops_from_symptom": 1,
-        "verdict": "broken",
+        "verdict": "degraded",
         "evidence": [
-          "Assertion: 3,120 rows versus expected 50,000..2,000,000.",
-          "Rows: 1,281,900\u21923,120 (-99.76%).",
-          "Freshness healthy: 1.22h/6h; schema healthy including pickup_ts."
+          "Row-count assertion failed: 3,120 observed versus 50,000..2,000,000 expected.",
+          "pickup_zone_id null-count assertion passed at 0.",
+          "Freshness was healthy at 1.22 hours against a 6-hour SLA; schema was healthy including pickup_ts."
         ]
       },
       {
         "urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.staging.stg_trips,PROD)",
         "name": "stg_trips",
         "hops_from_symptom": 2,
-        "verdict": "broken",
+        "verdict": "degraded",
         "evidence": [
-          "Assertion: 3,120 rows versus expected 50,000..2,500,000.",
-          "Rows: 1,281,900\u21923,120 (-99.76%).",
-          "Freshness breached: 30.02h/6h; schema healthy including pickup_ts."
+          "Row-count assertion failed: 3,120 observed versus 50,000..2,500,000 expected.",
+          "Freshness was 30.02 hours against a 6-hour SLA, 24.02 hours late.",
+          "Schema was healthy including pickup_ts."
         ]
       },
       {
@@ -57,19 +56,18 @@
         "hops_from_symptom": 3,
         "verdict": "root_cause",
         "evidence": [
-          "Freshness breached: 31.01h/6h, 25.01h over SLA.",
-          "Rows unchanged: 1,284,500\u21921,284,500 (0%).",
-          "Required fields, including pickup_ts, exist; no assertions configured.",
-          "Column-level upstream lineage returned zero; confirm_no_upstreams confirmed. No unhealthy parent exists."
+          "Freshness was 31.01 hours against a 6-hour SLA, 25.01 hours late.",
+          "Row count remained 1,284,500 and no assertions were configured.",
+          "Schema was healthy with pickup_ts and all downstream dependencies.",
+          "Upstream lineage was empty and confirm_no_upstreams returned confirmed."
         ]
       }
     ],
     "evidence": [
-      "Exact lineage: raw.trips_raw \u2192 stg_trips \u2192 fct_trips \u2192 agg_zone_demand.",
-      "Recall fast path matched run_34f92ac9c7234f76 on raw.trips_raw; live evidence verified it, so sibling exploration was skipped.",
-      "Critical VOLUME incident urn:li:incident:f72266aa-286e-4f41-b5a8-e1c2c9d56a1b was raised on the symptom.",
-      "Root was tagged oncall_root_cause at pickup_ts; 15 supported downstream assets were tagged oncall_impacted; symptom was tagged oncall_triaged; six root/top-impact owner URNs were notified.",
-      "Sixteen downstream entities were found: 7 datasets, 4 charts, 3 dashboards, 1 ML model, and 1 unsupported ML feature. The typed blast radius includes the 15 supported assets."
+      "Exact causal lineage is raw.trips_raw \u2192 stg_trips \u2192 fct_trips \u2192 agg_zone_demand.",
+      "Prior incident run_f1243c12dea94730 named raw.trips_raw; live verification confirmed it and licensed the recall fast path.",
+      "Blast-radius facets returned 16 entities: 7 datasets, 4 charts, 3 dashboards, 1 ML model, and 1 unsupported ML feature.",
+      "Critical VOLUME incident raised; root and 15 supported impacts tagged; owners notified; no data modified."
     ],
     "blast_radius": [
       {
@@ -191,7 +189,7 @@
         "usage_score": 410,
         "owners": [
           "Nina Alvarez",
-          "ML Platform"
+          "Ml Platform"
         ],
         "severity": "low"
       },
@@ -212,7 +210,7 @@
         "usage_score": 364,
         "owners": [
           "Nina Alvarez",
-          "ML Platform"
+          "Ml Platform"
         ],
         "severity": "low"
       },
@@ -236,23 +234,23 @@
         "usage_score": 0,
         "owners": [
           "Nina Alvarez",
-          "ML Platform"
+          "Ml Platform"
         ],
         "severity": "low"
       }
     ],
-    "recommended_action": "Data Platform must restore raw trips ingestion, verify pickup_ts delivery and checkpoint/watermark state, rerun raw\u2192staging\u2192marts, rerun assertions, and validate row counts before declaring the incident fixed.",
-    "prevention": "On raw.trips_raw, add a 6h source-freshness alert and checkpoint/watermark monitor, and install a circuit breaker that blocks staging and marts runs when the SLA is missed. Assign catalog owners to Rides by Hour and the other unowned BI charts.",
+    "recommended_action": "Restore raw.trips_raw pickup_ts ingestion; rerun stg_trips, fct_trips, and all downstream marts/features; then verify source freshness and every row-count assertion before resolving the incident.",
+    "prevention": "Page on raw.trips_raw source freshness and pickup_ts heartbeat/lag, and block downstream publishes whenever raw.trips_raw exceeds its 6-hour SLA.",
     "recalled_incident_ids": [
-      "run_34f92ac9c7234f76"
+      "run_f1243c12dea94730"
     ],
     "confidence": "high"
   },
-  "datahub_document_urn": "urn:li:document:oncall-postmortem-run_b296da60a60f4e56",
+  "datahub_document_urn": "urn:li:document:oncall-postmortem-run_7734eb410fc84266",
   "datahub_links": [
     "http://localhost:9002/dataset/urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.raw.trips_raw,PROD)",
-    "http://localhost:9002/document/urn:li:document:oncall-postmortem-run_b296da60a60f4e56",
-    "http://localhost:3001/memory/run_b296da60a60f4e56"
+    "http://localhost:9002/document/urn:li:document:oncall-postmortem-run_7734eb410fc84266",
+    "http://localhost:3001/memory/run_7734eb410fc84266"
   ],
   "reused_count": 0,
   "used_by_runs": []

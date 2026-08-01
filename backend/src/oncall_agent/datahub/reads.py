@@ -56,14 +56,27 @@ query a($urn: String!) {
 }
 """
 
-# `operations` is NOT returned newest-first, and `limit` truncates the series BEFORE any
-# ordering — with a small limit the newest record is silently dropped and a stale dataset reads
-# as fresh. Ask for a generous window and pick the maximum timestampMillis ourselves.
-FRESHNESS_QUERY = """
-query o($urn: String!) { dataset(urn: $urn) {
-  operations(limit: 50) {
+# `operations` is NOT returned newest-first, and `limit` truncates the series BEFORE any ordering,
+# so the newest record can be silently dropped and a stale dataset reads as FRESH. Raising the
+# limit only moves the ceiling — a long demo session accumulated 68 points and broke a limit of 50.
+# The count-independent fix is to bound by TIME: ask for a recent window, which cannot be truncated
+# past the newest record, and fall back to a large limit only if the window is empty (a dataset
+# genuinely untouched for longer than the window). Always take max(timestampMillis) ourselves.
+FRESHNESS_WINDOW_QUERY = """
+query o($urn: String!, $start: Long!) { dataset(urn: $urn) {
+  operations(startTimeMillis: $start, limit: 200) {
     timestampMillis operationType lastUpdatedTimestamp numAffectedRows actor } } }
 """
+
+FRESHNESS_QUERY = """
+query o($urn: String!) { dataset(urn: $urn) {
+  operations(limit: 1000) {
+    timestampMillis operationType lastUpdatedTimestamp numAffectedRows actor } } }
+"""
+
+# How far back the bounded freshness window reaches. Comfortably longer than the longest SLA in
+# the demo warehouse (168 h) so a breach is always inside it.
+FRESHNESS_WINDOW_HOURS = 24 * 30
 
 PROFILE_USAGE_QUERY = """
 query u($urn: String!) { dataset(urn: $urn) {
@@ -262,8 +275,17 @@ def get_freshness(
             raise ValueError(f"Dataset not found in the oncall namespace: {dataset_urn}")
         sla_text = (props.customProperties or {}).get("oncall.freshness_sla_hours")
         sla_hours = float(sla_text) if sla_text is not None else DEFAULT_FRESHNESS_SLA_HOURS
-    data = execute_graphql(FRESHNESS_QUERY, {"urn": dataset_urn})
+    current_ms_for_window = now_ms if now_ms is not None else int(time.time() * 1000)
+    window_start = current_ms_for_window - int(FRESHNESS_WINDOW_HOURS * 3_600_000)
+    data = execute_graphql(
+        FRESHNESS_WINDOW_QUERY, {"urn": dataset_urn, "start": window_start}
+    )
     operations = (data.get("dataset") or {}).get("operations") or []
+    if not operations:
+        # Nothing in the recent window — the dataset may genuinely be ancient. Fall back to an
+        # unbounded-ish read rather than reporting unknown freshness.
+        data = execute_graphql(FRESHNESS_QUERY, {"urn": dataset_urn})
+        operations = (data.get("dataset") or {}).get("operations") or []
     latest = max(operations, key=lambda item: int(item["timestampMillis"])) if operations else None
     last_updated = latest.get("lastUpdatedTimestamp") if latest else None
     current_ms = now_ms if now_ms is not None else int(time.time() * 1000)

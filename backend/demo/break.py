@@ -280,6 +280,8 @@ def _wait_until_indexed(scenario: str, event_ms: int, timeout_seconds: float = 1
     expected_unhealthy = _EXPECTED_UNHEALTHY[scenario]
     deadline = time.monotonic() + timeout_seconds
     last_extra: set[str] = set()
+    last_missing: set[str] = set()
+    last_pending: list[str] = []
     missing_indexed_edges: list[str] = []
     causal_edges = [
         (DATASET_BY_KEY[upstream].urn, DATASET_BY_KEY[downstream].urn)
@@ -287,6 +289,7 @@ def _wait_until_indexed(scenario: str, event_ms: int, timeout_seconds: float = 1
     ]
     while time.monotonic() < deadline:
         all_failed = True
+        pending_assertions: list[str] = []
         for assertion_id in expected:
             dataset_key = next(item[1] for item in ASSERTIONS if item[0] == assertion_id)
             status = get_assertion_status(DATASET_BY_KEY[dataset_key].urn)
@@ -301,8 +304,13 @@ def _wait_until_indexed(scenario: str, event_ms: int, timeout_seconds: float = 1
                 or int(latest["timestampMillis"]) < event_ms
                 or (latest.get("result") or {}).get("type") != "FAILURE"
             ):
+                observed = "no-run" if latest is None else str(
+                    (latest.get("result") or {}).get("type")
+                )
+                pending_assertions.append(f"{assertion_id}={observed}")
                 all_failed = False
                 break
+        last_pending = pending_assertions
         if all_failed:
             if scenario in {"stale_upstream", "recall_hit"}:
                 raw = DATASET_BY_KEY["raw.trips_raw"]
@@ -311,15 +319,18 @@ def _wait_until_indexed(scenario: str, event_ms: int, timeout_seconds: float = 1
                     continue
             unhealthy = {signal["name"] for signal in get_health_signals()}
             last_extra = unhealthy - expected_unhealthy
-            if not last_extra and expected_unhealthy <= unhealthy:
+            last_missing = expected_unhealthy - unhealthy
+            if not last_extra and not last_missing:
                 missing_indexed_edges = missing_indexed_upstream_edges(causal_edges)
                 if not missing_indexed_edges:
                     return
         time.sleep(2)
     raise TimeoutError(
-        f"Scenario did not become query-visible before timeout: {scenario} "
-        f"(stale signals still present: {sorted(last_extra) or 'none'}; "
-        f"lineage edges missing from index: {missing_indexed_edges or 'none'})"
+        "Scenario did not become query-visible before timeout: "
+        f"{scenario} | assertions not yet FAILURE: {last_pending or 'none'}"
+        f" | expected-unhealthy still healthy: {sorted(last_missing) or 'none'}"
+        f" | stale signals still present: {sorted(last_extra) or 'none'}"
+        f" | lineage edges missing from index: {sorted(missing_indexed_edges) or 'none'}"
     )
 
 

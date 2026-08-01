@@ -99,10 +99,10 @@ post-mortem — so the only difference is what the agent remembered.
 
 | Run                                    |                                  Recall | Time to root cause | Tool calls |
 | -------------------------------------- | --------------------------------------: | -----------------: | ---------: |
-| Cold — symptom on `agg_daily_rides`     |                         No prior memory |            111.0 s |         93 |
-| Repeat — symptom on `agg_zone_demand`   | Prior post-mortem recalled and verified |             23.2 s |         71 |
+| Cold — symptom on `agg_daily_rides`     |                         No prior memory |            143.5 s |         92 |
+| Repeat — symptom on `agg_zone_demand`   | Prior post-mortem recalled and verified |             22.5 s |         71 |
 
-`GET /api/compare` reports **79% less time to root cause and 24% fewer tool calls**.
+`GET /api/compare` reports **84% less time to root cause and 23% fewer tool calls** for this pair.
 
 The saving is structural, not a shortcut. Cold, the agent must walk every upstream branch capable
 of producing the signal and prove each one healthy — it examined and cleared the `stg_zones` /
@@ -120,9 +120,14 @@ figures from earlier revisions of this README. The checked-in
 this exact pair, and the [cold and recall post-mortems](examples/README.md) plus both full event
 logs under `examples/runs/` are the artifacts these two runs generated.
 
-**Time to root cause is not the whole run.** These two runs took **285.7 s** and **182.6 s**
-end to end; the rest is blast-radius ranking, the DataHub write-backs, authoring the post-mortem
-and resolving the incident. Expect a full triage to take roughly two to five minutes of wall clock.
+**Run-to-run variance is real.** The agent is not deterministic; across repeated cold runs we
+observed 58-144 s to root cause for the same scenario. The committed
+[snapshot](examples/snapshots/compare.json) is one specific pair, and the tool-call counts are far
+more stable than the wall-clock times. What reproduces is the direction and rough magnitude of the
+memory effect, not these exact figures.
+
+**Time to root cause is not the whole run.** The full triage — blast-radius ranking, the DataHub
+write-backs, authoring the post-mortem, resolving the incident — takes longer than reaching the root cause. Expect roughly two to five minutes of wall clock end to end.
 
 **On "15" versus "16" downstream entities.** The agent's own prose sometimes says sixteen. Both
 numbers are real and they count different things: DataHub's lineage facets return **16** downstream
