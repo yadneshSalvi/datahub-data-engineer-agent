@@ -9,6 +9,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import datahub.metadata.schema_classes as models
+
 from demo.catalog import (
     ASSERTIONS,
     CHARTS,
@@ -33,6 +35,7 @@ from oncall_agent.config import get_settings
 from oncall_agent.datahub.client import get_client, get_graph, preflight_gms
 from oncall_agent.datahub.reads import list_open_incidents
 from oncall_agent.datahub.writes import (
+    deterministic_incident_urn,
     patch_custom_properties,
     read_structured_property,
     remove_tags,
@@ -67,10 +70,24 @@ def _restore_health(event_ms: int) -> None:
         )
 
 
+INCIDENT_TYPES = ("FRESHNESS", "VOLUME", "FIELD", "SQL", "DATA_SCHEMA", "OPERATIONAL", "CUSTOM")
+
+
 def _resolve_and_delete_incidents() -> int:
+    """Delete agent-created incidents by DERIVED urn rather than by searching for them.
+
+    The search-backed listing misses incidents inside the index window, which is exactly when a
+    reset runs — so a search-driven cleanup leaves residue and the next run stacks another
+    incident on top. Deriving the candidate URNs is index-independent and complete.
+    """
+
     graph = get_graph()
     incident_urns: set[str] = set()
     for dataset in DATASETS:
+        for incident_type in INCIDENT_TYPES:
+            urn = deterministic_incident_urn(dataset.urn, incident_type)
+            if graph.get_aspect(entity_urn=urn, aspect_type=models.IncidentInfoClass) is not None:
+                incident_urns.add(urn)
         incident_urns.update(item["urn"] for item in list_open_incidents(dataset.urn))
     for urn in incident_urns:
         update_incident_status(

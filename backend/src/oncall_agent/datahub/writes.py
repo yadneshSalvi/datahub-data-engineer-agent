@@ -13,6 +13,7 @@ from collections.abc import Iterable, Mapping, Sequence
 from typing import Any
 
 import datahub.metadata.schema_classes as models
+from datahub.emitter.mce_builder import datahub_guid
 from datahub.emitter.mcp import MetadataChangeProposalWrapper
 from datahub.errors import ExperimentalWarning, IngestionAttributionWarning
 
@@ -24,7 +25,7 @@ from datahub.specific.dataset import DatasetPatchBuilder
 
 from oncall_agent.config import get_settings
 from oncall_agent.datahub.client import datahub_url_for, execute_graphql, get_client, get_graph
-from oncall_agent.datahub.reads import dataset_exists, list_open_incidents
+from oncall_agent.datahub.reads import dataset_exists
 from oncall_agent.datahub.urns import is_our_dataset_urn, qualified_name_from_urn
 
 log = logging.getLogger(__name__)
@@ -39,7 +40,22 @@ mutation u($urn: String!, $input: IncidentStatusInput!) {
 }
 """
 
-_incident_cache: dict[tuple[str, str, str], str] = {}
+_incident_cache: dict[tuple[str, str], str] = {}
+
+_ACTOR_URN = "urn:li:corpuser:datahub"
+
+# The incidentInfo aspect stores priority as an INT where lower is more severe, unlike the
+# GraphQL enum. Getting this backwards silently inverts severity in the DataHub UI.
+_INCIDENT_PRIORITY = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
+
+
+def deterministic_incident_urn(resource_urn: str, incident_type: str) -> str:
+    """Derive a stable incident URN from (resource, type) so re-raising is an upsert."""
+
+    guid = datahub_guid({"resource": resource_urn, "type": incident_type, "ns": "oncall"})
+    return f"urn:li:incident:oncall-{guid}"
+
+
 
 
 def _assert_safe_target(urn: str) -> None:
@@ -47,7 +63,9 @@ def _assert_safe_target(urn: str) -> None:
     safe = is_our_dataset_urn(urn)
     if urn.startswith(("urn:li:chart:(", "urn:li:dashboard:(", "urn:li:mlModel:(")):
         safe = qualified_name_from_urn(urn).startswith(settings.name_prefix.rstrip("."))
-    if urn.startswith("urn:li:document:oncall-") or urn.startswith("urn:li:assertion:oncall-"):
+    if urn.startswith(
+        ("urn:li:document:oncall-", "urn:li:assertion:oncall-", "urn:li:incident:oncall-")
+    ):
         safe = True
     if not safe:
         raise ValueError(f"Refusing to modify an entity outside the oncall namespace: {urn}")
@@ -126,35 +144,50 @@ def raise_incident(
     stage: str = "TRIAGE",
     message: str = "Raised by on-call agent",
 ) -> str:
-    """Raise one active incident per resource/type/title and return its URN."""
+    """Raise or refresh the single incident for this (resource, type), idempotently.
+
+    The URN is DERIVED from the stable identity, not minted by the server, so re-raising is an
+    upsert of the same entity by construction. The previous implementation looked for an existing
+    incident via ``list_open_incidents``, which is Elasticsearch-backed: right after a reset, or
+    inside the index window, that lookup returns nothing and a *second* incident is created with a
+    fresh random UUID. That is how duplicate incidents accumulate while the entity counter climbs.
+
+    Title and description are deliberately NOT part of the identity — they are model-generated and
+    vary between runs, so including them would defeat the deduplication they are meant to provide.
+    One dataset has at most one open incident per type; re-raising refreshes its content.
+    """
 
     _assert_safe_target(resource_urn)
     _assert_existing_dataset(resource_urn)
-    key = (resource_urn, incident_type, title)
-    cached = _incident_cache.get(key)
-    if cached is not None:
-        return cached
-    for incident in list_open_incidents(resource_urn):
-        if incident.get("incidentType") == incident_type and incident.get("title") == title:
-            urn = str(incident["urn"])
-            _incident_cache[key] = urn
-            return urn
-    data = execute_graphql(
-        RAISE_INCIDENT_MUTATION,
-        {
-            "input": {
-                "type": incident_type,
-                "title": title,
-                "description": description,
-                "resourceUrn": resource_urn,
-                "priority": priority,
-                "status": {"state": "ACTIVE", "stage": stage, "message": message},
-            }
-        },
+    incident_urn = deterministic_incident_urn(resource_urn, incident_type)
+    now_ms = int(time.time() * 1000)
+    audit = models.AuditStampClass(time=now_ms, actor=_ACTOR_URN)
+    existing = get_graph().get_aspect(
+        entity_urn=incident_urn, aspect_type=models.IncidentInfoClass
     )
-    urn = str(data["raiseIncident"])
-    _incident_cache[key] = urn
-    return urn
+    get_graph().emit(
+        MetadataChangeProposalWrapper(
+            entityUrn=incident_urn,
+            aspect=models.IncidentInfoClass(
+                type=incident_type,
+                title=title,
+                description=description,
+                entities=[resource_urn],
+                priority=_INCIDENT_PRIORITY[priority],
+                status=models.IncidentStatusClass(
+                    state=models.IncidentStateClass.ACTIVE,
+                    stage=stage,
+                    message=message,
+                    lastUpdated=audit,
+                ),
+                source=models.IncidentSourceClass(type=models.IncidentSourceTypeClass.MANUAL),
+                startedAt=existing.startedAt if existing else now_ms,
+                created=existing.created if existing else audit,
+            ),
+        )
+    )
+    _incident_cache[(resource_urn, incident_type)] = incident_urn
+    return incident_urn
 
 
 def update_incident_status(

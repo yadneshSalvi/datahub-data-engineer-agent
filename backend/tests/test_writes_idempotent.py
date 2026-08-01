@@ -5,7 +5,6 @@ from __future__ import annotations
 from types import SimpleNamespace
 from typing import Any
 
-import httpx
 import pytest
 import respx
 
@@ -72,27 +71,68 @@ def test_tag_helpers_are_effectively_idempotent(monkeypatch: Any) -> None:
 
 
 @respx.mock
-def test_raise_incident_reuses_the_first_artifact(monkeypatch: Any) -> None:
+def test_raise_incident_is_idempotent_by_derived_urn(monkeypatch: Any) -> None:
+    """Re-raising must target the SAME entity without consulting the search index.
+
+    The identity is (resource, type). Title and description are model-generated and vary between
+    runs, so they must not affect the URN — otherwise every run mints a new incident. And no
+    lookup may be involved at all: a search-backed existence check returns nothing inside the
+    index window, which is exactly when a reset has just run, and duplicates accumulate.
+    """
+
     writes._incident_cache.clear()
     monkeypatch.setattr(writes, "dataset_exists", lambda _urn: True)
-    resource = dataset_urn("marts.fct_trips")
-    incident = "urn:li:incident:stable-fixture"
-    route = respx.post("http://gms.test/api/graphql")
-    route.side_effect = [
-        httpx.Response(
-            200,
-            json={"data": {"dataset": {"incidents": {"total": 0, "incidents": []}}}},
+    emitted: list[Any] = []
+    monkeypatch.setattr(
+        writes,
+        "get_graph",
+        lambda: SimpleNamespace(
+            get_aspect=lambda **_kwargs: None,
+            emit=lambda mcp: emitted.append(mcp),
         ),
-        httpx.Response(200, json={"data": {"raiseIncident": incident}}),
-    ]
-    kwargs = {
-        "incident_type": "FRESHNESS",
-        "title": "stale trips",
-        "description": "fixture",
-    }
-    assert writes.raise_incident(resource, **kwargs) == incident
-    assert writes.raise_incident(resource, **kwargs) == incident
-    assert route.call_count == 2
+    )
+    resource = dataset_urn("marts.fct_trips")
+    first = writes.raise_incident(
+        resource, incident_type="FRESHNESS", title="stale trips", description="fixture"
+    )
+    second = writes.raise_incident(
+        resource,
+        incident_type="FRESHNESS",
+        title="a completely different model-written title",
+        description="also different",
+    )
+
+    assert first == second, "a differing title must not mint a second incident"
+    assert first == writes.deterministic_incident_urn(resource, "FRESHNESS")
+    assert first.startswith("urn:li:incident:oncall-")
+    assert [mcp.entityUrn for mcp in emitted] == [first, first]
+    # A different incident type on the same dataset is a genuinely different incident.
+    assert writes.deterministic_incident_urn(resource, "VOLUME") != first
+
+
+def test_raise_incident_maps_priority_to_the_inverted_int_scale(monkeypatch: Any) -> None:
+    """incidentInfo stores priority as an int where LOWER is more severe."""
+
+    writes._incident_cache.clear()
+    monkeypatch.setattr(writes, "dataset_exists", lambda _urn: True)
+    emitted: list[Any] = []
+    monkeypatch.setattr(
+        writes,
+        "get_graph",
+        lambda: SimpleNamespace(
+            get_aspect=lambda **_kwargs: None,
+            emit=lambda mcp: emitted.append(mcp),
+        ),
+    )
+    for priority, expected in (("CRITICAL", 0), ("HIGH", 1), ("MEDIUM", 2), ("LOW", 3)):
+        writes.raise_incident(
+            dataset_urn("marts.fct_trips"),
+            incident_type="VOLUME",
+            title="t",
+            description="d",
+            priority=priority,
+        )
+        assert emitted[-1].aspect.priority == expected
 
 
 def test_dataset_writes_refuse_nonexistent_targets(monkeypatch: Any) -> None:
