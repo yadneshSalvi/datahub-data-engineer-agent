@@ -110,7 +110,15 @@ else
 fi
 wait_for_url "backend" "$BACKEND_URL/api/health" "$BACKEND_PID"
 
-DEMO_STATE="$(curl -fsS "$BACKEND_URL/api/demo/state")"
+# /api/demo/state is search-index backed and caches ~10s, so it can transiently report
+# seeded:false right after a reset. Re-check before concluding the catalog needs seeding —
+# a spurious false here triggers a surprise several-minute reseed.
+DEMO_STATE=""
+for _attempt in 1 2 3; do
+  DEMO_STATE="$(curl -fsS "$BACKEND_URL/api/demo/state" || true)"
+  [[ "$DEMO_STATE" == *'"seeded":true'* ]] && break
+  [[ $_attempt -lt 3 ]] && sleep 6
+done
 if [[ "$DEMO_STATE" != *'"seeded":true'* ]]; then
   printf '==> Demo catalog is unseeded; seeding and verifying it now\n'
   (

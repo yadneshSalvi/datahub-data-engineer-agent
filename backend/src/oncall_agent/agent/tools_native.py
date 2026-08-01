@@ -694,7 +694,9 @@ async def notify_owners(
         "subject": subject,
         "body_markdown": body_markdown,
     }
-    path = _REPOSITORY_ROOT / "examples" / "notifications" / f"{notification_id}.json"
+    # Runtime receipts belong under data/ (gitignored). examples/ is a curated, committed set;
+    # letting every run write there silently grows the repo with unreviewed artifacts.
+    path = _REPOSITORY_ROOT / "data" / "notifications" / f"{notification_id}.json"
     await asyncio.to_thread(_write_notification_receipt, path, payload)
     ok = True
     detail = f"mock receipt: {path.relative_to(_REPOSITORY_ROOT)}"

@@ -83,7 +83,9 @@ status, freshness, usage, incidents, and the structured-property recall index.
 | Merged custom properties                | Root-cause dataset custom properties                                 | `DatasetPatchBuilder` merges `oncall.last_incident_id`, `oncall.last_root_cause`, and `oncall.incident_count` | Maintains a compact summary without replacing unrelated properties such as `seeded_by`.                                       |
 
 Owner notification is an external action rather than a DataHub metadata artifact. If
-`SLACK_WEBHOOK_URL` is absent, the exact webhook payload is recorded under `examples/notifications/`.
+`SLACK_WEBHOOK_URL` is absent, the agent still renders the exact webhook payload and writes it to
+`data/notifications/` (gitignored runtime output). Two curated receipts from the runs measured
+below are committed under `examples/notifications/`.
 
 ## The memory loop, measured
 

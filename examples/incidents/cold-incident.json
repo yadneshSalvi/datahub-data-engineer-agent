@@ -1,0 +1,8 @@
+{
+  "provenance": "raise_incident action from cold-run_34f92ac9c7234f76-events.json",
+  "incident_urn": "urn:li:incident:e89f90a1-d44f-45ed-9296-b5660088b49e",
+  "resource_urn": "urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)",
+  "summary": "Active critical volume incident",
+  "datahub_url": "http://localhost:9002/dataset/urn:li:dataset:(urn:li:dataPlatform:oncall,oncall_demo.marts.agg_daily_rides,PROD)/Incidents",
+  "input": {}
+}
