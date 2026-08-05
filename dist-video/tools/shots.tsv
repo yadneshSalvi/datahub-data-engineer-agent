@@ -1,0 +1,21 @@
+# One row per narration segment, in order. Tab-separated. '#' comments and blank lines ignored.
+#
+# seg   clip          in      speed   crop
+#
+# in    seconds to seek into the clip before the segment starts (skips page load / layout shift)
+# speed playback multiplier; >1 time-compresses a real wait. Any segment with speed != 1 gets a
+#       "Nx speed" chip burned in, so a fast-moving elapsed counter is never passed off as real time.
+# crop  W:H:X:Y in MASTER coordinates (3200x1800), or '-' for the full frame.
+#       A crop narrower than 1920 is upscaled; keep W >= 1600 to stay near native sharpness.
+#
+seg01	clip01_datahub_lineage	2	1	-
+seg02	clip02_datahub_schema	1	1	1700:956:120:300
+seg03	clip03_deck_allclear	1	1	-
+seg04	clip04_arm_scenario	1	1	1800:1012:1300:250
+seg05	clip05_inbox_triage	1	1	1900:1069:520:400
+seg06	clip06_triage_recall	2	3	1700:956:560:700
+seg07	clip07_triage_climb	0	4	-
+seg08	clip08_triage_rootcause	0	3	1900:1069:1250:800
+seg09	clip09_blast_datahub	1	1	-
+seg10	clip10_recall_card	1	2	1800:1012:560:650
+seg11	clip11_compare	1	1	-

@@ -43,3 +43,5 @@ frontend/dist/
 # Video build outputs (large binaries stay out of git)
 dist-video/*.mp4
 dist-video/*.srt
+dist-video/tools/raw/
+dist-video/tools/build/
