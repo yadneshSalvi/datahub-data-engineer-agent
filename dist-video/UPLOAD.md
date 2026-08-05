@@ -4,11 +4,13 @@
 
 | file | what |
 |---|---|
-| `oncall-demo.mp4` | final cut, 2:13, 1440×900, H.264 + AAC, 7.5 MB |
-| `oncall-demo.srt` | 66 captions, word-timestamped |
+| `oncall-demo.mp4` | final cut, 2:52, 1920×1080, H.264 + AAC, 12 MB |
+| `oncall-demo.srt` | 45 captions, timed from the audio, worded from the script |
 
 Under the hackathon's 3:00 cap. Every frame is the real running app against a live DataHub
 quickstart — no mockups, no motion graphics, no re-enactment.
+
+Rebuild it with `tools/`: `tts.py` → `verify_audio.py` → `assemble.sh` → `subtitles.py`.
 
 ---
 
@@ -34,17 +36,20 @@ post-mortem back into DataHub so the next incident on that lineage resolves fast
 
 Built for "Build with DataHub: The Agent Hackathon" (Agents That Do Real Work).
 
-What you're watching, in order:
-0:00  The problem — the 2am page, and three hours of walking lineage by hand
-0:17  A staged failure: an ingestion job stalls and quality signals fire
-0:27  One click starts the triage
-0:36  The investigation — memory first, then lineage upstream hop by hop, checking assertions,
-      freshness, row counts and schema at every node, and stopping only at a breach with no
-      unhealthy parent
-1:17  Blast radius ranked by usage, then the write-back landing inside DataHub itself
-1:40  The same root cause breaks a different table three hops away — the agent recalls its own
-      post-mortem, verifies it against live evidence, and goes straight to the answer
-1:58  Cold versus memory-assisted, side by side
+Narrated for viewers who have never used DataHub: every term is defined the first time it appears.
+
+Chapters:
+0:00  What a data catalog is, and what DataHub tracks
+0:18  The 2am page, and the hours of walking lineage by hand
+0:32  The control panel: 23 healthy assets, empty signal inbox
+0:45  A real failure, staged: an ingestion job stalls and the inbox fills
+0:59  One click starts the triage
+1:12  Memory first — a cold start, with no prior post-mortem to recall
+1:25  Walking the lineage upward, checking what a human would at every table
+1:41  The root cause: trips_raw, 26 hours stale against a 6-hour freshness limit
+2:01  Blast radius ranked by usage, and the write-back landing inside DataHub
+2:21  A different table breaks three hops away — the agent recalls its own post-mortem
+2:37  Cold versus memory-assisted, side by side
 
 How it reads and writes DataHub:
 · Catalog reads go through the DataHub MCP Server (search, entities, lineage, lineage paths,
@@ -71,10 +76,41 @@ https://github.com/yadneshSalvi/datahub-data-engineer-agent
 
 ---
 
+## What is on screen, and what is claimed
+
+Every number spoken in the narration is a deterministic property of the seeded scenario, verified
+against the run that is on screen at that moment:
+
+| spoken | verified against |
+|---|---|
+| "twenty three assets … all healthy" | `/api/demo/state` → 23 entities; catalog donut 23 / 0 / 0 |
+| "collapsed to four rows … expected at least twenty five" | `demo/catalog.py` assertion `ROW_COUNT BETWEEN 25 AND 400`; `demo/break.py` sets `row_count=4` |
+| "twenty six hours stale against a six hour freshness limit" | signal detail `26.0h stale · SLA 6h`; run summary `26.03 hours` |
+| "fifteen assets" | run blast radius length = 15 |
+
+No percentage or timing figure is ever spoken, because those move run to run. The `/compare`
+panel shows them on screen and the captions carry them, so the claim is always tied to the pair of
+runs being displayed.
+
+## Honesty notes on the edit
+
+- **The `2x speed` chip at 1:12** is real and required. The screen recorder only emits a frame when
+  pixels change, so the live-run capture is 166 s of video for a 315 s run — the elapsed counter in
+  that shot advances about twice real time. The chip says so rather than letting the clock imply
+  the agent is faster than it is. No other shot is sped up; several are slightly *slowed* to cover
+  their narration, and slow shots are never labelled as fast.
+- **1:25 and 1:41 are a deliberate replay** of the finished run, not the live take. The event
+  timeline does not auto-scroll, so the live capture sits motionless for minutes. A completed run
+  is a permanently replayable record, so it is driven on purpose to show the per-table checks and
+  the resolved causal path.
+- **Every shot pans slowly** across a 2x (3200×1800) master. That is what keeps the frame alive
+  through passages where the UI itself is not animating; the pixels are unretouched app output.
+
 ## Notes for whoever uploads
 
 - **Turn captions on by default** if the platform allows it — the narration is deliberately free of
-  spoken percentages (per-run variance makes them unsafe to say aloud), so the on-screen figures
-  and captions carry the numbers.
+  spoken percentages, so the on-screen figures and captions carry the numbers.
+- Captions are worded from `tools/narration.txt` and timed from the audio, so they never contain a
+  speech-recognition error. Do not regenerate them from an auto-transcribe feature.
 - The chapter timestamps above are accurate to this cut. Re-derive them if the video is re-edited.
-- Do not add a music bed without re-checking the narration level (mean −20.4 dB, peak −2.9 dB).
+- Do not add a music bed without re-checking the narration level (mean −21.4 dB, peak −1.1 dB).

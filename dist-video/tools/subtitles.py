@@ -87,7 +87,17 @@ def group(tokens: list[tuple[str, float, float]]) -> list[tuple[float, float, st
             buf = []
     if buf:
         cues.append((start, end, " ".join(buf)))
-    return cues
+
+    # A length-forced break can strand a sentence's last word or two on their own line ("read.").
+    # Fold those back into the previous cue when it still fits.
+    merged: list[tuple[float, float, str]] = []
+    for cue in cues:
+        if merged and len(cue[2]) <= 14 and len(merged[-1][2]) + len(cue[2]) + 1 <= MAX_CHARS + 28:
+            previous = merged.pop()
+            merged.append((previous[0], cue[1], f"{previous[2]} {cue[2]}"))
+        else:
+            merged.append(cue)
+    return merged
 
 
 def wrap(text: str) -> str:
@@ -112,7 +122,11 @@ def main() -> int:
 
     lines = []
     for index, (start, end, text) in enumerate(cues, start=1):
-        lines.append(f"{index}\n{stamp(start)} --> {stamp(max(end, start + MIN_CUE_SECONDS))}\n{wrap(text)}\n")
+        # Enforcing a minimum duration can push a cue past the next one; never let two overlap.
+        end = max(end, start + MIN_CUE_SECONDS)
+        if index < len(cues):
+            end = min(end, max(cues[index][0] - 0.02, start + 0.2))
+        lines.append(f"{index}\n{stamp(start)} --> {stamp(end)}\n{wrap(text)}\n")
     out.write_text("\n".join(lines), encoding="utf-8")
     print(f"wrote {out.name}: {len(cues)} cues from script text, last ends {stamp(cues[-1][1])}")
     return 0

@@ -33,7 +33,8 @@ duration() { ffprobe -v error -show_entries format=duration -of default=noprint_
 
 index=0
 total=0
-while IFS=$'\t' read -r seg clip in speed crop; do
+while IFS=$'\t' read -r seg clip in speed crop chip; do
+  chip=${chip:--}
   [[ -z "${seg// }" || "${seg:0:1}" == "#" ]] && continue
   index=$((index + 1))
   n=$(printf "%02d" "$index")
@@ -45,35 +46,61 @@ while IFS=$'\t' read -r seg clip in speed crop; do
 
   want=$(duration "$wav")
 
-  # Build the video filter chain: speed -> crop -> fit to 1080p -> pad -> speed chip.
+  # Build the video filter chain: speed -> panning crop -> fit to 1080p -> pad -> chip.
+  #
+  # The crop drifts slowly instead of sitting still. Screen recordings of these pages are static
+  # for long stretches — several UI panels scroll an inner container, so a window scroll during
+  # capture moved nothing at all, and a frame-difference check found 15+ second stretches of
+  # pixel-identical video. That is precisely the "nothing happens on screen" problem this recut
+  # exists to fix. A slow pan across the 2x master guarantees continuous motion in every shot
+  # while still showing real, unaltered UI.
+  #
+  # The crop size stays constant (the encoder needs a fixed output size); only its origin moves.
+  # Full-frame shots are inset slightly so they have margin to travel within.
+  if [[ "$crop" == "-" ]]; then
+    cw=$((3040)); ch=$((1710)); cx=80; cy=45
+  else
+    IFS=':' read -r cw ch cx cy <<< "$crop"
+  fi
+  # Travel ~5px/s horizontally on the master, a little less vertically, clamped inside the frame.
+  px="min(${cx}+5*t\\,in_w-${cw})"
+  py="min(${cy}+2*t\\,in_h-${ch})"
+
   chain="setpts=PTS/${speed}"
-  [[ "$crop" != "-" ]] && chain="$chain,crop=${crop}"
+  chain="$chain,crop=${cw}:${ch}:${px}:${py}"
   chain="$chain,scale=${W}:${H}:force_original_aspect_ratio=decrease"
   chain="$chain,pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:color=${BG},fps=${FPS}"
-  if [[ "$speed" != "1" && -f "$FONT" ]]; then
-    chain="$chain,drawbox=x=iw-232:y=36:w=196:h=54:color=black@0.55:t=fill"
-    chain="$chain,drawtext=fontfile='${FONT}':text='${speed}x speed':fontcolor=white@0.92:fontsize=30:x=iw-214:y=50"
-  fi
   # Hold the final frame if the clip runs short, so a segment never ends on black.
   chain="$chain,tpad=stop_mode=clone:stop_duration=8"
 
-  ffmpeg -y -v error -ss "$in" -i "$src" -filter_complex "[0:v]${chain}[v]" -map "[v]" \
-    -t "$want" -an -c:v libx264 -preset medium -crf 20 -pix_fmt yuv420p "$OUT/v_$n.mp4"
+  # The chip is declared per shot rather than derived from `speed`. Screen capture already drops
+  # idle frames, so a clip can run faster than wall time at speed=1, and a slow-motion shot
+  # (speed<1) must NOT be labelled as sped up. Only the shots.tsv chip column says what is claimed.
+  # It is rasterised by make_chip.py and overlaid: this ffmpeg lacks drawtext (no libfreetype).
+  if [[ "$chip" != "-" && -n "$chip" ]]; then
+    python3 make_chip.py "$chip" "$OUT/chip_$n.png" >/dev/null
+    ffmpeg -nostdin -y -v error -ss "$in" -i "$src" -i "$OUT/chip_$n.png" \
+      -filter_complex "[0:v]${chain}[base];[base][1:v]overlay=W-w-36:36[v]" -map "[v]" \
+      -t "$want" -an -c:v libx264 -preset medium -crf 20 -pix_fmt yuv420p "$OUT/v_$n.mp4"
+  else
+    ffmpeg -nostdin -y -v error -ss "$in" -i "$src" -filter_complex "[0:v]${chain}[v]" -map "[v]" \
+      -t "$want" -an -c:v libx264 -preset medium -crf 20 -pix_fmt yuv420p "$OUT/v_$n.mp4"
+  fi
 
   echo "file 'v_$n.mp4'" >> "$OUT/video_list.txt"
   echo "file '../$RAW/seg_$n.wav'" >> "$OUT/audio_list.txt"
   total=$(python3 -c "print(round($total + $want, 2))")
-  printf "  seg %s  %-26s %6.2fs  speed=%sx crop=%s\n" "$n" "$clip" "$want" "$speed" "$crop"
+  printf "  seg %s  %-22s %6.2fs  speed=%s crop=%-22s chip=%s\n" "$n" "$clip" "$want" "$speed" "$crop" "$chip"
 done < "$SHOTS"
 
 echo "  ---- narration total: ${total}s"
 
 echo "== concatenating =="
-ffmpeg -y -v error -f concat -safe 0 -i "$OUT/video_list.txt" -c copy "$OUT/video.mp4"
-ffmpeg -y -v error -f concat -safe 0 -i "$OUT/audio_list.txt" -c:a pcm_s16le "$OUT/audio.wav"
+ffmpeg -nostdin -y -v error -f concat -safe 0 -i "$OUT/video_list.txt" -c copy "$OUT/video.mp4"
+ffmpeg -nostdin -y -v error -f concat -safe 0 -i "$OUT/audio_list.txt" -c:a pcm_s16le "$OUT/audio.wav"
 
 echo "== muxing =="
-ffmpeg -y -v error -i "$OUT/video.mp4" -i "$OUT/audio.wav" \
+ffmpeg -nostdin -y -v error -i "$OUT/video.mp4" -i "$OUT/audio.wav" \
   -c:v copy -c:a aac -b:a 192k -shortest "$FINAL"
 
 secs=$(duration "$FINAL")

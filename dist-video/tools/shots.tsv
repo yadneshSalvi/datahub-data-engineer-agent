@@ -1,21 +1,31 @@
 # One row per narration segment, in order. Tab-separated. '#' comments and blank lines ignored.
 #
-# seg   clip          in      speed   crop
+# seg   clip    in      speed   crop    chip
 #
 # in    seconds to seek into the clip before the segment starts (skips page load / layout shift)
-# speed playback multiplier; >1 time-compresses a real wait. Any segment with speed != 1 gets a
-#       "Nx speed" chip burned in, so a fast-moving elapsed counter is never passed off as real time.
-# crop  W:H:X:Y in MASTER coordinates (3200x1800), or '-' for the full frame.
-#       A crop narrower than 1920 is upscaled; keep W >= 1600 to stay near native sharpness.
+# speed playback multiplier. Mostly slightly BELOW 1 here: agent-browser only emits a frame when
+#       pixels change, so a clip of a mostly-still page is shorter than its wall time and has to be
+#       stretched to cover its narration.
+# crop  W:H:X:Y in MASTER coordinates (3200x1800), or '-' for the full frame. Crops are what make
+#       the narrated text legible — a crop is a real zoom into the 2x master, not an upscale.
+# chip  burnt-in label, or '-'. Declared per shot rather than derived from `speed`, because the
+#       capture itself already compresses idle time: clip_run is 166s of video for a 315s run, so
+#       the elapsed counter visibly runs ~2x even at speed=1, and that has to be labelled. A
+#       slow-motion shot (speed<1) must never be labelled as sped up.
 #
-seg01	clip01_datahub_lineage	2	1	-
-seg02	clip02_datahub_schema	1	1	1700:956:120:300
-seg03	clip03_deck_allclear	1	1	-
-seg04	clip04_arm_scenario	1	1	1800:1012:1300:250
-seg05	clip05_inbox_triage	1	1	1900:1069:520:400
-seg06	clip06_triage_recall	2	3	1700:956:560:700
-seg07	clip07_triage_climb	0	4	-
-seg08	clip08_triage_rootcause	0	3	1900:1069:1250:800
-seg09	clip09_blast_datahub	1	1	-
-seg10	clip10_recall_card	1	2	1800:1012:560:650
-seg11	clip11_compare	1	1	-
+# seg05/seg06 are two windows into one continuous recording of the live run.
+# seg07/seg08 come from a deliberate replay pass over the finished run: the event timeline never
+# auto-scrolls, so the live take sits still on the left for minutes — the exact dead air that got
+# v1 rejected. The run is a permanent replayable record, so it is driven on purpose instead.
+#
+seg01	clip01_datahub_lineage	1.5	1	2600:1463:300:170	-
+seg02	clip02_datahub_schema	1	1	1700:956:120:300	-
+seg03	clip03_deck_allclear	2	1	2600:1463:300:170	-
+seg04	clip04_arm_scenario	6	1	1700:956:1480:200	-
+seg05	clip_run	1.5	1	1900:1069:400:470	-
+seg06	clip_run	15	1	1700:956:500:560	2x speed
+seg07	clip0708_replay	0	0.8	1600:900:460:480	-
+seg08	clip0708_replay	13	0.69	1700:956:1620:420	-
+seg09	clip09_composite	0.2	0.97	-	-
+seg10	clip10_recall_card	0.4	0.65	1700:956:500:560	-
+seg11	clip11_compare	1.5	1	2500:1406:340:200	-
