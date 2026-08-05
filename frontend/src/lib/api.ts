@@ -14,7 +14,9 @@ import type {
   SignalsResponse,
 } from "./types";
 
-export const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8001").replace(/\/$/, "");
+// Pinned to 127.0.0.1 rather than localhost: the backend binds IPv4 only, and browsers resolve
+// localhost to ::1 first, so any unrelated process on [::1]:8001 silently answers every API call.
+export const API_URL = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8001").replace(/\/$/, "");
 
 export class ApiError extends Error {
   readonly status: number;

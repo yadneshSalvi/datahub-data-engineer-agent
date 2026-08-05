@@ -4,8 +4,10 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BACKEND_DIR="$ROOT_DIR/backend"
 FRONTEND_DIR="$ROOT_DIR/frontend"
-BACKEND_URL="http://localhost:8001"
-FRONTEND_URL="http://localhost:3001"
+# 127.0.0.1, not localhost: an unrelated process holding [::1]:8001 otherwise answers these health
+# probes, so the reuse check passes against the wrong server (the same trap port 8080 already sets).
+BACKEND_URL="http://127.0.0.1:8001"
+FRONTEND_URL="http://127.0.0.1:3001"
 BACKEND_PID=""
 FRONTEND_PID=""
 
@@ -104,7 +106,7 @@ else
   printf '==> Starting backend\n'
   (
     cd "$BACKEND_DIR"
-    exec env -u VIRTUAL_ENV uv run uvicorn oncall_agent.app:app --host 0.0.0.0 --port 8001
+    exec env -u VIRTUAL_ENV uv run uvicorn oncall_agent.app:app --host 127.0.0.1 --port 8001
   ) &
   BACKEND_PID=$!
 fi

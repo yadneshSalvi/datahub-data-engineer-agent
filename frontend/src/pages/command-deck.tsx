@@ -24,6 +24,12 @@ function metricSkeletons() {
   return Array.from({ length: 4 }, (_, index) => <Skeleton key={index} className="h-[132px] rounded-card" />);
 }
 
+function MetricTrend({ label, values, measured = false }: { label: string; values: number[]; measured?: boolean }) {
+  const runs = `${values.length} ${measured ? "measured " : ""}run${values.length === 1 ? "" : "s"}`;
+  const caption = `${label} · ${values.length < 3 ? `${runs} so far` : `last ${runs}`}`;
+  return <div className="flex flex-col items-end"><Sparkline values={values} label={`${label}; ${runs}`} /><p className="mt-1 whitespace-nowrap text-right text-[8px] font-medium leading-tight text-fg-subtle">{caption}</p></div>;
+}
+
 function OwnerStack({ signal }: { signal: Signal }) {
   if (signal.owners.length === 0) return <span className="text-[10px] text-fg-subtle">Unowned</span>;
   return <div className="flex -space-x-1.5" aria-label={`Owners: ${signal.owners.map((owner) => owner.name).join(", ")}`}>{signal.owners.slice(0, 3).map((owner) => { const initials = owner.name.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase(); return <Tooltip key={owner.urn} content={owner.name}><span className="grid size-7 place-items-center rounded-full border-2 border-surface bg-surface-2 text-[9px] font-bold text-fg-muted">{initials}</span></Tooltip>; })}</div>;
@@ -62,13 +68,17 @@ export default function CommandDeck() {
   const stableNodes = useLastKnownGood<GraphNode[]>(graph.data?.nodes ?? [], (n) => n.length > 0);
   const triage = useMutation({ mutationFn: (signal: Signal) => api.createRun({ dataset_urn: signal.dataset_urn, signal_kind: signal.kind, signal_detail: signal.detail, assertion_urn: signal.assertion_urns[0] }), onMutate: (signal) => setTriaging(signal.id), onSuccess: ({ run_id }) => { void queryClient.invalidateQueries({ queryKey: ["runs"] }); navigate(`/runs/${run_id}`); }, onError: (error) => { const message = error instanceof ApiError ? `${error.message}${error.hint ? ` · ${error.hint}` : ""}` : "The triage run could not be started."; toast({ tone: "error", title: "Triage failed to start", message }); }, onSettled: () => setTriaging(null) });
   const trend = metrics.data?.trend ?? [];
-  const firstTime = trend[0]?.time_to_root_cause_s;
-  const lastTime = trend.at(-1)?.time_to_root_cause_s;
+  const toolCallTrend = trend.map((item) => item.tool_calls);
+  const timeTrend = trend.flatMap((item) => item.time_to_root_cause_s == null ? [] : [item.time_to_root_cause_s]);
+  let recallCount = 0;
+  const recallTrend = trend.map((item, index) => (recallCount += item.recall_used) / (index + 1));
+  const firstTime = timeTrend[0];
+  const lastTime = timeTrend.at(-1);
   const reduction = firstTime && lastTime != null ? Math.round(((firstTime - lastTime) / firstTime) * 100) : null;
 
   return (
     <div className="mx-auto max-w-[1540px] p-6"><header className="mb-5 flex items-end justify-between"><div><p className="section-label">Live operations</p><h1 className="mt-1 text-2xl font-semibold tracking-[-.02em]">Command Deck</h1><p className="mt-1.5 text-xs text-fg-muted">Signals, active investigations, and the memory loop at a glance.</p></div><div className="flex items-center gap-2"><StatusDot tone={signals.isLoading ? "unknown" : signals.data?.signals.length ? "critical" : "ok"} label={signals.isLoading ? "Checking signals" : signals.data?.signals.length ? `${signals.data.signals.length} signals` : "All clear"} /><span className="rounded-md border border-border bg-surface px-2 py-1 font-mono text-[10px] text-fg-subtle tabular-nums">AUTO · 10s</span></div></header>
-      <section aria-label="Key metrics" className="grid grid-cols-4 gap-3">{metrics.isLoading ? metricSkeletons() : metrics.isError || !metrics.data ? <div className="col-span-4"><EmptyState icon={AlertTriangle} title="Metrics are unavailable" description="The command deck could not load run metrics from the backend." action={<Button size="sm" variant="secondary" onClick={() => void metrics.refetch()}>Retry</Button>} /></div> : <><Metric label="Incidents triaged" value={String(metrics.data.runs_succeeded)}><Sparkline values={trend.map((_, index) => index + 1)} /></Metric><Metric label="Avg time to root cause" value={metrics.data.avg_time_to_root_cause_s == null ? "—" : `${metrics.data.avg_time_to_root_cause_s.toFixed(1)}s`} delta={reduction == null ? undefined : `${Math.abs(reduction)}% faster vs first`} deltaGood={(reduction ?? 0) >= 0}><Sparkline values={trend.map((item) => item.time_to_root_cause_s ?? 0)} /></Metric><Metric label="Recall hit rate" value={`${Math.round(metrics.data.recall_hit_rate * 100)}%`}><Sparkline values={trend.map((_, index) => { const seen = trend.slice(0, index + 1); return seen.reduce((sum, item) => sum + item.recall_used, 0) / seen.length; })} /></Metric><Metric label="Downstream assets protected" value={formatCompact(metrics.data.assets_protected)}><Sparkline values={trend.map((_, index) => metrics.data!.assets_protected * ((index + 1) / Math.max(1, trend.length)))} /></Metric></>}
+      <section aria-label="Key metrics" className="grid grid-cols-4 gap-3">{metrics.isLoading ? metricSkeletons() : metrics.isError || !metrics.data ? <div className="col-span-4"><EmptyState icon={AlertTriangle} title="Metrics are unavailable" description="The command deck could not load run metrics from the backend." action={<Button size="sm" variant="secondary" onClick={() => void metrics.refetch()}>Retry</Button>} /></div> : <><Metric label="Incidents triaged" value={String(metrics.data.runs_succeeded)}><MetricTrend label="tool calls per run" values={toolCallTrend} /></Metric><Metric label="Avg time to root cause" value={metrics.data.avg_time_to_root_cause_s == null ? "—" : `${metrics.data.avg_time_to_root_cause_s.toFixed(1)}s`} delta={reduction == null ? undefined : `${Math.abs(reduction)}% faster vs first`} deltaGood={(reduction ?? 0) >= 0}><MetricTrend label="time to root cause" values={timeTrend} measured /></Metric><Metric label="Recall hit rate" value={`${Math.round(metrics.data.recall_hit_rate * 100)}%`}><MetricTrend label="running recall hit rate" values={recallTrend} /></Metric><Metric label="Downstream assets protected" value={formatCompact(metrics.data.assets_protected)} /></>}
       </section>
       <div className="mt-4 grid grid-cols-[minmax(0,1fr)_300px] gap-4">
         <Card className="min-w-0">
