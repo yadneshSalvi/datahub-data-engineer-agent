@@ -18,7 +18,7 @@
 # auto-scrolls, so the live take sits still on the left for minutes — the exact dead air that got
 # v1 rejected. The run is a permanent replayable record, so it is driven on purpose instead.
 #
-seg01	clip01_datahub_lineage	1.5	1	2600:1463:300:170	-
+seg01	clip01_datahub_lineage	9	1	2600:1463:300:170	-
 seg02	clip02_datahub_schema	1	1	1700:956:120:300	-
 seg03	clip03_deck_allclear	2	1	2600:1463:300:170	-
 seg04	clip04_arm_scenario	6	1	1700:956:1480:200	-
