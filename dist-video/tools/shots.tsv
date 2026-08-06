@@ -20,12 +20,12 @@
 #
 seg01	clip01_datahub_lineage	9	1	2600:1463:300:170	-
 seg02	clip02_datahub_schema	1	1	1700:956:120:300	-
-seg03	clip03_deck_allclear	2	1	2600:1463:300:170	-
+seg03	clip03_deck_allclear	4	1	2600:1463:300:170	-
 seg04	clip04_arm_scenario	6	1	1700:956:1480:200	-
 seg05	clip_run	1.5	1	1900:1069:400:470	-
 seg06	clip_run	15	1	1700:956:500:560	2x speed
 seg07	clip0708_replay	0	0.8	1600:900:460:480	-
 seg08	clip0708_replay	13	0.69	1700:956:1620:420	-
 seg09	clip09_composite	0.2	0.97	-	-
-seg10	clip10_recall_card	0.4	0.65	1700:956:500:560	-
+seg10	clip10_recall_card	6	1	1700:956:500:800	-
 seg11	clip11_compare	1.5	1	2500:1406:340:200	-
