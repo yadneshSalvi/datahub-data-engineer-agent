@@ -4,7 +4,7 @@
 
 | file | what |
 |---|---|
-| `oncall-demo.mp4` | final cut, 2:52.8 (172.761 s), 1920×1080, H.264 + AAC, 22,041,240 bytes |
+| `oncall-demo.mp4` | final cut, 2:52.8 (172.761 s), 1920×1080, H.264 + AAC, 26,083,409 bytes |
 | `oncall-demo.srt` | 45 captions, timed from the audio, worded from the script |
 
 Under the hackathon's 3:00 cap. Every frame is the real running app against a live DataHub
