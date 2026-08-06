@@ -4,7 +4,7 @@
 
 | file | what |
 |---|---|
-| `oncall-demo.mp4` | final cut, 2:52.8 (172.761 s), 1920×1080, H.264 + AAC, 26,083,409 bytes |
+| `oncall-demo.mp4` | final cut, 2:52.8 (172.761 s), 1920×1080, H.264 + AAC, 28,158,200 bytes |
 | `oncall-demo.srt` | 45 captions, timed from the audio, worded from the script |
 
 Under the hackathon's 3:00 cap. Every frame is the real running app against a live DataHub
@@ -103,8 +103,14 @@ runs being displayed.
   timeline does not auto-scroll, so the live capture sits motionless for minutes. A completed run
   is a permanently replayable record, so it is driven on purpose to show the per-table checks and
   the resolved causal path.
-- **Every shot pans slowly** across a 2x (3200×1800) master. That is what keeps the frame alive
-  through passages where the UI itself is not animating; the pixels are unretouched app output.
+- **The camera is either still or moving on purpose.** Each shot establishes on a locked full frame,
+  draws an accent border around the region the narration is about to name, eases into it over about
+  a second, then holds perfectly still. Measured across the finished cut: median inter-frame change
+  0.029, with twelve movement runs of 0.75–1.25s — the twelve intended moves and nothing else. What
+  moves during a hold is the UI itself: rows landing, the event stream advancing, the replay walking
+  its cards. An earlier cut drifted continuously to avoid dead air and read as a shake with text
+  sliding out of frame; stillness is the correct default and holds are native-sharp crops of the 2x
+  master, not upscales.
 
 ## Notes for whoever uploads
 

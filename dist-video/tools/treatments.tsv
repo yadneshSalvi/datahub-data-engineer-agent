@@ -1,0 +1,30 @@
+# Camera treatment per narration segment. Tab-separated: seg <TAB> phases
+#
+# The camera is either perfectly still or moving deliberately — never drifting. An earlier cut
+# panned slowly through every shot to avoid dead air; it read as a constant shake with text sliding
+# off screen. Stillness is correct: the UI's own motion (rows landing, the event stream, the replay)
+# is what keeps a held shot alive.
+#
+# phases: semicolon-separated, each `kind:seconds[:X,Y,W,H]` in MASTER coords (3200x1800).
+#   full          whole frame, pixel-locked
+#   hl            whole frame, pixel-locked, with an accent border around the region about to be
+#                 discussed. Always precedes a zoom so the eye arrives before the camera does.
+#   zin           ~1s eased move from whole frame to the target rect
+#   hold          locked on the target rect, zero drift
+#   zout          ~1s eased move from the target rect back to the whole frame
+#
+# A zoom target must be 16:9 or it will letterbox; a highlight rect can be any shape.
+# The final phase's duration is computed to make the segment match its narration exactly, so the
+# numbers below are the fixed ones and the last phase absorbs the remainder.
+#
+seg01	full:3.0;hl:1.2:280,400,1900,1069;zin:1.0:280,400,1900,1069;hold:11.05:280,400,1900,1069;zout:1.0:280,400,1900,1069;full:1.0
+seg02	full:2.5;hl:1.2:140,560,2020,1136;zin:1.0:140,560,2020,1136;hold:9.75:140,560,2020,1136
+seg03	full:2.2;hl:1.0:2048,619,1152,648;zin:1.0:2048,619,1152,648;hold:4.3:2048,619,1152,648;zout:1.0:2048,619,1152,648;hl:2.99:480,619,2016,648
+seg04	full:14.61
+seg05	full:1.5;hl:1.0:400,470,2020,300;zin:1.0:360,430,2100,1181;hold:4.0:360,430,2100,1181;zout:1.0:360,430,2100,1181;full:4.55
+seg06	full:2.0;hl:1.2:563,1380,1050,230;zin:1.0:240,844,1700,956;hold:8.57:240,844,1700,956
+seg07	full:2.0;hl:1.2:480,760,1600,900;zin:1.0:460,700,1700,956;hold:12.09:460,700,1700,956
+seg08	full:2.5;hl:1.2:1560,470,1620,900;zin:1.0:1500,420,1700,956;hold:14.71:1500,420,1700,956
+seg09	full:8.1;hl:11.95:2390,500,800,1250
+seg10	full:2.0;hl:1.2:563,1380,1080,290;zin:1.0:400,844,1700,956;hold:12.33:400,844,1700,956
+seg11	full:3.0;hl:1.2:480,300,2664,1499;zin:1.0:480,300,2664,1499;hold:9.65:480,300,2664,1499
