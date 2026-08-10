@@ -13,7 +13,8 @@ wrong boundary, and preserve that evidence so the same investigation is never pa
 
 ## Demo video
 
-**2 minutes 13 seconds, every frame the real app against a live DataHub quickstart.**
+**2 minutes 54 seconds — the real app against a live DataHub quickstart, with side panels
+quoting the filmed runs' recorded evidence.**
 
 <!-- Replace this line with the YouTube link once uploaded. -->
 > **Watch:** _upload pending — see [`dist-video/UPLOAD.md`](dist-video/UPLOAD.md) for the cut,
@@ -21,17 +22,22 @@ wrong boundary, and preserve that evidence so the same investigation is never pa
 
 | | |
 | --- | --- |
-| 0:00 | The problem — the 2 a.m. page, and hours of walking lineage by hand |
-| 0:17 | A staged failure: an ingestion job stalls and quality signals fire |
-| 0:27 | One click starts the triage |
-| 0:36 | The investigation — memory first, then lineage upstream hop by hop |
-| 1:17 | Blast radius ranked by usage, then the write-back landing inside DataHub |
-| 1:40 | The same root cause breaks a different table — the agent recalls its own post-mortem |
-| 1:58 | Cold versus memory-assisted, side by side |
+| 0:00 | What a data catalog is, and what DataHub maps |
+| 0:18 | How the agent reaches DataHub: six MCP tools and seventeen of its own |
+| 0:39 | The control panel: 23 healthy assets, empty signal inbox |
+| 0:51 | A stopped ingestion job, and the assertions that start failing |
+| 1:06 | One click hands over the page |
+| 1:18 | Memory first — a cold start, then the walk up the lineage |
+| 1:36 | The four checks it runs at every table |
+| 1:47 | The root cause: trips_raw, 26 hours stale, and the stop rule that confirms it |
+| 2:03 | Blast radius ranked by usage, and the write-backs landing in DataHub |
+| 2:22 | A second incident three hops away — the agent recalls its own post-mortem |
+| 2:38 | Cold versus memory-assisted, side by side |
 
-The narration deliberately states no percentages: the agent is non-deterministic and the figures
-move between runs, so the on-screen values and captions carry them instead. See
-[the memory loop, measured](#the-memory-loop-measured) for the basis of the comparison.
+The narration quotes the filmed pair's measured deltas — 24% fewer tool calls, 14% less time —
+and every figure on screen is quoted verbatim from that pair's recorded runs. See
+[the memory loop, measured](#the-memory-loop-measured) for what is being compared and how much
+those figures move between runs.
 
 ## Architecture
 
@@ -125,8 +131,14 @@ post-mortem — so the only difference is what the agent remembered.
 | Repeat — symptom on `agg_zone_demand`   | Prior post-mortem recalled and verified |             33.2 s |         72 |
 
 `GET /api/compare` reports **62% less time to root cause and 23% fewer tool calls** for this pair.
-These are the two runs shown in the demo video, so the figures on screen and the figures here
-are the same pair.
+
+The **demo video** was filmed from a different pair of the same experiment — cold
+`run_9a5cb891af954977` (92 tool calls, 83.0 s to root cause) against recall
+`run_71b45939d95844ab` (70 calls, 71.5 s): the **24% fewer tool calls and 14% less time, over
+the same three hops**, that the narration quotes. The verbatim `/api/compare` response for the
+filmed pair is committed at
+[`examples/snapshots/compare-video-pair.json`](examples/snapshots/compare-video-pair.json). Two
+pairs, two deltas — that spread is the run-to-run variance discussed below.
 
 The saving is structural, not a shortcut. Cold, the agent must walk every upstream branch capable
 of producing the signal and prove each one healthy — it examined and cleared the `stg_zones` /

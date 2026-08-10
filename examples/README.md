@@ -12,7 +12,13 @@ basis of the measurement in the root README.
 | `run_332299d97bdd4b34` (**recall**) | `marts.agg_zone_demand` row-count assertion | `raw.trips_raw`  | prior post-mortem, 3 hops upstream |             33.2 s |         72 |
 
 Same root cause, **different symptoms**, with `demo/reset.py --keep-memory` between them — so the
-only difference is what the agent remembered. **These are the two runs shown in the demo video.**
+only difference is what the agent remembered.
+
+The demo video was filmed from a different pair of the same experiment — cold
+`run_9a5cb891af954977` (92 tool calls, 83.0 s to root cause) versus recall
+`run_71b45939d95844ab` (70 calls, 71.5 s): the **24% fewer tool calls / 14% less time** the
+narration quotes. The verbatim `GET /api/compare` response for that filmed pair is committed as
+`snapshots/compare-video-pair.json`; the full artifacts below belong to the pair in the table.
 
 ## Files
 
@@ -30,6 +36,7 @@ incidents/
   cold-incident.json, recall-incident.json  the raise_incident inputs and resulting URNs
 snapshots/
   compare.json                              verbatim GET /api/compare response for this pair
+  compare-video-pair.json                   verbatim GET /api/compare for the pair filmed in the demo video
   signals.json                              verbatim GET /api/signals feed
 ```
 

@@ -44,3 +44,8 @@ frontend/dist/
 dist-video/*.mp4
 dist-video/tools/raw/
 dist-video/tools/build/
+
+# Orchestration artifacts (private)
+.agents/
+.claude/
+skills-lock.json
