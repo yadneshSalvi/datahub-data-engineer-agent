@@ -382,14 +382,17 @@ def draw_card(image: Image.Image, draw: ImageDraw.ImageDraw, x: int, y: int,
 def render_calls(t: float, script: list[dict], seg_bounds: dict[str, tuple[float, float]]) -> Image.Image:
     image, draw = frame()
 
-    # Which segment are we in? Cards clear at every segment boundary — a new beat is a new page.
-    seg = None
-    for name, (start, end) in seg_bounds.items():
-        if start <= t < end:
-            seg = name
-            break
-    if seg is None:
-        seg = list(seg_bounds)[-1]
+    # A new beat is a new page, but the page turns when the beat's FIRST CALL lands, not when the
+    # narration segment ticks over. Clearing on the segment boundary left the panel blank for the
+    # 4.4s of framing sentence before seg07's first check — dead air that the old churning capture
+    # happened to hide. Carrying the previous beat's cards across the gap keeps real evidence on
+    # screen until real evidence replaces it.
+    seg = list(seg_bounds)[0]
+    for event in script:
+        if event.get("update"):
+            continue
+        if t >= seg_bounds[event["seg"]][0] + event["t"]:
+            seg = event["seg"]
     seg_start = seg_bounds[seg][0]
 
     cards: list[tuple[dict, float, float]] = []

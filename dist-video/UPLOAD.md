@@ -4,7 +4,7 @@
 
 | file | what |
 |---|---|
-| `oncall-demo.mp4` | final cut, 2:54.2 (174.161 s), 1920×1080, H.264 + AAC, 24,894,259 bytes |
+| `oncall-demo.mp4` | final cut, 2:54.2 (174.161 s), 1920×1080, H.264 + AAC, 18,634,449 bytes |
 | `oncall-demo.srt` | 43 captions, timed from the audio, worded from the script |
 
 The captions are committed to the repo. `dist-video/*.srt` used to be gitignored alongside the
@@ -148,6 +148,15 @@ and the screen showing them is in frame at that moment. No figure is rounded in 
   their narration. No shot therefore carries a speed chip, and a slowed shot is never labelled as
   fast. `assemble.py` refuses to build a segment whose narration outruns its clip, so a shortfall
   fails the build instead of being padded with cloned frames.
+- **1:19 to 1:47 is a held reading of the stored run, not a live capture.** The investigation
+  timeline auto-scrolls itself while an agent is working, and the first cut of this window filmed
+  that: it read as churn. This window is now built from stills of the SAME persisted run
+  (`run_9a5cb891af954977`), held at three fixed scroll positions, with the accent border landing on
+  the card the narration is about to name — the recall call, its arguments, its `"found": 0`
+  result, then the lineage hop and the four checks on the table it reached. Position changes are
+  hard cuts between held frames; nothing scrolls on camera. Because these are stills, no playback
+  rate applies to them: nothing is sped up or slowed, and nothing on screen implies a live clock.
+  No agent was re-run to produce them and nothing was written to the catalog.
 - **1:36 and 1:47 are a deliberate replay** of the finished run, not the live take. The event
   timeline does not auto-scroll, so the live capture sits motionless for minutes. A completed run
   is a permanently replayable record, so it is driven on purpose to show the per-table checks and

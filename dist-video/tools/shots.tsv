@@ -17,13 +17,18 @@
 # radius, then a hard cut to the DataHub page carrying the write-backs. One fixed crop could not
 # have framed both, and re-shooting was not an option.
 #
+# seg06/seg07 play seg06_pane and seg07_pane. The live captures they replace auto-scrolled the
+# investigation timeline, which read as churn. These are stills of the SAME persisted run held at
+# fixed scroll positions, with the accent border landing on the card the narration is about to
+# name; position changes are hard cuts, never a scroll. No agent was re-run to make them.
+#
 seg01	clip01_datahub_lineage	36	0.75	2600:1463:300:170	-
 seg02	clip02_datahub_schema	1	0.86	1740:1678:140:120	-
 seg03	clip03_deck_allclear	4	1	2600:1463:300:170	-
 seg04	clip04_composite	0	0.95	2400:1350:180:450	-
 seg05	clip_run	0	0.895	2100:1181:360:430	-
-seg06	clip06_coldstart	5	1	1150:1109:500:546	-
-seg07	clip07_walk	7	1	1150:1109:500:640	-
+seg06	seg06_pane	0	1	pre	-
+seg07	seg07_pane	0	1	pre	-
 seg08	clip0708_replay	13	0.69	1340:1292:1700:508	-
 seg09	clip09_split	0	0.98	pre	-
 seg10	clip10_recall_card	6	1	1150:1109:480:640	-
