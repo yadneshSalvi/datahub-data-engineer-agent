@@ -1,5 +1,7 @@
 # YouTube upload: copy-paste pack
 
+**Published:** <https://youtu.be/8VTZzn7bgtE>
+
 **Video file:** `oncall-demo.mp4` · **Captions:** upload `oncall-demo.srt` (English) ·
 **Thumbnail:** `oncall-demo-thumbnail.png` (1280x720) · **Visibility:** Public
 

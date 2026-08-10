@@ -16,9 +16,8 @@ wrong boundary, and preserve that evidence so the same investigation is never pa
 **2 minutes 54 seconds — the real app against a live DataHub quickstart, with side panels
 quoting the filmed runs' recorded evidence.**
 
-<!-- Replace this line with the YouTube link once uploaded. -->
-> **Watch:** _upload pending — see [`dist-video/UPLOAD.md`](dist-video/UPLOAD.md) for the cut,
-> subtitles, title, description and chapter timestamps._
+> **Watch: <https://youtu.be/8VTZzn7bgtE>** — 2:54, captioned. The upload package (title,
+> description, chapters, thumbnail) is in [`dist-video/UPLOAD.md`](dist-video/UPLOAD.md).
 
 | | |
 | --- | --- |
