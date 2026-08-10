@@ -183,6 +183,13 @@ The script checks Docker and GMS, syncs dependencies, starts the API on
 the UI on `http://localhost:3001`. Ctrl-C stops the app processes it started; it never stops the
 shared DataHub containers.
 
+**Start both servers through `dev.sh` rather than by hand.** Each has an IPv4/IPv6 trap that the
+script already handles, and they point in opposite directions. Vite started without `--host` binds
+`[::1]` only, so the UI answers on `localhost:3001` but not on `127.0.0.1:3001`. The API binds IPv4
+only, so a health check aimed at `localhost:8001` can resolve to `::1` and be answered by an
+unrelated process that happens to hold it — a 404 on `/api/health` is a wrong-host symptom, not a
+wrong route. Check the API on `127.0.0.1`.
+
 This repository's local quickstart exposes GMS on `http://localhost:8081`. **That port is a local
 default, not a universal DataHub port.** Set `DATAHUB_GMS_URL` in [.env](.env.example) for another
 deployment. The local DataHub UI defaults to `http://localhost:9002` and is independently
