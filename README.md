@@ -276,7 +276,11 @@ Real captures of the running app at 1440x900, taken from the two runs described 
 
 Building this surfaced five behaviours on **DataHub OSS GMS v1.5.0.6** that cost real debugging
 time. Each was reproduced live against a stock `datahub docker quickstart`, and each is worked
-around in this codebase. We are writing them up here in case they are useful upstream.
+around in this codebase. We are writing them up here in case they are useful upstream. The two most
+reproducible of them are now filed upstream as
+[datahub#19063](https://github.com/datahub-project/datahub/issues/19063) (`operations(limit: n)`
+ordering) and [datahub#19064](https://github.com/datahub-project/datahub/issues/19064)
+(`hasFailingAssertions` search filter).
 
 1. **`operations(limit: n)` truncates before ordering, and is not newest-first.** On a dataset whose
    `operation` series had ~10 points, `limit: 5` omitted the newest record entirely — so a dataset
