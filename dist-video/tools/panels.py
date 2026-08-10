@@ -192,7 +192,8 @@ def arrow(draw, x, y0, y1, alpha, t: float | None = None) -> None:
 def render_arch(t: float) -> Image.Image:
     cues = arch_cues()
     image, draw = frame()
-    header(draw, "How the agent reaches DataHub", "Two paths into the same catalog")
+    header(draw, "How the agent reaches DataHub",
+           "Six MCP read tools · seventeen native tools, reads and write-backs")
 
     def alpha_of(key: str) -> float:
         return ease((t - cues[key]) / 0.45)
@@ -249,7 +250,7 @@ def calls_script() -> list[dict]:
     return [
         # ---- seg06 · cold recall, then the first lineage hop
         dict(seg="seg06", t=at("seg06", "searches"), chip="Institutional memory",
-             sub="DataHub search · structured property index", badge="SDK", tool="recall_postmortems",
+             sub="DataHub search · structured property index", badge="NATIVE", tool="recall_postmortems",
              args=[f"dataset_urn = {DS}.marts.agg_daily_rides,PROD)", "max_hops    = 3"]),
         dict(seg="seg06", t=at("seg06", "Nothing"), update=True,
              resp=['{"found": 0,', ' "message": "No prior post-mortems on this',
@@ -261,26 +262,26 @@ def calls_script() -> list[dict]:
 
         # ---- seg07 · the four checks a human would run, on the failing table
         dict(seg="seg07", t=at("seg07", "assertion"), chip="Assertions", sub="DataHub Python SDK · GraphQL",
-             badge="SDK", tool="get_assertion_status",
+             badge="NATIVE", tool="get_assertion_status",
              args=[f"dataset_urn = {DS}.marts.agg_daily_rides,PROD)"],
              resp=['"failing": 1  ·  result "FAILURE"',
                    '"row_count must satisfy BETWEEN: 25..400"']),
         dict(seg="seg07", t=at("seg07", "fresh"), chip="Freshness", sub="DataHub Python SDK · GraphQL",
-             badge="SDK", tool="get_freshness",
+             badge="NATIVE", tool="get_freshness",
              args=[f"dataset_urn = {DS}.marts.agg_daily_rides,PROD)"],
              resp=['"hours_stale": 1.22   "sla_hours": 6.0', '"breaching": false']),
         dict(seg="seg07", t=at("seg07", "row"), chip="Profile history", sub="DataHub Python SDK · GraphQL",
-             badge="SDK", tool="get_row_count_trend",
+             badge="NATIVE", tool="get_row_count_trend",
              args=[f"dataset_urn = {DS}.marts.agg_daily_rides,PROD)"],
              resp=['"latest_row_count": 4', '"previous_row_count": 182   "pct_change": -97.8']),
         dict(seg="seg07", t=at("seg07", "schema"), chip="Schema", sub="DataHub Python SDK · GraphQL",
-             badge="SDK", tool="check_schema_drift",
+             badge="NATIVE", tool="check_schema_drift",
              args=[f"dataset_urn = {DS}.marts.agg_daily_rides,PROD)"],
              resp=['"verdict": "unknown"  — no downstream column', ' dependency available to compare']),
 
         # ---- seg08 · the source, and the stop rule
         dict(seg="seg08", t=at("seg08", "Twenty"), chip="Freshness", sub="DataHub Python SDK · GraphQL",
-             badge="SDK", tool="get_freshness",
+             badge="NATIVE", tool="get_freshness",
              args=[f"dataset_urn = {DS}.raw.trips_raw,PROD)"],
              resp=['"hours_stale": 26.03   "sla_hours": 6.0', '"breaching": true']),
         dict(seg="seg08", t=at("seg08", "Nothing"), chip="Lineage", sub="DataHub MCP server",
@@ -288,39 +289,39 @@ def calls_script() -> list[dict]:
              args=[f"urn      = {DS}.raw.trips_raw,PROD)", "upstream = true    max_hops = 1"],
              resp=['{"upstreams": {"total": 0, …}}']),
         dict(seg="seg08", t=at("seg08", "confirms"), chip="Stop rule", sub="Aspect store, not the search index",
-             badge="SDK", tool="confirm_no_upstreams",
+             badge="NATIVE", tool="confirm_no_upstreams",
              args=[f"dataset_urn = {DS}.raw.trips_raw,PROD)"],
              resp=['"verdict": "confirmed"',
                    '"Genuine source node. The stop rule is satisfied."'], good=True),
 
         # ---- seg09 · who it hurts, and everything written back
         dict(seg="seg09", t=at("seg09", "fifteen"), chip="Usage", sub="DataHub Python SDK · GraphQL",
-             badge="SDK", tool="get_usage_stats",
+             badge="NATIVE", tool="get_usage_stats",
              args=[f"dataset_urn = {DS}.marts.fct_trips,PROD)"],
              resp=['"queries_30d": 3621   "unique_users": 1',
                    "ranked 1st of the run's blast_radius_total 15",
                    '  = 7 datasets + 4 charts + 3 dashboards + 1 model']),
         dict(seg="seg09", t=at("seg09", "filing"), chip="Incident write-back", sub="DataHub Python SDK · GraphQL",
-             badge="SDK", tool="raise_incident",
+             badge="NATIVE", tool="raise_incident",
              args=[f"dataset_urn   = {DS}.marts.agg_daily_rides,PROD)",
                    'incident_type = "VOLUME"'],
              resp=['urn:li:incident:oncall-2cd1e500…', '"Active critical volume incident"'], good=True),
         dict(seg="seg09", t=at("seg09", "tagging"), chip="Tags, down to the column",
-             sub="DataHub Python SDK · GraphQL", badge="SDK", tool="tag_assets",
+             sub="DataHub Python SDK · GraphQL", badge="NATIVE", tool="tag_assets",
              args=['tag = "oncall_root_cause"', 'column_paths = ["pickup_ts"]'],
              resp=['"Applied oncall_root_cause to 1 assets (1 changed)"'], good=True),
         dict(seg="seg09", t=at("seg09", "notifying"), chip="Ownership", sub="DataHub Python SDK · GraphQL",
-             badge="SDK", tool="notify_owners",
+             badge="NATIVE", tool="notify_owners",
              args=['owner_urns = [maya.chen, data-platform, sam.patel, …]'],
              resp=['"Notified 6 owners: CRITICAL: stale', ' raw.trips_raw collapsed agg_daily_rides"'], good=True),
         dict(seg="seg09", t=at("seg09", "writing"), chip="Institutional memory", sub="Document + searchable structured property",
-             badge="SDK", tool="write_postmortem",
+             badge="NATIVE", tool="write_postmortem",
              args=['postmortem = {"title": …, "root_cause_urn": …, …}'],
              resp=['urn:li:document:oncall-postmortem-', ' run_9a5cb891af954977'], good=True),
 
         # ---- seg10 · the second incident: the memory pays off
         dict(seg="seg10", t=at("seg10", "search"), chip="Institutional memory",
-             sub="DataHub search · second incident", badge="SDK", tool="recall_postmortems",
+             sub="DataHub search · second incident", badge="NATIVE", tool="recall_postmortems",
              args=[f"dataset_urn = {DS}.marts.agg_zone_demand,PROD)", "max_hops    = 3"]),
         dict(seg="seg10", t=at("seg10", "finds"), update=True,
              resp=['{"found": 1,', ' "root_cause_name": "raw.trips_raw",',

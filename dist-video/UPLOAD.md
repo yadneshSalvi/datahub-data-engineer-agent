@@ -4,8 +4,12 @@
 
 | file | what |
 |---|---|
-| `oncall-demo.mp4` | final cut, 2:54.2 (174.161 s), 1920×1080, H.264 + AAC, 24,879,320 bytes |
+| `oncall-demo.mp4` | final cut, 2:54.2 (174.161 s), 1920×1080, H.264 + AAC, 24,894,259 bytes |
 | `oncall-demo.srt` | 43 captions, timed from the audio, worded from the script |
+
+The captions are committed to the repo. `dist-video/*.srt` used to be gitignored alongside the
+mp4; 3 KB of judge-facing text is not a large binary, so the ignore rule was narrowed to the mp4
+only.
 
 Under the hackathon's 3:00 cap. Every frame of footage is the real running app against a live
 DataHub quickstart. The only drawn elements are the split-screen panels, and everything they
@@ -98,7 +102,7 @@ rejected for. The panels are the only drawn material in the cut.
 | beat | panel |
 |---|---|
 | 0:18 | Architecture. Agent → DataHub MCP server (6 read tools) and → Python SDK + GraphQL (17 native tools) → DataHub. Nodes light as the narration names them. |
-| 1:18–2:38 | The agent's real calls, revealed one at a time: `recall_postmortems`, `datahub_get_lineage`, the four health checks, `confirm_no_upstreams`, `get_usage_stats`, `raise_incident`, `tag_assets`, `notify_owners`, `write_postmortem`, `datahub_get_lineage_paths_between`. |
+| 1:19–2:38 | The agent's real calls, revealed one at a time: `recall_postmortems`, `datahub_get_lineage`, the four health checks, `confirm_no_upstreams`, `get_usage_stats`, `raise_incident`, `tag_assets`, `notify_owners`, `write_postmortem`, `datahub_get_lineage_paths_between`. |
 
 **Every figure on a panel is quoted from `backend/data/oncall.db`** — the persisted run log of
 `run_9a5cb891af954977` (cold) and `run_71b45939d95844ab` (recall), the two runs on screen.
@@ -107,6 +111,16 @@ unless every number and every quoted string printed on a panel appears verbatim 
 response of a call of that name in that run. 89 figures across 16 cards currently pass.
 
 Long responses are abbreviated with a visible `…`, never silently truncated.
+
+A panel card carries the same origin badge the app puts on that call — `NATIVE` or `MCP`, which is
+the raw `origin` field off the run event — so a viewer comparing the panel to the tool card beside
+it sees one vocabulary, not two. Which interface a native tool is built on is named in the panel's
+sub-header (`DataHub Python SDK · GraphQL`).
+
+The two integrations are not a reads/writes split, and nothing in the cut says they are: of the
+seventeen native tools, ten are reads, five are writes and two are run bookkeeping. MCP covers the
+catalog; the native tools cover what OSS MCP cannot reach — assertion status, freshness, row-count
+history, usage — and all of the writing.
 
 **One number is not quoted from a raw response, deliberately.** The raw downstream lineage response
 reads `"total": 16`, because it counts an unranked ML feature; the run's own `authoritative_counts`
