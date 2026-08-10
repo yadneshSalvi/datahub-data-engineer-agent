@@ -1,21 +1,21 @@
-Every company runs on data pipelines. Raw tables feed cleaned tables, which feed the dashboards that executives actually read. DataHub is an open source catalog that maps all of it, and tracks whether the data is healthy.
+Companies run on data pipelines. Raw tables feed cleaned tables, which feed the dashboards executives read. DataHub is an open source catalog that maps every table, every column, and every dependency between them.
 
-So when a dashboard goes wrong at two in the morning, someone gets paged, opens that map, and walks it by hand, table by table, for hours. That is the job we handed to an agent.
+DataHub also stores what you need when something breaks: schemas, owners, usage, incidents, and assertions. Our agent reads that catalog through DataHub's MCP server, and writes back through the DataHub Python SDK.
 
-This is its control panel. On the right, the catalog snapshot: twenty three assets in a ride hailing warehouse, all healthy. On the left, the signal inbox, empty.
+This is the agent's control panel. On the right, the catalog snapshot from DataHub: twenty three assets in a ride hailing data warehouse, all healthy.
 
-Now we stage a real failure. An ingestion job stalls, and the inbox fills up. Each row is a failing assertion. An assertion is an automated data quality check that DataHub runs against a table.
+Now we stop the ingestion job. An assertion is an automated data quality check DataHub runs against a table. Its checks start failing, and the inbox on the left fills up.
 
-Look at the top row. A table called agg daily rides has collapsed to four rows. Its check expected at least twenty five. One click, and the agent takes the page.
+The top row: agg daily rides has collapsed to four rows, where its check expected at least twenty five. One click, and the agent takes the page.
 
-It starts with memory. It searches DataHub for post mortems it has written about this table before. Nothing yet. This is the first time it has seen this one.
+Its first move is memory. It searches DataHub for post mortems it wrote before, indexed as a searchable structured property. Nothing. So it climbs the lineage, the map of which table feeds which, one hop at a time.
 
-Then it walks the lineage, the map of which tables feed which. It climbs upward one hop at a time, checking what a human would at every table. Is the check passing. Is the data fresh. Did the row count collapse.
+At every table it asks what a human would, all through DataHub. Is the assertion passing. Is the data fresh. Did the row count collapse. Did the schema change.
 
-Watch the graph on the right. Staging trips is broken, but its parent is worse, so it keeps climbing, and stops at trips raw. Twenty six hours stale against a six hour freshness limit, with nothing feeding it. That is the root cause.
+Staging trips is broken, but its parent is worse, so it keeps climbing and stops at trips raw. Twenty six hours stale against a six hour limit. Nothing feeds it, and it confirms that rather than assuming.
 
-Then it works downstream to see who this hurts. Fifteen assets, ranked by real usage. And it acts inside DataHub: it files an incident, tags the root cause down to the column, notifies the owners, and writes a post mortem back into the catalog.
+Then it works downstream: fifteen assets, ranked by usage from DataHub. Then it acts inside DataHub, filing an incident, tagging the root cause down to the column, notifying the owners, and writing a post mortem back in.
 
-Now a different table breaks, three hops away, one this agent has never triaged. Watch the first card. It remembers. It finds the post mortem it wrote, confirms it against live evidence, and goes straight to the answer.
+Now a different table breaks, three hops away. This time the search hits. It finds its own post mortem, then uses DataHub's column level lineage to check the path from the same source, and goes straight to the answer.
 
-Same root cause. Same answer. A fraction of the work. Every incident it closes makes the next one faster, because the knowledge lives in DataHub, where the next engineer will find it too.
+Same root cause. On this pair of runs: twenty four percent fewer tool calls, fourteen percent less time, the same three hops. Written back into DataHub, where the next engineer finds it.

@@ -95,6 +95,56 @@ def phase_filter(kind: str, rect: tuple[int, int, int, int] | None, frames: int)
     sys.exit(f"unknown phase kind: {kind}")
 
 
+
+# The split-screen blocks. Inside a block the camera is pixel-locked and the panel does all the
+# moving; the block enters and leaves with a single ~1s slide. They are deliberately few and long:
+# five short blocks would have put two transitions a second apart at the seg08/09 and seg09/10
+# boundaries, which is the constant motion the drift-pan cut was rejected for.
+BLOCKS = {"A": ["seg02"], "B": ["seg06", "seg07", "seg08", "seg09", "seg10"]}
+LEFT_W = 1120
+PANEL_W = W - LEFT_W          # 800; panels.py renders at exactly this width
+SLIDE = 0.9
+
+
+def block_of(seg: str) -> tuple[str, int, int] | None:
+    for name, members in BLOCKS.items():
+        if seg in members:
+            return name, members.index(seg), len(members)
+    return None
+
+
+def slide_x() -> tuple[str, str]:
+    """Eased slide expressions for a panel entering and leaving frame."""
+
+    p = f"min(t/{SLIDE},1)"
+    q = f"max(min((t-(DUR-{SLIDE}))/{SLIDE},1),0)"
+    enter = f"{LEFT_W}+{PANEL_W}*(1-(3*pow({p},2)-2*pow({p},3)))"
+    leave = f"{LEFT_W}+{PANEL_W}*(3*pow({q},2)-2*pow({q},3))"
+    return enter, leave
+
+
+def panel_x(first: bool, last: bool, dur: float) -> str:
+    enter, leave = slide_x()
+    if first and last:
+        expr = f"if(lt(t,{SLIDE}),{enter},{leave})"
+    elif first:
+        expr = enter
+    elif last:
+        expr = leave
+    else:
+        expr = str(LEFT_W)
+    return expr.replace("DUR", f"{dur:.3f}")
+
+
+def treat_rect(spec: str) -> str:
+    """`sp:<secs>:<x,y,w,h>` -> an ffmpeg crop argument, checked against the left pane's shape."""
+
+    x, y, w, h = (int(v) for v in spec.split(":")[2].split(","))
+    if abs(w / h - LEFT_W / H) > 0.004:
+        sys.exit(f"crop {w}x{h} is {w / h:.4f}, not the left pane's {LEFT_W / H:.4f} — it would stretch")
+    return f"{w}:{h}:{x}:{y}"
+
+
 def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     shots = {r[0]: r for r in rows(TOOLS / "shots.tsv")}
@@ -114,13 +164,46 @@ def main() -> int:
             sys.exit(f"missing {src} — capture {clip} first")
         want = duration(wav)
 
-        # Normalise once: speed, frame rate and master size, trimmed to the narration length.
+        # A clip must genuinely cover its narration. tpad is left in only to absorb sub-frame
+        # rounding; anything longer would clone a frozen frame into the cut, which is how a
+        # "still" defect gets manufactured in the edit rather than found in the capture.
+        available = (duration(src) - float(start)) / float(speed)
+        if want > available:
+            sys.exit(f"{seg}: narration is {want:.2f}s but {clip} only gives {available:.2f}s "
+                     f"from in-point {start} at speed {speed} — retime, do not pad")
+
+        pre = treatments[seg].endswith("pre")
+        size = f"{LEFT_W}:{H}" if pre else f"{MASTER_W}:{MASTER_H}"
         norm = OUT / f"n_{n}.mp4"
         run(["ffmpeg", "-nostdin", "-y", "-v", "error", "-ss", start, "-i", str(src),
-             "-vf", f"setpts=PTS/{speed},fps={FPS},scale={MASTER_W}:{MASTER_H},"
-                    f"tpad=stop_mode=clone:stop_duration=12",
+             "-vf", f"setpts=PTS/{speed},fps={FPS},scale={size},"
+                    f"tpad=stop_mode=clone:stop_duration=1",
              "-t", f"{want}", "-an", "-c:v", "libx264", "-preset", "medium", "-crf", "18",
              "-pix_fmt", "yuv420p", str(norm)])
+
+        block = block_of(seg)
+        if block:
+            name, position, count = block
+            panel = OUT / f"panel_{name}.mp4"
+            if not panel.is_file():
+                sys.exit(f"missing {panel} — run panels.py first")
+            offset = sum(duration(RAW / f"seg_{sorted(shots).index(m) + 1:02d}.wav")
+                         for m in BLOCKS[name][:position])
+            left = (f"scale={LEFT_W}:{H}" if pre
+                    else f"crop={treat_rect(treatments[seg])},scale={LEFT_W}:{H}")
+            seg_mp4 = OUT / f"v_{n}.mp4"
+            run(["ffmpeg", "-nostdin", "-y", "-v", "error",
+                 "-i", str(norm), "-ss", f"{offset}", "-t", f"{want}", "-i", str(panel),
+                 "-filter_complex",
+                 f"[0:v]{left},pad={W}:{H}:0:0:color={BG}[base];"
+                 f"[base][1:v]overlay=x='{panel_x(position == 0, position == count - 1, want)}':y=0[v]",
+                 "-map", "[v]", "-t", f"{want}", "-an", "-c:v", "libx264", "-preset", "medium",
+                 "-crf", "19", "-pix_fmt", "yuv420p", "-r", str(FPS), str(seg_mp4)])
+            video_list.append(f"file '{seg_mp4.name}'")
+            audio_list.append(f"file '../raw/seg_{n}.wav'")
+            total += want
+            print(f"  seg {n}  {clip:<24} {want:6.2f}s  split-screen, panel {name}")
+            continue
 
         # Split the segment into treatment phases; the last one absorbs the rounding remainder.
         specs = []

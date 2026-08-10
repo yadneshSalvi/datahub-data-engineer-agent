@@ -1,31 +1,30 @@
 # One row per narration segment, in order. Tab-separated. '#' comments and blank lines ignored.
 #
-# seg   clip    in      speed   crop    chip
+# seg	clip	in	speed	crop	chip
 #
 # in    seconds to seek into the clip before the segment starts (skips page load / layout shift)
-# speed playback multiplier. Mostly slightly BELOW 1 here: agent-browser only emits a frame when
+# speed playback multiplier. Never above 1 in this cut: agent-browser only emits a frame when
 #       pixels change, so a clip of a mostly-still page is shorter than its wall time and has to be
-#       stretched to cover its narration.
-# crop  W:H:X:Y in MASTER coordinates (3200x1800), or '-' for the full frame. Crops are what make
-#       the narrated text legible — a crop is a real zoom into the 2x master, not an upscale.
-# chip  burnt-in label, or '-'. Declared per shot rather than derived from `speed`, because the
-#       capture itself already compresses idle time: clip_run is 166s of video for a 315s run, so
-#       the elapsed counter visibly runs ~2x even at speed=1, and that has to be labelled. A
-#       slow-motion shot (speed<1) must never be labelled as sped up.
+#       stretched to cover its narration. assemble.py refuses to build a segment whose narration
+#       outruns its clip, so a shortfall shows up as a build failure and not as a frozen frame.
+# crop  documentation only — the camera treatment in treatments.tsv is what the assembler applies.
+# chip  burnt-in label, or '-'. Nothing is sped up in this cut, so nothing carries a speed chip.
 #
-# seg05/seg06 are two windows into one continuous recording of the live run.
-# seg07/seg08 come from a deliberate replay pass over the finished run: the event timeline never
-# auto-scrolls, so the live take sits still on the left for minutes — the exact dead air that got
-# v1 rejected. The run is a permanent replayable record, so it is driven on purpose instead.
+# seg02 and seg06-seg10 are the split-screen blocks; their left-pane crop lives in treatments.tsv
+# as the `sp` phase, and must match the 1120x1080 left pane's shape or the build refuses it.
 #
-seg01	clip01_datahub_lineage	9	1	2600:1463:300:170	-
-seg02	clip02_datahub_schema	1	1	1700:956:120:300	-
+# seg09 plays clip09_split, a two-scene left pane re-cut from the clip09 masters: the ranked blast
+# radius, then a hard cut to the DataHub page carrying the write-backs. One fixed crop could not
+# have framed both, and re-shooting was not an option.
+#
+seg01	clip01_datahub_lineage	36	0.75	2600:1463:300:170	-
+seg02	clip02_datahub_schema	1	0.95	1740:1678:140:120	-
 seg03	clip03_deck_allclear	4	1	2600:1463:300:170	-
-seg04	clip04_composite	0	0.979	-	-
+seg04	clip04_composite	0	0.95	2400:1350:180:450	-
 seg05	clip_run	0	0.895	2100:1181:360:430	-
-seg06	clip06_coldstart	5	1	1700:956:500:844	-
-seg07	clip07_walk	7	1	1600:900:460:880	-
-seg08	clip0708_replay	13	0.69	1700:956:1620:420	-
-seg09	clip09_composite	0.2	0.97	-	-
-seg10	clip10_recall_card	6	1	1700:956:500:800	-
+seg06	clip06_coldstart	5	1	1150:1109:500:546	-
+seg07	clip07_walk	7	1	1150:1109:500:640	-
+seg08	clip0708_replay	13	0.69	1340:1292:1700:508	-
+seg09	clip09_split	0	0.98	pre	-
+seg10	clip10_recall_card	6	1	1150:1109:480:640	-
 seg11	clip11_compare	1.5	1	2500:1406:340:200	-
