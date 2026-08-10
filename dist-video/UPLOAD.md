@@ -4,7 +4,7 @@
 
 | file | what |
 |---|---|
-| `oncall-demo.mp4` | final cut, 2:51.6 (171.561 s), 1920×1080, H.264 + AAC, 25,038,088 bytes |
+| `oncall-demo.mp4` | final cut, 2:54.2 (174.161 s), 1920×1080, H.264 + AAC, 24,879,320 bytes |
 | `oncall-demo.srt` | 43 captions, timed from the audio, worded from the script |
 
 Under the hackathon's 3:00 cap. Every frame of footage is the real running app against a live
@@ -50,23 +50,24 @@ with their real responses, at the moment the narration reaches them.
 
 Chapters:
 0:00  What a data catalog is, and what DataHub maps
-0:17  How the agent reaches DataHub: the MCP server and the Python SDK
-0:37  The control panel: 23 healthy assets, empty signal inbox
-0:48  A stopped ingestion job, and the assertions that start failing
-1:03  One click hands over the page
-1:15  Memory first — a cold start, then the walk up the lineage
-1:33  The four checks it runs at every table
-1:45  The root cause: trips_raw, 26 hours stale, and the stop rule that confirms it
+0:18  How the agent reaches DataHub: six MCP tools and seventeen of its own
+0:39  The control panel: 23 healthy assets, empty signal inbox
+0:51  A stopped ingestion job, and the assertions that start failing
+1:06  One click hands over the page
+1:18  Memory first — a cold start, then the walk up the lineage
+1:36  The four checks it runs at every table
+1:47  The root cause: trips_raw, 26 hours stale, and the stop rule that confirms it
 2:03  Blast radius ranked by usage, and the write-backs landing in DataHub
-2:21  A second incident three hops away — the agent recalls its own post-mortem
-2:36  Cold versus memory-assisted, side by side
+2:22  A second incident three hops away — the agent recalls its own post-mortem
+2:38  Cold versus memory-assisted, side by side
 
 How it reads and writes DataHub:
 · Catalog reads go through the DataHub MCP Server — six read tools: search, get_entities,
   get_lineage, get_lineage_paths_between, list_schema_fields, get_dataset_queries.
-· Assertion status, freshness, usage, incidents and every write go through the DataHub Python SDK
-  and GraphQL — seventeen native tools. That split is deliberate: on OSS, MCP's
-  get_dataset_assertions is Cloud-only, so it cannot supply the trigger.
+· Seventeen native tools on the DataHub Python SDK and GraphQL cover what OSS MCP cannot reach —
+  assertion status, freshness, row-count history, usage — as well as every write. The division is
+  not reads-versus-writes: most of those seventeen are reads. On OSS, MCP's get_dataset_assertions
+  is Cloud-only, so it cannot supply the trigger at all.
 · Write-back: incidents, dataset and column-level tags, institutional-memory links, a searchable
   oncall.postmortem structured property (the recall index), document entities, and merged custom
   properties.
@@ -88,13 +89,16 @@ https://github.com/yadneshSalvi/datahub-data-engineer-agent
 
 ## The split-screen panels, and what is in them
 
-Four times the frame splits: the footage holds in a pixel-locked 1120×1080 left pane and a panel
-animates beside it. The panels are the only drawn material in the cut.
+Twice the frame splits — once for the diagram, once for the whole investigation. Inside a split
+the footage holds in a pixel-locked 1120×1080 left pane and only the panel moves. Two blocks means
+two entrances and two exits in the whole cut; five shorter blocks would have put transitions about
+a second apart at two segment boundaries, which is the constant motion the drift-pan cut was
+rejected for. The panels are the only drawn material in the cut.
 
 | beat | panel |
 |---|---|
-| 0:17 | Architecture. Agent → DataHub MCP server (6 read tools) and → Python SDK + GraphQL (17 native tools) → DataHub. Nodes light as the narration names them. |
-| 1:15–2:36 | The agent's real calls, revealed one at a time: `recall_postmortems`, `datahub_get_lineage`, the four health checks, `confirm_no_upstreams`, `get_usage_stats`, `raise_incident`, `tag_assets`, `notify_owners`, `write_postmortem`, `datahub_get_lineage_paths_between`. |
+| 0:18 | Architecture. Agent → DataHub MCP server (6 read tools) and → Python SDK + GraphQL (17 native tools) → DataHub. Nodes light as the narration names them. |
+| 1:18–2:38 | The agent's real calls, revealed one at a time: `recall_postmortems`, `datahub_get_lineage`, the four health checks, `confirm_no_upstreams`, `get_usage_stats`, `raise_incident`, `tag_assets`, `notify_owners`, `write_postmortem`, `datahub_get_lineage_paths_between`. |
 
 **Every figure on a panel is quoted from `backend/data/oncall.db`** — the persisted run log of
 `run_9a5cb891af954977` (cold) and `run_71b45939d95844ab` (recall), the two runs on screen.
@@ -130,7 +134,7 @@ and the screen showing them is in frame at that moment. No figure is rounded in 
   their narration. No shot therefore carries a speed chip, and a slowed shot is never labelled as
   fast. `assemble.py` refuses to build a segment whose narration outruns its clip, so a shortfall
   fails the build instead of being padded with cloned frames.
-- **1:33 and 1:45 are a deliberate replay** of the finished run, not the live take. The event
+- **1:36 and 1:47 are a deliberate replay** of the finished run, not the live take. The event
   timeline does not auto-scroll, so the live capture sits motionless for minutes. A completed run
   is a permanently replayable record, so it is driven on purpose to show the per-table checks and
   the resolved causal path. The elapsed counters in those shots read the finished run's totals;

@@ -1,10 +1,10 @@
 Companies run on data pipelines. Raw tables feed cleaned tables, which feed the dashboards executives read. DataHub is an open source catalog that maps every table, every column, and every dependency between them.
 
-DataHub also stores what you need when something breaks: schemas, owners, usage, incidents, and assertions. Our agent reads that catalog through DataHub's MCP server, and writes back through the DataHub Python SDK.
+DataHub also stores what you need when something breaks: schemas, owners, usage, incidents, assertions. Six read tools reach it through DataHub's MCP server; seventeen more, on the Python SDK, run the deeper checks and write back.
 
 This is the agent's control panel. On the right, the catalog snapshot from DataHub: twenty three assets in a ride hailing data warehouse, all healthy.
 
-Now we stop the ingestion job. An assertion is an automated data quality check DataHub runs against a table. Its checks start failing, and the inbox on the left fills up.
+Now we stop the ingestion job. An assertion is an automated data quality check DataHub runs against a table. Downstream checks start failing, and the inbox on the left fills up.
 
 The top row: agg daily rides has collapsed to four rows, where its check expected at least twenty five. One click, and the agent takes the page.
 

@@ -157,8 +157,8 @@ def arch_cues() -> dict[str, float]:
         "Usage": at("seg02", "usage"),
         "Incidents": at("seg02", "incidents"),
         "Assertions": at("seg02", "assertions"),
-        "mcp": at("seg02", "reads"),
-        "sdk": at("seg02", "writes"),
+        "mcp": at("seg02", "Six"),
+        "sdk": at("seg02", "seventeen"),
     }
 
 
@@ -192,7 +192,7 @@ def arrow(draw, x, y0, y1, alpha, t: float | None = None) -> None:
 def render_arch(t: float) -> Image.Image:
     cues = arch_cues()
     image, draw = frame()
-    header(draw, "How the agent reaches DataHub", "One read path, one write path")
+    header(draw, "How the agent reaches DataHub", "Two paths into the same catalog")
 
     def alpha_of(key: str) -> float:
         return ease((t - cues[key]) / 0.45)
@@ -232,7 +232,7 @@ def render_arch(t: float) -> Image.Image:
         draw.text((cx + 17, cy + 11), name, font=F_NODE_SUB, fill=blend(BG, WHITE, 0.3 + 0.7 * a))
         cx += w + 14
 
-    note = "Reads go through MCP. Writes and the OSS gaps go through the SDK."
+    note = "MCP reads the catalog. Native tools add what OSS MCP lacks, plus every write."
     draw.text((PAD, 968), fit(note, F_SUB, W - 2 * PAD), font=F_SUB,
               fill=blend(BG, DIM, min(mcp_a, sdk_a)))
     return image
