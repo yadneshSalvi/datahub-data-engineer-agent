@@ -11,6 +11,14 @@ tracking down owners. The hard part is not producing a plausible explanation; it
 enough catalog evidence to identify the first intrinsically broken node, act without crossing the
 wrong boundary, and preserve that evidence so the same investigation is never paid for twice.
 
+## Live demo
+
+**Try it now: <https://datahub-oncall.yadneshsalvi.com>** — hosted against a live DataHub
+OSS catalog (tick the human-verification checkbox; it keeps crawlers away from our LLM
+keys). Arm a scenario in Demo Controls, triage it, then reset with "Keep agent memory" and
+arm "Recall hit" to watch the memory loop. The catalog the agent writes into is browsable
+at <https://datahub-catalog.yadneshsalvi.com> (sign in `datahub` / `datahub`).
+
 ## Demo video
 
 **2 minutes 54 seconds — the real app against a live DataHub quickstart, with side panels
