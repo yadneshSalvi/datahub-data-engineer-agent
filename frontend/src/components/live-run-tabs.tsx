@@ -47,11 +47,11 @@ function Postmortem({ id, event }: { id: string | null; event: PostmortemEvent |
   const links = event ? [
     { label: "Structured property", url: event.datahub_urls.structured_property },
     { label: "Document entity", url: event.datahub_urls.document },
-    { label: "Institutional link", url: event.datahub_urls.link.includes("localhost:3001") ? event.datahub_urls.structured_property : event.datahub_urls.link },
+    { label: "Institutional link", url: event.datahub_urls.link.includes("localhost:3001") || event.datahub_urls.link.includes(window.location.host) ? event.datahub_urls.structured_property : event.datahub_urls.link },
   ] : [
     { label: "Root-cause property", url: query.data.datahub_links[0] },
     { label: "Document entity", url: query.data.datahub_links[1] },
-    { label: "Institutional link", url: query.data.datahub_links[2]?.includes("localhost:3001") ? query.data.datahub_links[0] : query.data.datahub_links[2] },
+    { label: "Institutional link", url: query.data.datahub_links[2]?.includes("localhost:3001") || query.data.datahub_links[2]?.includes(window.location.host) ? query.data.datahub_links[0] : query.data.datahub_links[2] },
   ];
   return <div><div className="mb-4 rounded-xl border border-ok/30 bg-ok/8 p-3"><div className="flex items-center gap-2"><FileCheck2 className="size-4 text-ok" aria-hidden="true" /><div><p className="text-[10px] font-bold uppercase tracking-[.12em] text-ok">Written back to DataHub</p><p className="mt-0.5 text-[9px] text-fg-muted">Narrative, structured memory, and entity link are durable catalog artifacts.</p></div></div><div className="mt-3 flex flex-wrap gap-2">{links.map((link) => link.url && <a key={link.label} href={link.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-md border border-ok/25 bg-bg/35 px-2 py-1 text-[8px] font-semibold text-ok transition-colors hover:bg-ok/10">{link.label}<ExternalLink className="size-2.5" aria-hidden="true" /></a>)}</div></div><Markdown>{query.data.doc_markdown}</Markdown></div>;
 }

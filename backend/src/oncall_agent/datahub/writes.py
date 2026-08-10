@@ -40,6 +40,18 @@ mutation u($urn: String!, $input: IncidentStatusInput!) {
 }
 """
 
+ADD_TAGS_MUTATION = """
+mutation t($input: AddTagsInput!) {
+  addTags(input: $input)
+}
+"""
+
+REMOVE_TAG_MUTATION = """
+mutation t($input: TagAssociationInput!) {
+  removeTag(input: $input)
+}
+"""
+
 _incident_cache: dict[tuple[str, str], str] = {}
 
 _ACTOR_URN = "urn:li:corpuser:datahub"
@@ -93,14 +105,25 @@ def apply_tags(entity_urn: str, tag_names: Iterable[str], *, fields: Iterable[st
     _assert_safe_target(entity_urn)
     _assert_existing_dataset(entity_urn)
     entity = get_client().entities.get(entity_urn)
-    changed = False
     current = {item.tag for item in (entity.tags or [])}
+    missing = [TagUrn(name) for name in dict.fromkeys(tag_names) if str(TagUrn(name)) not in current]
+    if entity_urn.startswith("urn:li:mlModel:") and not fields:
+        # entities.update() re-emits the fetched versionProperties aspect, whose
+        # isLatest field is computed server-side; GMS rejects that write with a
+        # 422 on mlModels. Attach entity-level tags via addTags instead.
+        if not missing:
+            return False
+        execute_graphql(
+            ADD_TAGS_MUTATION,
+            {"input": {"resourceUrn": entity_urn, "tagUrns": [str(tag) for tag in missing]}},
+        )
+        return True
+    changed = False
+    for tag in missing:
+        entity.add_tag(tag)
+        changed = True
     for name in dict.fromkeys(tag_names):
         tag = TagUrn(name)
-        if str(tag) not in current:
-            entity.add_tag(tag)
-            current.add(str(tag))
-            changed = True
         for field in fields:
             field_tags = {item.tag for item in (entity[field].tags or [])}
             if str(tag) not in field_tags:
@@ -116,14 +139,23 @@ def remove_tags(entity_urn: str, tag_names: Iterable[str], *, fields: Iterable[s
 
     _assert_safe_target(entity_urn)
     entity = get_client().entities.get(entity_urn)
-    changed = False
     current = {item.tag for item in (entity.tags or [])}
+    present = [TagUrn(name) for name in dict.fromkeys(tag_names) if str(TagUrn(name)) in current]
+    if entity_urn.startswith("urn:li:mlModel:") and not fields:
+        # Same constraint as apply_tags: entities.update() re-emits the computed
+        # versionProperties.isLatest field, which GMS rejects for mlModels.
+        for tag in present:
+            execute_graphql(
+                REMOVE_TAG_MUTATION,
+                {"input": {"resourceUrn": entity_urn, "tagUrn": str(tag)}},
+            )
+        return bool(present)
+    changed = False
+    for tag in present:
+        entity.remove_tag(tag)
+        changed = True
     for name in dict.fromkeys(tag_names):
         tag = TagUrn(name)
-        if str(tag) in current:
-            entity.remove_tag(tag)
-            current.remove(str(tag))
-            changed = True
         for field in fields:
             field_tags = {item.tag for item in (entity[field].tags or [])}
             if str(tag) in field_tags:
